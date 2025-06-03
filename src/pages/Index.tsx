@@ -1,12 +1,42 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React from 'react';
+import { Sidebar } from '@/components/Sidebar';
+import { Editor } from '@/components/Editor';
+import { useFileSystem } from '@/hooks/useFileSystem';
 
 const Index = () => {
+  const {
+    currentFileId,
+    expandedFolders,
+    createFile,
+    updateFile,
+    deleteFile,
+    toggleFolder,
+    getFileTree,
+    getCurrentFile,
+    setCurrentFileId
+  } = useFileSystem();
+
+  const fileTree = getFileTree();
+  const currentFile = getCurrentFile();
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-background text-foreground flex">
+      <Sidebar
+        files={fileTree}
+        currentFileId={currentFileId}
+        expandedFolders={expandedFolders}
+        onFileSelect={setCurrentFileId}
+        onToggleFolder={toggleFolder}
+        onCreateFile={createFile}
+        onUpdateFile={updateFile}
+        onDeleteFile={deleteFile}
+      />
+      
+      <Editor
+        file={currentFile}
+        onUpdateFile={updateFile}
+      />
     </div>
   );
 };
