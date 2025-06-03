@@ -13,7 +13,7 @@ interface BlockEditorProps {
   className?: string;
 }
 
-const blockTypes = [
+const blockTypes: Array<{ type: Block['type']; label: string; icon: React.ComponentType<any> }> = [
   { type: 'text', label: 'Texto', icon: Type },
   { type: 'heading', label: 'Título', icon: Hash },
   { type: 'list', label: 'Lista', icon: List },
