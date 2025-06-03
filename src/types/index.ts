@@ -1,4 +1,3 @@
-
 export interface FileItem {
   id: string;
   name: string;
@@ -9,6 +8,7 @@ export interface FileItem {
   updatedAt: Date;
   tags?: string[];
   emoji?: string;
+  comments?: Comment[];
 }
 
 export interface Comment {
