@@ -258,12 +258,12 @@ export const Editor: React.FC<EditorProps> = ({ file, onUpdateFile }) => {
         {comments.map(comment => (
           <div
             key={comment.id}
-            className="absolute bg-yellow-200 text-black p-2 rounded-md shadow-lg max-w-xs z-10"
+            className="absolute bg-notion-dark border border-notion-dark-border text-foreground p-3 rounded-md shadow-lg max-w-xs z-10"
             style={{ left: comment.x, top: comment.y }}
           >
-            <div className="text-xs font-medium mb-1">{comment.author}</div>
+            <div className="text-xs font-medium mb-1 text-muted-foreground">{comment.author}</div>
             <div className="text-sm">{comment.content}</div>
-            <div className="text-xs text-gray-600 mt-1">
+            <div className="text-xs text-muted-foreground mt-1">
               {comment.createdAt.toLocaleString('pt-BR')}
             </div>
           </div>
@@ -272,14 +272,14 @@ export const Editor: React.FC<EditorProps> = ({ file, onUpdateFile }) => {
         {/* Comment Input */}
         {showCommentBox && (
           <div
-            className="absolute bg-white text-black p-3 rounded-md shadow-lg z-20 border"
+            className="absolute bg-notion-dark border border-notion-dark-border text-foreground p-3 rounded-md shadow-lg z-20"
             style={{ left: showCommentBox.x, top: showCommentBox.y }}
           >
             <Textarea
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               placeholder="Adicione um comentário..."
-              className="w-64 h-20 text-sm mb-2 border border-gray-300"
+              className="w-64 h-20 text-sm mb-2 bg-background border-notion-dark-border"
               autoFocus
             />
             <div className="flex gap-2">
@@ -294,6 +294,7 @@ export const Editor: React.FC<EditorProps> = ({ file, onUpdateFile }) => {
                 size="sm"
                 variant="outline"
                 onClick={() => setShowCommentBox(null)}
+                className="border-notion-dark-border hover:bg-notion-dark-hover"
               >
                 Cancelar
               </Button>
