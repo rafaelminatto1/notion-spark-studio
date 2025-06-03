@@ -1,14 +1,13 @@
 
 import React, { useState, useCallback, useRef } from 'react';
-import { FileText, Tag, MessageCircle } from 'lucide-react';
+import { FileText, Tag, MessageCircle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { TagInput } from '@/components/TagInput';
-import { LinkRenderer } from '@/components/LinkRenderer';
-import { Backlinks } from '@/components/Backlinks';
 import { CommentsPanel } from '@/components/CommentsPanel';
 import { FileItem, Comment } from '@/types';
 import { useComments } from '@/hooks/useComments';
+import { parseLinks } from '@/utils/linkParser';
 
 interface EditorProps {
   file: FileItem | undefined;
@@ -92,6 +91,104 @@ export const Editor: React.FC<EditorProps> = ({
     startAddingComment(x, y);
   }, [showComments, startAddingComment]);
 
+  // Calculate backlinks for the current file
+  const findBacklinks = (files: FileItem[], fileName: string): FileItem[] => {
+    return files.filter(file => 
+      file.type === 'file' && 
+      file.content && 
+      file.name !== fileName &&
+      file.content.includes(`[[${fileName}]]`)
+    );
+  };
+
+  const backlinks = file ? findBacklinks(files, file.name) : [];
+
+  // Parse links from content
+  const renderLinks = () => {
+    if (!file?.content) return null;
+    
+    const links = parseLinks(file.content);
+    if (links.length === 0) return null;
+    
+    return (
+      <div className="mt-4">
+        <h4 className="text-sm font-medium text-gray-300 mb-2">Links encontrados:</h4>
+        <div className="space-y-2">
+          {links.map((link, index) => {
+            const targetFile = files.find(f => f.name === link.target && f.type === 'file');
+            const fileExists = !!targetFile;
+            
+            return (
+              <Button
+                key={index}
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  if (fileExists && targetFile) {
+                    onNavigateToFile(targetFile.id);
+                  } else {
+                    onCreateFile(link.target);
+                  }
+                }}
+                className={`inline-flex items-center gap-1 h-auto p-1 text-sm font-normal mr-2 ${
+                  fileExists 
+                    ? "text-blue-400 hover:text-blue-300 hover:bg-blue-400/10" 
+                    : "text-red-400 hover:text-red-300 hover:bg-red-400/10"
+                }`}
+              >
+                🔗{link.target} {!fileExists && '(criar)'}
+              </Button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  // Render backlinks
+  const renderBacklinks = () => {
+    if (backlinks.length === 0) {
+      return (
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <ArrowLeft className="h-4 w-4 text-gray-400" />
+            <h3 className="text-sm font-medium text-gray-300">Backlinks</h3>
+          </div>
+          <p className="text-xs text-gray-500">Nenhuma referência encontrada</p>
+        </div>
+      );
+    }
+
+    return (
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <ArrowLeft className="h-4 w-4 text-gray-400" />
+          <h3 className="text-sm font-medium text-gray-300">
+            Backlinks ({backlinks.length})
+          </h3>
+        </div>
+        
+        <div className="space-y-2">
+          {backlinks.map(backFile => (
+            <Button
+              key={backFile.id}
+              variant="ghost"
+              size="sm"
+              onClick={() => onNavigateToFile(backFile.id)}
+              className="w-full justify-start gap-2 h-auto p-2 text-left hover:bg-notion-dark-hover"
+            >
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                {backFile.emoji && <span className="text-sm">{backFile.emoji}</span>}
+                <FileText className="h-3 w-3 text-gray-400 flex-shrink-0" />
+                <span className="text-sm text-gray-300 truncate">{backFile.name}</span>
+              </div>
+            </Button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   if (!file) {
     return (
       <div className="flex-1 flex items-center justify-center bg-notion-dark text-gray-400">
@@ -119,7 +216,7 @@ export const Editor: React.FC<EditorProps> = ({
               }`}
             >
               <MessageCircle className="h-4 w-4 mr-2" />
-              Comentários ({file.comments?.length || 0})
+              Comentários ({(file.comments || []).length})
             </Button>
           </div>
         </div>
@@ -149,14 +246,7 @@ export const Editor: React.FC<EditorProps> = ({
           />
           
           {/* Link Preview */}
-          <div className="mt-4 space-y-2">
-            <LinkRenderer
-              content={file.content || ''}
-              files={files}
-              onNavigateToFile={onNavigateToFile}
-              onCreateFile={onCreateFile}
-            />
-          </div>
+          {renderLinks()}
         </div>
 
         {/* Comments Overlay */}
@@ -176,11 +266,7 @@ export const Editor: React.FC<EditorProps> = ({
 
       {/* Backlinks */}
       <div className="border-t border-notion-dark-border p-6">
-        <Backlinks
-          currentFile={file}
-          files={files}
-          onNavigateToFile={onNavigateToFile}
-        />
+        {renderBacklinks()}
       </div>
     </div>
   );
