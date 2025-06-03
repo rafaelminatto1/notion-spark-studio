@@ -1,3 +1,4 @@
+
 export interface FileItem {
   id: string;
   name: string;
@@ -27,4 +28,14 @@ export interface Block {
   content: string;
   properties?: Record<string, any>;
   comments?: Comment[];
+}
+
+export interface Template {
+  id: string;
+  name: string;
+  description: string;
+  content: string;
+  emoji: string;
+  category: string;
+  createdAt: Date;
 }

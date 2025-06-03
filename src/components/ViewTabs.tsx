@@ -1,10 +1,10 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { FileText, GitBranch, LayoutDashboard } from 'lucide-react';
+import { FileText, GitBranch, LayoutDashboard, FileTemplate } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export type ViewMode = 'dashboard' | 'editor' | 'graph';
+export type ViewMode = 'dashboard' | 'editor' | 'graph' | 'templates';
 
 interface ViewTabsProps {
   activeView: ViewMode;
@@ -27,6 +27,11 @@ export const ViewTabs: React.FC<ViewTabsProps> = ({
       id: 'editor' as ViewMode,
       label: 'Editor',
       icon: FileText
+    },
+    {
+      id: 'templates' as ViewMode,
+      label: 'Templates',
+      icon: FileTemplate
     },
     {
       id: 'graph' as ViewMode,
@@ -53,7 +58,7 @@ export const ViewTabs: React.FC<ViewTabsProps> = ({
             )}
           >
             <Icon className="h-4 w-4" />
-            {tab.label}
+            <span className="hidden sm:inline">{tab.label}</span>
           </Button>
         );
       })}

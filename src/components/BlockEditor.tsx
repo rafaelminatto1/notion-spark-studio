@@ -1,6 +1,6 @@
 
 import React, { useState, useCallback } from 'react';
-import { Plus, Type, List, Code, Image, Quote, Hash } from 'lucide-react';
+import { Plus, Type, List, Code, Image, Quote, Hash, Minus, GripVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,6 +19,7 @@ const blockTypes: Array<{ type: Block['type']; label: string; icon: React.Compon
   { type: 'list', label: 'Lista', icon: List },
   { type: 'code', label: 'Código', icon: Code },
   { type: 'quote', label: 'Citação', icon: Quote },
+  { type: 'image', label: 'Imagem', icon: Image },
 ];
 
 export const BlockEditor: React.FC<BlockEditorProps> = ({
@@ -28,6 +29,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
 }) => {
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const [showBlockMenu, setShowBlockMenu] = useState<string | null>(null);
+  const [draggedBlock, setDraggedBlock] = useState<string | null>(null);
 
   const addBlock = useCallback((type: Block['type'], afterId?: string) => {
     const newBlock: Block = {
@@ -57,8 +59,52 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
   }, [blocks, onBlocksChange]);
 
   const deleteBlock = useCallback((id: string) => {
+    if (blocks.length === 1) return; // Keep at least one block
     onBlocksChange(blocks.filter(block => block.id !== id));
   }, [blocks, onBlocksChange]);
+
+  const duplicateBlock = useCallback((id: string) => {
+    const blockToDuplicate = blocks.find(b => b.id === id);
+    if (!blockToDuplicate) return;
+
+    const newBlock: Block = {
+      ...blockToDuplicate,
+      id: Date.now().toString()
+    };
+
+    const index = blocks.findIndex(b => b.id === id);
+    const newBlocks = [...blocks];
+    newBlocks.splice(index + 1, 0, newBlock);
+    onBlocksChange(newBlocks);
+  }, [blocks, onBlocksChange]);
+
+  const moveBlock = useCallback((fromIndex: number, toIndex: number) => {
+    const newBlocks = [...blocks];
+    const [movedBlock] = newBlocks.splice(fromIndex, 1);
+    newBlocks.splice(toIndex, 0, movedBlock);
+    onBlocksChange(newBlocks);
+  }, [blocks, onBlocksChange]);
+
+  const handleDragStart = (e: React.DragEvent, blockId: string) => {
+    setDraggedBlock(blockId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e: React.DragEvent, targetBlockId: string) => {
+    e.preventDefault();
+    if (!draggedBlock || draggedBlock === targetBlockId) return;
+
+    const fromIndex = blocks.findIndex(b => b.id === draggedBlock);
+    const toIndex = blocks.findIndex(b => b.id === targetBlockId);
+    
+    moveBlock(fromIndex, toIndex);
+    setDraggedBlock(null);
+  };
 
   const renderBlock = (block: Block) => {
     const isSelected = selectedBlockId === block.id;
@@ -115,6 +161,20 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
             />
           </div>
         );
+      case 'image':
+        return (
+          <div className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center">
+            <Image className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+            <Input
+              {...baseProps}
+              placeholder="URL da imagem ou descrição..."
+              className="text-center"
+            />
+            <p className="text-xs text-gray-500 mt-2">
+              Cole uma URL de imagem ou descreva o que deveria aparecer aqui
+            </p>
+          </div>
+        );
       default:
         return (
           <Textarea
@@ -129,14 +189,26 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
   return (
     <div className={cn("space-y-4", className)}>
       {blocks.map((block, index) => (
-        <div key={block.id} className="group relative">
+        <div 
+          key={block.id} 
+          className="group relative"
+          draggable
+          onDragStart={(e) => handleDragStart(e, block.id)}
+          onDragOver={handleDragOver}
+          onDrop={(e) => handleDrop(e, block.id)}
+        >
           <div className="flex items-start gap-2">
+            {/* Drag Handle */}
+            <div className="opacity-0 group-hover:opacity-100 flex items-center pt-2">
+              <GripVertical className="h-4 w-4 text-gray-400 cursor-grab hover:text-white" />
+            </div>
+            
             <div className="flex-1">
               {renderBlock(block)}
             </div>
             
             {/* Block Controls */}
-            <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1">
+            <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 pt-2">
               <Button
                 variant="ghost"
                 size="sm"
@@ -144,6 +216,24 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
                 className="h-6 w-6 p-0"
               >
                 <Plus className="h-3 w-3" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => duplicateBlock(block.id)}
+                className="h-6 w-6 p-0"
+                title="Duplicar"
+              >
+                <Code className="h-3 w-3" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => deleteBlock(block.id)}
+                className="h-6 w-6 p-0 text-red-400 hover:text-red-300"
+                title="Deletar"
+              >
+                <Minus className="h-3 w-3" />
               </Button>
             </div>
           </div>
