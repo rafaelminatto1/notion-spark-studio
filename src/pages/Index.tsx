@@ -6,6 +6,7 @@ import { useFileSystem } from '@/hooks/useFileSystem';
 
 const Index = () => {
   const {
+    files,
     currentFileId,
     expandedFolders,
     createFile,
@@ -19,6 +20,10 @@ const Index = () => {
 
   const fileTree = getFileTree();
   const currentFile = getCurrentFile();
+
+  const handleNavigateToFile = (fileId: string) => {
+    setCurrentFileId(fileId);
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground flex">
@@ -35,7 +40,10 @@ const Index = () => {
       
       <Editor
         file={currentFile}
+        files={files}
         onUpdateFile={updateFile}
+        onNavigateToFile={handleNavigateToFile}
+        onCreateFile={createFile}
       />
     </div>
   );
