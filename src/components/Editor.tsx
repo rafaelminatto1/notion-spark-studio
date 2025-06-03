@@ -238,12 +238,12 @@ export const Editor: React.FC<EditorProps> = ({ file, onUpdateFile }) => {
       </div>
 
       {/* Editor Content */}
-      <div className="flex-1 relative">
+      <div className="flex-1 relative bg-notion-dark">
         <Textarea
           value={file.content || ''}
           onChange={(e) => handleContentChange(e.target.value)}
           placeholder="Comece a escrever..."
-          className="w-full h-full resize-none border-0 bg-transparent text-foreground p-8 text-base leading-relaxed focus:ring-0 focus:outline-none"
+          className="w-full h-full resize-none border-0 bg-notion-dark text-foreground p-8 text-base leading-relaxed focus:ring-0 focus:outline-none placeholder:text-gray-500"
           style={{ minHeight: 'calc(100vh - 200px)' }}
           onDoubleClick={(e) => {
             const rect = e.currentTarget.getBoundingClientRect();
@@ -279,7 +279,7 @@ export const Editor: React.FC<EditorProps> = ({ file, onUpdateFile }) => {
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               placeholder="Adicione um comentário..."
-              className="w-64 h-20 text-sm mb-2 bg-background border-notion-dark-border"
+              className="w-64 h-20 text-sm mb-2 bg-notion-dark border-notion-dark-border text-foreground"
               autoFocus
             />
             <div className="flex gap-2">
