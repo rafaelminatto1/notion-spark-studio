@@ -28,6 +28,7 @@ import { useLinks } from '@/hooks/useLinks';
 import { Backlinks } from '@/components/Backlinks';
 import { LinkRenderer } from '@/components/LinkRenderer';
 import { parseLinks, replaceLinksWithComponents } from '@/utils/linkParser';
+import { TagInput } from '@/components/TagInput';
 
 interface EditorProps {
   file: FileItem | undefined;
@@ -168,6 +169,12 @@ export const Editor: React.FC<EditorProps> = ({
     return result;
   }, [getFileByName, handleLinkClick]);
 
+  const handleTagsChange = useCallback((tags: string[]) => {
+    if (file) {
+      onUpdateFile(file.id, { tags });
+    }
+  }, [file, onUpdateFile]);
+
   if (!file) {
     return (
       <div className="flex-1 flex items-center justify-center bg-notion-dark">
@@ -201,9 +208,19 @@ export const Editor: React.FC<EditorProps> = ({
                 <span className="text-2xl">{file.emoji || '📄'}</span>
                 <div>
                   <h1 className="font-semibold text-lg text-white">{file.name}</h1>
-                  <p className="text-sm text-gray-400">
-                    Editado em {file.updatedAt.toLocaleDateString('pt-BR')}
-                  </p>
+                  <div className="flex items-center gap-4">
+                    <p className="text-sm text-gray-400">
+                      Editado em {file.updatedAt.toLocaleDateString('pt-BR')}
+                    </p>
+                    {file && (
+                      <TagInput
+                        tags={file.tags || []}
+                        onTagsChange={handleTagsChange}
+                        placeholder="Adicionar tag..."
+                        className="flex-wrap"
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

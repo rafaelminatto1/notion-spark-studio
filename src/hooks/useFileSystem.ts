@@ -26,10 +26,39 @@ export const useFileSystem = () => {
       name: 'Cálculo I',
       type: 'file',
       parentId: '2',
-      content: '# Cálculo I\n\nLimites e Derivadas...',
+      content: '# Cálculo I\n\nLimites e Derivadas...\n\nVer também: [[Álgebra Linear]]',
       createdAt: new Date(),
       updatedAt: new Date(),
-      tags: ['matemática', 'cálculo']
+      tags: ['matemática', 'cálculo', 'universidade/primeiro-ano']
+    },
+    {
+      id: '4',
+      name: 'Álgebra Linear',
+      type: 'file',
+      parentId: '2',
+      content: '# Álgebra Linear\n\nMatrizes e Vetores...\n\nRelacionado com [[Cálculo I]]',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      tags: ['matemática', 'álgebra', 'universidade/primeiro-ano']
+    },
+    {
+      id: '5',
+      name: 'Física',
+      type: 'folder',
+      parentId: '1',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      emoji: '⚡'
+    },
+    {
+      id: '6',
+      name: 'Mecânica Clássica',
+      type: 'file',
+      parentId: '5',
+      content: '# Mecânica Clássica\n\nLeis de Newton...',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      tags: ['física', 'mecânica', 'universidade/segundo-ano']
     }
   ]);
 

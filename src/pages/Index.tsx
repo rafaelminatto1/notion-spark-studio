@@ -36,6 +36,7 @@ const Index = () => {
         onCreateFile={createFile}
         onUpdateFile={updateFile}
         onDeleteFile={deleteFile}
+        allFiles={files} // Passando todos os arquivos para acessar tags
       />
       
       <Editor
