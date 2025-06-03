@@ -1,10 +1,10 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { FileText, GitBranch } from 'lucide-react';
+import { FileText, GitBranch, LayoutDashboard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export type ViewMode = 'editor' | 'graph';
+export type ViewMode = 'dashboard' | 'editor' | 'graph';
 
 interface ViewTabsProps {
   activeView: ViewMode;
@@ -18,6 +18,11 @@ export const ViewTabs: React.FC<ViewTabsProps> = ({
   className
 }) => {
   const tabs = [
+    {
+      id: 'dashboard' as ViewMode,
+      label: 'Dashboard',
+      icon: LayoutDashboard
+    },
     {
       id: 'editor' as ViewMode,
       label: 'Editor',
