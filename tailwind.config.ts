@@ -64,9 +64,9 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				notion: {
-					dark: '#191919',
-					'dark-hover': '#2F2F2F',
-					'dark-border': '#373737',
+					dark: '#0f0f0f',
+					'dark-hover': '#1a1a1a',
+					'dark-border': '#282828',
 					purple: '#6B46C1',
 					'purple-dark': '#553C9A',
 					blue: '#3B82F6',
