@@ -15,7 +15,8 @@ import {
   Heading2,
   Heading3,
   Type,
-  MessageCircle
+  MessageCircle,
+  FileText
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
