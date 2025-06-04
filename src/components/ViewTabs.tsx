@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { FileText, GitBranch, LayoutDashboard, FileTemplate } from 'lucide-react';
+import { FileText, GitBranch, LayoutDashboard, File } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export type ViewMode = 'dashboard' | 'editor' | 'graph' | 'templates';
@@ -31,7 +31,7 @@ export const ViewTabs: React.FC<ViewTabsProps> = ({
     {
       id: 'templates' as ViewMode,
       label: 'Templates',
-      icon: FileTemplate
+      icon: File
     },
     {
       id: 'graph' as ViewMode,
