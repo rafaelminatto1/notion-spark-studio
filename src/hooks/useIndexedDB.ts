@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 
 interface IndexedDBConfig {
@@ -13,7 +14,7 @@ interface IndexedDBConfig {
 
 const DEFAULT_CONFIG: IndexedDBConfig = {
   dbName: 'NotionCloneDB',
-  version: 3, // Incrementado para adicionar novas tabelas
+  version: 4, // Incrementado para adicionar offline_queue
   objectStores: [
     {
       name: 'files',
@@ -70,6 +71,15 @@ const DEFAULT_CONFIG: IndexedDBConfig = {
       indexes: [
         { name: 'createdAt', keyPath: 'createdAt' },
         { name: 'isActive', keyPath: 'isActive' }
+      ]
+    },
+    {
+      name: 'offline_queue',
+      keyPath: 'id',
+      indexes: [
+        { name: 'timestamp', keyPath: 'timestamp' },
+        { name: 'type', keyPath: 'type' },
+        { name: 'collection', keyPath: 'collection' }
       ]
     }
   ]
