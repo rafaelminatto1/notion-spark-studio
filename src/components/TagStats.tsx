@@ -35,7 +35,7 @@ export const TagStats: React.FC<TagStatsProps> = ({
       return fileIds;
     };
     return getUniqueFiles(tag, acc);
-  }, new Set()).size;
+  }, new Set<string>()).size;
 
   const parentTags = tags.filter(tag => tag.children && tag.children.length > 0).length;
 
