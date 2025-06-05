@@ -27,7 +27,7 @@ export const AnimatedElement: React.FC<AnimatedElementProps> = ({
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [hasAnimated, setHasAnimated] = useState(false);
-  const elementRef = useRef<HTMLElement>(null);
+  const elementRef = useRef<any>(null);
   const { startAnimation, getAnimationClass } = useAnimations();
   const elementId = useRef(`animated-${Math.random().toString(36).substr(2, 9)}`);
 
@@ -86,20 +86,18 @@ export const AnimatedElement: React.FC<AnimatedElementProps> = ({
 
   const animationClass = isVisible ? getAnimationClass(animation, config) : '';
 
-  return (
-    <Component
-      ref={elementRef}
-      className={cn(
-        animationClass,
-        trigger === 'mount' && !isVisible && 'opacity-0',
-        trigger === 'inView' && !isVisible && 'opacity-0',
-        className
-      )}
-      onMouseEnter={handleMouseEnter}
-      onClick={handleClick}
-      {...props}
-    >
-      {children}
-    </Component>
-  );
+  const componentProps = {
+    ref: elementRef,
+    className: cn(
+      animationClass,
+      trigger === 'mount' && !isVisible && 'opacity-0',
+      trigger === 'inView' && !isVisible && 'opacity-0',
+      className
+    ),
+    onMouseEnter: handleMouseEnter,
+    onClick: handleClick,
+    ...props
+  };
+
+  return React.createElement(Component, componentProps, children);
 };
