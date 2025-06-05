@@ -13,7 +13,7 @@ interface IndexedDBConfig {
 
 const DEFAULT_CONFIG: IndexedDBConfig = {
   dbName: 'NotionCloneDB',
-  version: 2, // Incrementado para adicionar novas tabelas
+  version: 3, // Incrementado para adicionar novas tabelas
   objectStores: [
     {
       name: 'files',
@@ -49,6 +49,27 @@ const DEFAULT_CONFIG: IndexedDBConfig = {
       indexes: [
         { name: 'timestamp', keyPath: 'timestamp' },
         { name: 'health', keyPath: 'health' }
+      ]
+    },
+    {
+      name: 'users',
+      keyPath: 'id'
+    },
+    {
+      name: 'activities',
+      keyPath: 'id',
+      indexes: [
+        { name: 'timestamp', keyPath: 'timestamp' },
+        { name: 'type', keyPath: 'type' },
+        { name: 'targetId', keyPath: 'targetId' }
+      ]
+    },
+    {
+      name: 'sessions',
+      keyPath: 'id',
+      indexes: [
+        { name: 'createdAt', keyPath: 'createdAt' },
+        { name: 'isActive', keyPath: 'isActive' }
       ]
     }
   ]
