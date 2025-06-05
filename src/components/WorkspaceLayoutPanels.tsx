@@ -78,18 +78,8 @@ export const WorkspaceLayoutPanels: React.FC<WorkspaceLayoutPanelsProps> = ({
           onNavigateToFile={onNavigateToFile}
           onCreateFile={onCreateFile}
           onToggleFavorite={onToggleFavorite}
-          onGoBack={() => {
-            const fileId = onGoBack();
-            if (fileId) {
-              setCurrentFileId(fileId);
-            }
-          }}
-          onGoForward={() => {
-            const fileId = onGoForward();
-            if (fileId) {
-              setCurrentFileId(fileId);
-            }
-          }}
+          onGoBack={onGoBack}
+          onGoForward={onGoForward}
           canGoBack={canGoBack}
           canGoForward={canGoForward}
         />
