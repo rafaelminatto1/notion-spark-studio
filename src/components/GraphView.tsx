@@ -16,7 +16,11 @@ import {
   Info,
   Play,
   Pause,
-  Settings
+  Settings,
+  Target,
+  Network,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { GraphNode, GraphLink, useGraph } from '@/hooks/useGraph';
 import { FileItem } from '@/types';
@@ -46,11 +50,22 @@ export const GraphView: React.FC<GraphViewProps> = ({
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(true);
   const [showLabels, setShowLabels] = useState(true);
-  const [linkDistance, setLinkDistance] = useState([100]);
-  const [chargeStrength, setChargeStrength] = useState([300]);
+  const [showOrphans, setShowOrphans] = useState(true);
+  const [linkDistance, setLinkDistance] = useState([120]);
+  const [chargeStrength, setChargeStrength] = useState([400]);
   const [showSettings, setShowSettings] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
+  const [focusDepth, setFocusDepth] = useState([2]);
   
-  const { nodes, links, getConnectedNodes, getClusters, getNodeStats } = useGraph(files);
+  const { 
+    nodes, 
+    links, 
+    getConnectedNodes, 
+    getClusters, 
+    getNodeStats,
+    getMostConnectedNodes,
+    getMostCentralNodes 
+  } = useGraph(files);
 
   // Filtrar nós e links baseado nos filtros ativos
   const filteredData = useCallback(() => {
@@ -64,8 +79,28 @@ export const GraphView: React.FC<GraphViewProps> = ({
       const matchesClusters = selectedClusters.length === 0 ||
         selectedClusters.includes(node.cluster || 'sem-categoria');
       
-      return matchesSearch && matchesTags && matchesClusters;
+      const isOrphan = node.connections === 0;
+      const showThis = showOrphans || !isOrphan;
+      
+      return matchesSearch && matchesTags && matchesClusters && showThis;
     });
+
+    // Modo foco: mostrar apenas nós conectados ao selecionado
+    if (focusMode && selectedNode) {
+      const focusedNodeIds = new Set([selectedNode]);
+      const addNeighbors = (nodeId: string, depth: number) => {
+        if (depth <= 0) return;
+        const neighbors = getConnectedNodes(nodeId);
+        neighbors.forEach(neighborId => {
+          if (!focusedNodeIds.has(neighborId)) {
+            focusedNodeIds.add(neighborId);
+            addNeighbors(neighborId, depth - 1);
+          }
+        });
+      };
+      addNeighbors(selectedNode, focusDepth[0]);
+      filteredNodes = filteredNodes.filter(node => focusedNodeIds.has(node.id));
+    }
 
     const filteredNodeIds = new Set(filteredNodes.map(n => n.id));
     const filteredLinks = links.filter(link => 
@@ -74,7 +109,7 @@ export const GraphView: React.FC<GraphViewProps> = ({
     );
 
     return { nodes: filteredNodes, links: filteredLinks };
-  }, [nodes, links, searchQuery, selectedTags, selectedClusters]);
+  }, [nodes, links, searchQuery, selectedTags, selectedClusters, showOrphans, focusMode, selectedNode, focusDepth, getConnectedNodes]);
 
   const { nodes: visibleNodes, links: visibleLinks } = filteredData();
   const allTags = [...new Set(nodes.flatMap(node => node.tags))].sort();
@@ -113,41 +148,55 @@ export const GraphView: React.FC<GraphViewProps> = ({
 
     simulationRef.current = simulation;
 
-    // Criar gradientes para os links
+    // Criar definições para gradientes e padrões
     const defs = svg.append('defs');
+    
+    // Gradientes para links bidirecionais
     visibleLinks.forEach((link, i) => {
       const gradient = defs.append('linearGradient')
         .attr('id', `gradient-${i}`)
         .attr('gradientUnits', 'objectBoundingBox');
       
-      gradient.append('stop')
-        .attr('offset', '0%')
-        .attr('stop-color', '#4a5568');
-      
-      gradient.append('stop')
-        .attr('offset', '100%')
-        .attr('stop-color', '#718096');
+      if (link.bidirectional) {
+        gradient.append('stop')
+          .attr('offset', '0%')
+          .attr('stop-color', '#10b981');
+        gradient.append('stop')
+          .attr('offset', '50%')
+          .attr('stop-color', '#3b82f6');
+        gradient.append('stop')
+          .attr('offset', '100%')
+          .attr('stop-color', '#10b981');
+      } else {
+        gradient.append('stop')
+          .attr('offset', '0%')
+          .attr('stop-color', '#4a5568');
+        gradient.append('stop')
+          .attr('offset', '100%')
+          .attr('stop-color', '#718096');
+      }
     });
 
-    // Criar links com gradientes
+    // Criar links
     const link = container.append('g')
       .selectAll('line')
       .data(visibleLinks)
       .enter().append('line')
       .attr('stroke', (d, i) => `url(#gradient-${i})`)
-      .attr('stroke-opacity', 0.6)
-      .attr('stroke-width', (d: any) => Math.max(1, (d.strength || 0.5) * 3))
+      .attr('stroke-opacity', 0.7)
+      .attr('stroke-width', (d: any) => Math.max(1.5, (d.strength || 0.5) * 4))
+      .attr('stroke-dasharray', (d: any) => d.bidirectional ? 'none' : '5,5')
       .attr('marker-end', 'url(#arrowhead)');
 
-    // Adicionar setas para direção dos links
+    // Adicionar setas
     defs.append('marker')
       .attr('id', 'arrowhead')
       .attr('viewBox', '-0 -5 10 10')
-      .attr('refX', 15)
+      .attr('refX', 20)
       .attr('refY', 0)
       .attr('orient', 'auto')
-      .attr('markerWidth', 6)
-      .attr('markerHeight', 6)
+      .attr('markerWidth', 8)
+      .attr('markerHeight', 8)
       .append('path')
       .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
       .attr('fill', '#4a5568');
@@ -175,13 +224,14 @@ export const GraphView: React.FC<GraphViewProps> = ({
         })
       );
 
-    // Adicionar círculos externos (halo effect)
+    // Adicionar círculos externos (aura effect)
     nodeGroup.append('circle')
-      .attr('r', (d) => (d.size || 15) + 4)
+      .attr('r', (d) => (d.size || 15) + 6)
       .attr('fill', 'none')
       .attr('stroke', (d) => d.color || '#6b7280')
       .attr('stroke-width', 2)
-      .attr('stroke-opacity', 0.3);
+      .attr('stroke-opacity', (d) => d.id === currentFileId ? 0.8 : 0.2)
+      .style('filter', (d) => d.id === currentFileId ? 'drop-shadow(0 0 15px currentColor)' : 'none');
 
     // Adicionar círculos principais
     nodeGroup.append('circle')
@@ -191,33 +241,34 @@ export const GraphView: React.FC<GraphViewProps> = ({
         return d.color || '#6b7280';
       })
       .attr('stroke', '#fff')
-      .attr('stroke-width', 2)
-      .style('filter', (d) => d.id === currentFileId ? 'drop-shadow(0 0 10px #8b5cf6)' : 'none');
+      .attr('stroke-width', 3)
+      .style('filter', (d) => d.id === currentFileId ? 'drop-shadow(0 0 10px #8b5cf6)' : 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))');
 
-    // Adicionar indicadores de conexões (pequenos pontos)
+    // Adicionar indicadores de centralidade
     nodeGroup.append('circle')
-      .attr('r', 3)
-      .attr('cx', (d) => (d.size || 15) - 5)
-      .attr('cy', (d) => -(d.size || 15) + 5)
+      .attr('r', (d) => Math.max(2, (d.centrality || 0) * 8))
+      .attr('cx', (d) => (d.size || 15) - 8)
+      .attr('cy', (d) => -(d.size || 15) + 8)
       .attr('fill', '#fbbf24')
       .attr('stroke', '#fff')
       .attr('stroke-width', 1)
-      .style('opacity', (d) => d.connections > 0 ? 1 : 0);
+      .style('opacity', (d) => (d.centrality || 0) > 0.1 ? 1 : 0);
 
     // Adicionar labels dos nós
     if (showLabels) {
       nodeGroup.append('text')
         .text((d) => d.name)
         .attr('x', 0)
-        .attr('y', (d) => -(d.size || 15) - 8)
+        .attr('y', (d) => -(d.size || 15) - 10)
         .attr('text-anchor', 'middle')
         .attr('fill', '#e2e8f0')
-        .attr('font-size', '11px')
+        .attr('font-size', '12px')
         .attr('font-weight', (d) => d.id === currentFileId ? 'bold' : 'normal')
-        .style('pointer-events', 'none');
+        .style('pointer-events', 'none')
+        .style('text-shadow', '1px 1px 2px rgba(0,0,0,0.8)');
     }
 
-    // Event handlers para interatividade
+    // Event handlers
     nodeGroup
       .on('click', (event, d) => {
         setSelectedNode(d.id);
@@ -226,7 +277,6 @@ export const GraphView: React.FC<GraphViewProps> = ({
       .on('mouseenter', (event, d) => {
         setHoveredNode(d.id);
         
-        // Destacar conexões
         const connectedIds = getConnectedNodes(d.id);
         
         nodeGroup.selectAll('circle')
@@ -237,21 +287,19 @@ export const GraphView: React.FC<GraphViewProps> = ({
         
         link.transition().duration(200)
           .attr('opacity', (linkData: any) =>
-            linkData.source.id === d.id || linkData.target.id === d.id ? 1 : 0.1
+            linkData.source.id === d.id || linkData.target.id === d.id ? 1 : 0.2
           );
       })
       .on('mouseleave', () => {
         setHoveredNode(null);
         nodeGroup.selectAll('circle').transition().duration(200).attr('opacity', 1);
-        link.transition().duration(200).attr('opacity', 0.6);
+        link.transition().duration(200).attr('opacity', 0.7);
       });
 
-    // Controlar simulação
     if (!isPlaying) {
       simulation.stop();
     }
 
-    // Atualizar posições na simulação
     simulation.on('tick', () => {
       link
         .attr('x1', (d: any) => d.source.x)
@@ -262,7 +310,6 @@ export const GraphView: React.FC<GraphViewProps> = ({
       nodeGroup.attr('transform', (d: any) => `translate(${d.x},${d.y})`);
     });
 
-    // Função para resetar zoom
     const resetZoom = () => {
       svg.transition().duration(500).call(
         zoom.transform,
@@ -274,12 +321,10 @@ export const GraphView: React.FC<GraphViewProps> = ({
 
   }, [visibleNodes, visibleLinks, currentFileId, onFileSelect, getConnectedNodes, isPlaying, showLabels, linkDistance, chargeStrength]);
 
-  // Efeito para recriar simulação quando dados mudam
   useEffect(() => {
     resetSimulation();
   }, [resetSimulation]);
 
-  // Controles da simulação
   const handlePlayPause = () => {
     setIsPlaying(!isPlaying);
     if (simulationRef.current) {
@@ -312,12 +357,15 @@ export const GraphView: React.FC<GraphViewProps> = ({
     setSelectedTags([]);
     setSelectedClusters([]);
     setSelectedNode(null);
+    setFocusMode(false);
     if (svgRef.current && (svgRef.current as any).resetZoom) {
       (svgRef.current as any).resetZoom();
     }
   };
 
   const nodeStats = selectedNode ? getNodeStats(selectedNode) : null;
+  const mostConnected = getMostConnectedNodes(3);
+  const mostCentral = getMostCentralNodes(3);
 
   return (
     <div className={cn("flex flex-col h-full bg-notion-dark", className)}>
@@ -341,7 +389,16 @@ export const GraphView: React.FC<GraphViewProps> = ({
             className="gap-2"
           >
             {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-            {isPlaying ? 'Pausar' : 'Iniciar'}
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setFocusMode(!focusMode)}
+            className={cn("gap-2", focusMode && "bg-notion-purple/20")}
+          >
+            <Target className="h-4 w-4" />
+            Foco
           </Button>
 
           <Button
@@ -360,7 +417,6 @@ export const GraphView: React.FC<GraphViewProps> = ({
             className="gap-2"
           >
             <RotateCcw className="h-4 w-4" />
-            Reset
           </Button>
         </div>
 
@@ -368,98 +424,120 @@ export const GraphView: React.FC<GraphViewProps> = ({
         {showSettings && (
           <Card className="p-4 bg-notion-dark-hover border-notion-dark-border">
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <label className="text-sm text-gray-300">Mostrar Labels</label>
-                <Switch
-                  checked={showLabels}
-                  onCheckedChange={setShowLabels}
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm text-gray-300">Labels</label>
+                  <Switch
+                    checked={showLabels}
+                    onCheckedChange={setShowLabels}
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <label className="text-sm text-gray-300">Órfãos</label>
+                  <Switch
+                    checked={showOrphans}
+                    onCheckedChange={setShowOrphans}
+                  />
+                </div>
               </div>
               
               <div className="space-y-2">
-                <label className="text-sm text-gray-300">Distância dos Links: {linkDistance[0]}</label>
+                <label className="text-sm text-gray-300">Distância: {linkDistance[0]}</label>
                 <Slider
                   value={linkDistance}
                   onValueChange={setLinkDistance}
                   max={200}
                   min={50}
                   step={10}
-                  className="w-full"
                 />
               </div>
               
               <div className="space-y-2">
-                <label className="text-sm text-gray-300">Força de Repulsão: {chargeStrength[0]}</label>
+                <label className="text-sm text-gray-300">Repulsão: {chargeStrength[0]}</label>
                 <Slider
                   value={chargeStrength}
                   onValueChange={setChargeStrength}
-                  max={500}
-                  min={100}
+                  max={600}
+                  min={200}
                   step={50}
-                  className="w-full"
                 />
               </div>
+
+              {focusMode && (
+                <div className="space-y-2">
+                  <label className="text-sm text-gray-300">Profundidade do Foco: {focusDepth[0]}</label>
+                  <Slider
+                    value={focusDepth}
+                    onValueChange={setFocusDepth}
+                    max={4}
+                    min={1}
+                    step={1}
+                  />
+                </div>
+              )}
             </div>
           </Card>
         )}
 
-        {/* Filtros por clusters */}
-        {clusters.length > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-gray-400" />
-              <span className="text-sm text-gray-400">Clusters:</span>
+        {/* Filtros */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Clusters */}
+          {clusters.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-gray-400" />
+                <span className="text-sm text-gray-400">Clusters:</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {clusters.map(cluster => (
+                  <Badge
+                    key={cluster}
+                    variant={selectedClusters.includes(cluster) ? "default" : "secondary"}
+                    className={cn(
+                      "cursor-pointer transition-colors text-xs",
+                      selectedClusters.includes(cluster) 
+                        ? "bg-notion-purple text-white" 
+                        : "bg-notion-dark-hover hover:bg-notion-purple/20"
+                    )}
+                    onClick={() => handleClusterToggle(cluster)}
+                  >
+                    {cluster} ({nodes.filter(n => n.cluster === cluster).length})
+                  </Badge>
+                ))}
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {clusters.map(cluster => (
-                <Badge
-                  key={cluster}
-                  variant={selectedClusters.includes(cluster) ? "default" : "secondary"}
-                  className={cn(
-                    "cursor-pointer transition-colors",
-                    selectedClusters.includes(cluster) 
-                      ? "bg-notion-purple text-white" 
-                      : "bg-notion-dark-hover hover:bg-notion-purple/20"
-                  )}
-                  onClick={() => handleClusterToggle(cluster)}
-                >
-                  {cluster} ({nodes.filter(n => n.cluster === cluster).length})
-                </Badge>
-              ))}
-            </div>
-          </div>
-        )}
+          )}
 
-        {/* Filtros por tags */}
-        {allTags.length > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
+          {/* Tags */}
+          {allTags.length > 0 && (
+            <div className="space-y-2">
               <span className="text-sm text-gray-400">Tags:</span>
+              <div className="flex flex-wrap gap-2">
+                {allTags.slice(0, 8).map(tag => (
+                  <Badge
+                    key={tag}
+                    variant={selectedTags.includes(tag) ? "default" : "secondary"}
+                    className={cn(
+                      "cursor-pointer transition-colors text-xs",
+                      selectedTags.includes(tag) 
+                        ? "bg-blue-600 text-white" 
+                        : "bg-notion-dark-hover hover:bg-blue-600/20"
+                    )}
+                    onClick={() => handleTagToggle(tag)}
+                  >
+                    {tag}
+                  </Badge>
+                ))}
+                {allTags.length > 8 && (
+                  <span className="text-xs text-gray-500">
+                    +{allTags.length - 8}
+                  </span>
+                )}
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {allTags.slice(0, 10).map(tag => (
-                <Badge
-                  key={tag}
-                  variant={selectedTags.includes(tag) ? "default" : "secondary"}
-                  className={cn(
-                    "cursor-pointer transition-colors text-xs",
-                    selectedTags.includes(tag) 
-                      ? "bg-blue-600 text-white" 
-                      : "bg-notion-dark-hover hover:bg-blue-600/20"
-                  )}
-                  onClick={() => handleTagToggle(tag)}
-                >
-                  {tag}
-                </Badge>
-              ))}
-              {allTags.length > 10 && (
-                <span className="text-xs text-gray-500">
-                  +{allTags.length - 10} mais
-                </span>
-              )}
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Graph Container */}
@@ -475,8 +553,8 @@ export const GraphView: React.FC<GraphViewProps> = ({
           {/* Stats overlay */}
           <div className="absolute top-4 right-4 bg-notion-dark-hover/90 backdrop-blur-sm rounded-lg p-3 border border-notion-dark-border">
             <div className="text-xs text-gray-400 space-y-1">
-              <div>Arquivos: {visibleNodes.length}</div>
-              <div>Conexões: {visibleLinks.length}</div>
+              <div>Nós: {visibleNodes.length}</div>
+              <div>Links: {visibleLinks.length}</div>
               <div>Clusters: {clusters.length}</div>
               {hoveredNode && (
                 <div className="pt-1 border-t border-notion-dark-border">
@@ -488,15 +566,40 @@ export const GraphView: React.FC<GraphViewProps> = ({
               )}
             </div>
           </div>
+
+          {/* Top nodes overlay */}
+          <div className="absolute top-4 left-4 bg-notion-dark-hover/90 backdrop-blur-sm rounded-lg p-3 border border-notion-dark-border max-w-xs">
+            <div className="text-xs text-gray-400 space-y-2">
+              <div>
+                <div className="font-medium text-white mb-1">Mais Conectados</div>
+                {mostConnected.map(node => (
+                  <div key={node.id} className="flex justify-between">
+                    <span className="truncate">{node.name}</span>
+                    <span>{node.connections}</span>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="pt-2 border-t border-notion-dark-border">
+                <div className="font-medium text-white mb-1">Mais Centrais</div>
+                {mostCentral.map(node => (
+                  <div key={node.id} className="flex justify-between">
+                    <span className="truncate">{node.name}</span>
+                    <span>{((node.centrality || 0) * 100).toFixed(1)}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Painel lateral com detalhes do nó selecionado */}
+        {/* Painel lateral com detalhes */}
         {nodeStats && (
           <div className="w-80 border-l border-notion-dark-border bg-notion-dark-hover p-4 overflow-y-auto">
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <Info className="h-4 w-4 text-blue-400" />
-                <h3 className="font-medium text-white">Detalhes do Arquivo</h3>
+                <h3 className="font-medium text-white">Detalhes</h3>
               </div>
               
               {nodeStats.node && (
@@ -540,25 +643,34 @@ export const GraphView: React.FC<GraphViewProps> = ({
                       </div>
                     </div>
                   </div>
+
+                  <div>
+                    <div className="text-sm text-gray-400">Centralidade</div>
+                    <div className="text-lg font-medium text-purple-400">
+                      {((nodeStats.node.centrality || 0) * 100).toFixed(1)}%
+                    </div>
+                  </div>
                   
                   {nodeStats.connectedNodes.length > 0 && (
                     <div>
-                      <div className="text-sm text-gray-400 mb-2">Arquivos conectados</div>
+                      <div className="text-sm text-gray-400 mb-2">
+                        Conectados ({nodeStats.connectedNodes.length})
+                      </div>
                       <div className="space-y-1">
-                        {nodeStats.connectedNodes.slice(0, 5).map(connectedNode => (
+                        {nodeStats.connectedNodes.slice(0, 8).map(connectedNode => (
                           <Button
                             key={connectedNode.id}
                             variant="ghost"
                             size="sm"
                             onClick={() => onFileSelect(connectedNode.id)}
-                            className="w-full justify-start text-xs h-auto p-2"
+                            className="w-full justify-start text-xs h-auto p-2 truncate"
                           >
                             {connectedNode.name}
                           </Button>
                         ))}
-                        {nodeStats.connectedNodes.length > 5 && (
+                        {nodeStats.connectedNodes.length > 8 && (
                           <div className="text-xs text-gray-500 px-2">
-                            +{nodeStats.connectedNodes.length - 5} mais
+                            +{nodeStats.connectedNodes.length - 8} mais
                           </div>
                         )}
                       </div>

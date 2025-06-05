@@ -14,6 +14,7 @@ export interface GraphNode {
   size?: number;
   color?: string;
   cluster?: string;
+  centrality?: number;
 }
 
 export interface GraphLink {
@@ -21,6 +22,7 @@ export interface GraphLink {
   target: string;
   type: 'link' | 'folder';
   strength?: number;
+  bidirectional?: boolean;
 }
 
 export const useGraph = (files: FileItem[]) => {
@@ -39,7 +41,7 @@ export const useGraph = (files: FileItem[]) => {
         const primaryTag = file.tags?.[0] || 'sem-categoria';
         
         // Calcular tamanho do nó baseado nas conexões
-        const nodeSize = Math.max(8, Math.min(25, 10 + connections * 3));
+        const nodeSize = Math.max(12, Math.min(30, 15 + connections * 2));
         
         // Cor baseada no cluster/tag principal
         const colors = {
@@ -48,6 +50,9 @@ export const useGraph = (files: FileItem[]) => {
           'programação': '#10b981',
           'universidade': '#8b5cf6',
           'projeto': '#f59e0b',
+          'estudo': '#06b6d4',
+          'livro': '#84cc16',
+          'reunião': '#f97316',
           'sem-categoria': '#6b7280'
         };
         
@@ -61,7 +66,8 @@ export const useGraph = (files: FileItem[]) => {
           connections,
           size: nodeSize,
           color: nodeColor,
-          cluster: primaryTag
+          cluster: primaryTag,
+          centrality: 0
         });
       }
     });
@@ -79,6 +85,12 @@ export const useGraph = (files: FileItem[]) => {
             const linkKey = `${file.id}-${targetFile.id}`;
             const reverseLinkKey = `${targetFile.id}-${file.id}`;
             
+            // Verificar se é bidirecional
+            const targetLinks = targetFile.content ? parseLinks(targetFile.content) : [];
+            const isBidirectional = targetLinks.some(tLink => 
+              tLink.target.toLowerCase() === file.name.toLowerCase()
+            );
+            
             if (!linkSet.has(linkKey) && !linkSet.has(reverseLinkKey)) {
               linkSet.add(linkKey);
               
@@ -89,18 +101,29 @@ export const useGraph = (files: FileItem[]) => {
                 targetNode?.tags.includes(tag)
               ).length || 0;
               
-              const linkStrength = Math.max(0.3, Math.min(1, 0.5 + sharedTags * 0.2));
+              const linkStrength = Math.max(0.3, Math.min(1, 0.5 + sharedTags * 0.3));
               
               graphLinks.push({
                 source: file.id,
                 target: targetFile.id,
                 type: 'link',
-                strength: linkStrength
+                strength: linkStrength,
+                bidirectional: isBidirectional
               });
             }
           }
         });
       }
+    });
+
+    // Calcular centralidade dos nós
+    const centralityMap = new Map<string, number>();
+    nodeMap.forEach((node, nodeId) => {
+      const incomingLinks = graphLinks.filter(l => l.target === nodeId).length;
+      const outgoingLinks = graphLinks.filter(l => l.source === nodeId).length;
+      const centrality = (incomingLinks + outgoingLinks) / Math.max(1, graphLinks.length);
+      centralityMap.set(nodeId, centrality);
+      node.centrality = centrality;
     });
 
     return {
@@ -143,8 +166,48 @@ export const useGraph = (files: FileItem[]) => {
       connectedNodes,
       totalConnections: connectedIds.length,
       incomingLinks: links.filter(l => l.target === nodeId).length,
-      outgoingLinks: links.filter(l => l.source === nodeId).length
+      outgoingLinks: links.filter(l => l.source === nodeId).length,
+      bidirectionalLinks: links.filter(l => 
+        (l.source === nodeId || l.target === nodeId) && l.bidirectional
+      ).length
     };
+  };
+
+  const getShortestPath = (sourceId: string, targetId: string): string[] => {
+    // Algoritmo BFS para encontrar menor caminho
+    const queue = [[sourceId]];
+    const visited = new Set([sourceId]);
+    
+    while (queue.length > 0) {
+      const path = queue.shift()!;
+      const currentNode = path[path.length - 1];
+      
+      if (currentNode === targetId) {
+        return path;
+      }
+      
+      const neighbors = getConnectedNodes(currentNode);
+      for (const neighbor of neighbors) {
+        if (!visited.has(neighbor)) {
+          visited.add(neighbor);
+          queue.push([...path, neighbor]);
+        }
+      }
+    }
+    
+    return [];
+  };
+
+  const getMostConnectedNodes = (limit = 5): GraphNode[] => {
+    return [...nodes]
+      .sort((a, b) => b.connections - a.connections)
+      .slice(0, limit);
+  };
+
+  const getMostCentralNodes = (limit = 5): GraphNode[] => {
+    return [...nodes]
+      .sort((a, b) => (b.centrality || 0) - (a.centrality || 0))
+      .slice(0, limit);
   };
 
   return {
@@ -154,6 +217,9 @@ export const useGraph = (files: FileItem[]) => {
     getNodesByTag,
     getNodesByCluster,
     getClusters,
-    getNodeStats
+    getNodeStats,
+    getShortestPath,
+    getMostConnectedNodes,
+    getMostCentralNodes
   };
 };
