@@ -9,16 +9,383 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      activities: {
+        Row: {
+          file_id: string | null
+          id: string
+          metadata: Json | null
+          session_id: string | null
+          target_id: string | null
+          timestamp: string
+          type: string
+          user_id: string
+          view: string | null
+        }
+        Insert: {
+          file_id?: string | null
+          id?: string
+          metadata?: Json | null
+          session_id?: string | null
+          target_id?: string | null
+          timestamp?: string
+          type: string
+          user_id: string
+          view?: string | null
+        }
+        Update: {
+          file_id?: string | null
+          id?: string
+          metadata?: Json | null
+          session_id?: string | null
+          target_id?: string | null
+          timestamp?: string
+          type?: string
+          user_id?: string
+          view?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activities_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "files"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activities_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "work_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      backups: {
+        Row: {
+          data: Json
+          id: string
+          name: string
+          timestamp: string
+          user_id: string
+        }
+        Insert: {
+          data: Json
+          id?: string
+          name: string
+          timestamp?: string
+          user_id: string
+        }
+        Update: {
+          data?: Json
+          id?: string
+          name?: string
+          timestamp?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      files: {
+        Row: {
+          content: string | null
+          created_at: string
+          description: string | null
+          emoji: string | null
+          id: string
+          is_protected: boolean | null
+          is_public: boolean | null
+          name: string
+          parent_id: string | null
+          show_in_sidebar: boolean | null
+          tags: string[] | null
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          description?: string | null
+          emoji?: string | null
+          id?: string
+          is_protected?: boolean | null
+          is_public?: boolean | null
+          name: string
+          parent_id?: string | null
+          show_in_sidebar?: boolean | null
+          tags?: string[] | null
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          description?: string | null
+          emoji?: string | null
+          id?: string
+          is_protected?: boolean | null
+          is_public?: boolean | null
+          name?: string
+          parent_id?: string | null
+          show_in_sidebar?: boolean | null
+          tags?: string[] | null
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "files_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      health_reports: {
+        Row: {
+          health: string
+          id: string
+          message: string | null
+          metadata: Json | null
+          timestamp: string
+          user_id: string | null
+        }
+        Insert: {
+          health: string
+          id?: string
+          message?: string | null
+          metadata?: Json | null
+          timestamp?: string
+          user_id?: string | null
+        }
+        Update: {
+          health?: string
+          id?: string
+          message?: string | null
+          metadata?: Json | null
+          timestamp?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      media: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          size_bytes: number | null
+          type: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          size_bytes?: number | null
+          type: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          size_bytes?: number | null
+          type?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          avatar?: string | null
+          created_at?: string
+          email: string
+          id: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          avatar?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          auto_save: boolean | null
+          backup_frequency: number | null
+          compact_mode: boolean | null
+          created_at: string
+          default_view: Database["public"]["Enums"]["default_view_type"] | null
+          enable_animations: boolean | null
+          id: string
+          language: Database["public"]["Enums"]["language_type"] | null
+          show_line_numbers: boolean | null
+          theme: Database["public"]["Enums"]["theme_type"] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_save?: boolean | null
+          backup_frequency?: number | null
+          compact_mode?: boolean | null
+          created_at?: string
+          default_view?: Database["public"]["Enums"]["default_view_type"] | null
+          enable_animations?: boolean | null
+          id?: string
+          language?: Database["public"]["Enums"]["language_type"] | null
+          show_line_numbers?: boolean | null
+          theme?: Database["public"]["Enums"]["theme_type"] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_save?: boolean | null
+          backup_frequency?: number | null
+          compact_mode?: boolean | null
+          created_at?: string
+          default_view?: Database["public"]["Enums"]["default_view_type"] | null
+          enable_animations?: boolean | null
+          id?: string
+          language?: Database["public"]["Enums"]["language_type"] | null
+          show_line_numbers?: boolean | null
+          theme?: Database["public"]["Enums"]["theme_type"] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      work_sessions: {
+        Row: {
+          created_at: string
+          duration_minutes: number | null
+          end_time: string | null
+          id: string
+          is_active: boolean | null
+          start_time: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration_minutes?: number | null
+          end_time?: string | null
+          id?: string
+          is_active?: boolean | null
+          start_time?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duration_minutes?: number | null
+          end_time?: string | null
+          id?: string
+          is_active?: boolean | null
+          start_time?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      workspace_settings: {
+        Row: {
+          created_at: string
+          current_file_id: string | null
+          expanded_folders: string[] | null
+          id: string
+          last_saved: string | null
+          layout_config: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_file_id?: string | null
+          expanded_folders?: string[] | null
+          id?: string
+          last_saved?: string | null
+          layout_config?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_file_id?: string | null
+          expanded_folders?: string[] | null
+          id?: string
+          last_saved?: string | null
+          layout_config?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_settings_current_file_id_fkey"
+            columns: ["current_file_id"]
+            isOneToOne: false
+            referencedRelation: "files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_current_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "editor" | "viewer"
+      default_view_type: "editor" | "graph" | "dashboard"
+      language_type: "pt" | "en"
+      theme_type: "light" | "dark" | "system"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +500,11 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "editor", "viewer"],
+      default_view_type: ["editor", "graph", "dashboard"],
+      language_type: ["pt", "en"],
+      theme_type: ["light", "dark", "system"],
+    },
   },
 } as const

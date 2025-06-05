@@ -8,39 +8,46 @@ import { WorkspaceProvider } from '@/components/WorkspaceProvider';
 import { WorkspaceLayout } from '@/components/WorkspaceLayout';
 import { WorkspaceSettings } from '@/components/WorkspaceSettings';
 import { AppHeader } from '@/components/AppHeader';
+import { UserProfileButton } from '@/components/UserProfileButton';
 import { Button } from '@/components/ui/button';
-import { useFileSystem } from '@/hooks/useFileSystem';
+import { useSupabaseFiles } from '@/hooks/useSupabaseFiles';
+import { useSupabaseProfile } from '@/hooks/useSupabaseProfile';
 import { useQuickSwitcher } from '@/hooks/useQuickSwitcher';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useNavigation } from '@/hooks/useNavigation';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useMobileDetection } from '@/hooks/useMobileDetection';
-import { useSessionManager } from '@/hooks/useSessionManager';
 
 const Index = () => {
   const [activeView, setActiveView] = useState<ViewMode>('dashboard');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [showWorkspaceSettings, setShowWorkspaceSettings] = useState(false);
+  const [currentFileId, setCurrentFileId] = useState<string | null>(null);
   
   const isMobile = useMobileDetection();
   
-  const {
-    files,
-    currentFileId,
-    createFile,
-    updateFile,
-    setCurrentFileId
-  } = useFileSystem();
-
+  const { files, loading: filesLoading, createFile, updateFile } = useSupabaseFiles();
+  const { profile, preferences } = useSupabaseProfile();
   const { favorites } = useFavorites();
   const { navigateTo } = useNavigation();
-  const { createSession, updateActivity } = useSessionManager();
 
-  // Initialize session on app start
-  useEffect(() => {
-    createSession('default-user');
-  }, [createSession]);
+  // Convert Supabase files to the format expected by existing components
+  const convertedFiles = files.map(file => ({
+    id: file.id,
+    name: file.name,
+    type: file.type as 'file' | 'folder',
+    parentId: file.parent_id,
+    content: file.content,
+    emoji: file.emoji,
+    description: file.description,
+    tags: file.tags,
+    isProtected: file.is_protected,
+    isPublic: file.is_public,
+    showInSidebar: file.show_in_sidebar,
+    createdAt: new Date(file.created_at),
+    updatedAt: new Date(file.updated_at)
+  }));
 
   // Close mobile sidebar when view changes
   useEffect(() => {
@@ -49,13 +56,12 @@ const Index = () => {
     }
   }, [activeView, isMobile]);
 
-  // Track view changes
+  // Set default view based on user preferences
   useEffect(() => {
-    updateActivity({
-      type: 'view_changed',
-      view: activeView
-    });
-  }, [activeView, updateActivity]);
+    if (preferences?.default_view) {
+      setActiveView(preferences.default_view);
+    }
+  }, [preferences]);
 
   const handleNavigateToFile = (fileId: string) => {
     setCurrentFileId(fileId);
@@ -64,12 +70,17 @@ const Index = () => {
   };
 
   const handleCreateFromTemplate = async (template: any) => {
-    const fileId = await createFile(template.name, undefined, 'file');
-    await updateFile(fileId, { 
-      content: template.content,
-      emoji: template.emoji 
-    });
-    handleNavigateToFile(fileId);
+    const fileId = await createFile(
+      template.name, 
+      undefined, 
+      'file', 
+      template.content,
+      template.emoji
+    );
+    
+    if (fileId) {
+      handleNavigateToFile(fileId);
+    }
   };
 
   const handleNavigateToGraph = () => {
@@ -78,6 +89,14 @@ const Index = () => {
 
   const handleViewChange = (view: string) => {
     setActiveView(view as ViewMode);
+  };
+
+  const handleCreateFile = async (name: string, parentId?: string, type: 'file' | 'folder' = 'file') => {
+    return await createFile(name, parentId, type);
+  };
+
+  const handleUpdateFile = async (id: string, updates: any) => {
+    await updateFile(id, updates);
   };
 
   useKeyboardShortcuts({
@@ -95,9 +114,9 @@ const Index = () => {
     filteredCommands,
     addToRecent
   } = useQuickSwitcher(
-    files,
+    convertedFiles,
     handleNavigateToFile,
-    createFile,
+    handleCreateFile,
     handleNavigateToGraph
   );
 
@@ -121,12 +140,23 @@ const Index = () => {
                 ← Voltar
               </Button>
               <h1 className="text-lg font-semibold">Configurações do Workspace</h1>
-              <div />
+              <UserProfileButton onShowSettings={() => setShowWorkspaceSettings(true)} />
             </div>
             <WorkspaceSettings />
           </div>
         </WorkspaceProvider>
       </ThemeProvider>
+    );
+  }
+
+  if (filesLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-sm text-muted-foreground">Carregando workspace...</p>
+        </div>
+      </div>
     );
   }
 
@@ -150,7 +180,7 @@ const Index = () => {
               isMobile={isMobile}
               isMobileSidebarOpen={isMobileSidebarOpen}
               onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-              files={files}
+              files={convertedFiles}
               onFileSelect={handleNavigateToFile}
               onShowSettings={() => setShowWorkspaceSettings(true)}
             />
@@ -160,7 +190,7 @@ const Index = () => {
               activeView={activeView}
               onViewChange={handleViewChange}
               onNavigateToFile={handleNavigateToFile}
-              onCreateFile={createFile}
+              onCreateFile={handleCreateFile}
             />
           </div>
 
@@ -175,11 +205,11 @@ const Index = () => {
 
           {/* Command Palette */}
           <CommandPalette
-            files={files}
+            files={convertedFiles}
             isOpen={isCommandPaletteOpen}
             onClose={() => setIsCommandPaletteOpen(false)}
             onFileSelect={handleNavigateToFile}
-            onCreateFile={createFile}
+            onCreateFile={handleCreateFile}
             favorites={favorites}
           />
         </div>
