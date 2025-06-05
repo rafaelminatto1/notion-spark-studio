@@ -68,7 +68,7 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      const img = new Image();
+      const img = new window.Image();
 
       img.onload = () => {
         const maxWidth = 1920;
@@ -87,7 +87,7 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 
         canvas.toBlob((blob) => {
           if (blob) {
-            const compressedFile = new File([blob], file.name, {
+            const compressedFile = new window.File([blob], file.name, {
               type: file.type,
               lastModified: Date.now()
             });
@@ -252,14 +252,19 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
       if (item.type.startsWith('image/')) {
         const file = item.getAsFile();
         if (file) {
-          handleFileUpload(new DataTransfer().files);
-          const dt = new DataTransfer();
-          dt.items.add(file);
-          handleFileUpload(dt.files);
+          const fileList = createFileList([file]);
+          handleFileUpload(fileList);
         }
       }
     }
   }, [isOpen, handleFileUpload]);
+
+  // Helper function to create FileList from array of files
+  const createFileList = (files: File[]): FileList => {
+    const dt = new DataTransfer();
+    files.forEach(file => dt.items.add(file));
+    return dt.files;
+  };
 
   React.useEffect(() => {
     document.addEventListener('paste', handlePaste);
