@@ -8,7 +8,10 @@ import {
   Settings, 
   Palette,
   Clock,
-  Star
+  Star,
+  Zap,
+  LayoutGrid,
+  Command
 } from 'lucide-react';
 import {
   CommandDialog,
@@ -31,6 +34,7 @@ interface Command {
   action: () => void;
   group: string;
   keywords?: string[];
+  shortcut?: string;
 }
 
 interface CommandPaletteProps {
@@ -40,6 +44,8 @@ interface CommandPaletteProps {
   onFileSelect: (fileId: string) => void;
   onCreateFile: (name: string) => void;
   favorites: string[];
+  onOpenWorkspaceSettings?: () => void;
+  onToggleTheme?: () => void;
 }
 
 export const CommandPalette: React.FC<CommandPaletteProps> = ({
@@ -48,7 +54,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   onClose,
   onFileSelect,
   onCreateFile,
-  favorites
+  favorites,
+  onOpenWorkspaceSettings,
+  onToggleTheme
 }) => {
   const recentFiles = files
     .filter(f => f.type === 'file')
@@ -58,6 +66,46 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   const favoriteFiles = files.filter(f => favorites.includes(f.id));
 
   const commands: Command[] = [
+    // Quick Actions
+    {
+      id: 'quick-search',
+      title: 'Busca Global',
+      subtitle: 'Buscar em todo o conteúdo',
+      icon: <Search className="h-4 w-4" />,
+      action: () => {
+        // Implementar busca global
+        onClose();
+      },
+      group: 'quick',
+      shortcut: 'Ctrl+Shift+F',
+      keywords: ['buscar', 'procurar', 'encontrar', 'search']
+    },
+    {
+      id: 'command-palette',
+      title: 'Paleta de Comandos',
+      subtitle: 'Abrir paleta de comandos',
+      icon: <Command className="h-4 w-4" />,
+      action: () => {
+        onClose();
+      },
+      group: 'quick',
+      shortcut: 'Ctrl+K',
+      keywords: ['comandos', 'palette', 'ações']
+    },
+    {
+      id: 'zen-mode',
+      title: 'Modo Foco',
+      subtitle: 'Entrar no modo de edição focado',
+      icon: <Zap className="h-4 w-4" />,
+      action: () => {
+        // Implementar modo zen
+        onClose();
+      },
+      group: 'quick',
+      shortcut: 'Ctrl+Enter',
+      keywords: ['foco', 'zen', 'concentração', 'fullscreen']
+    },
+
     // Recent files
     ...recentFiles.map(file => ({
       id: `file-${file.id}`,
@@ -116,6 +164,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         onClose();
       },
       group: 'actions',
+      shortcut: 'Ctrl+N',
       keywords: ['nova', 'criar', 'página', 'arquivo']
     },
     {
@@ -146,6 +195,20 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       keywords: ['tags', 'buscar', 'filtrar']
     },
     {
+      id: 'workspace-settings',
+      title: 'Configurações do Workspace',
+      subtitle: 'Abrir configurações do workspace',
+      icon: <LayoutGrid className="h-4 w-4" />,
+      action: () => {
+        if (onOpenWorkspaceSettings) {
+          onOpenWorkspaceSettings();
+        }
+        onClose();
+      },
+      group: 'actions',
+      keywords: ['workspace', 'layout', 'painéis', 'configurações']
+    },
+    {
       id: 'settings',
       title: 'Configurações',
       subtitle: 'Abrir configurações',
@@ -163,15 +226,19 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       subtitle: 'Mudar entre claro e escuro',
       icon: <Palette className="h-4 w-4" />,
       action: () => {
-        // Implementar troca de tema
+        if (onToggleTheme) {
+          onToggleTheme();
+        }
         onClose();
       },
       group: 'actions',
+      shortcut: 'Ctrl+Shift+T',
       keywords: ['tema', 'escuro', 'claro', 'aparência']
     }
   ];
 
   const groupedCommands = {
+    quick: commands.filter(cmd => cmd.group === 'quick'),
     favorites: commands.filter(cmd => cmd.group === 'favorites'),
     recent: commands.filter(cmd => cmd.group === 'recent'),
     actions: commands.filter(cmd => cmd.group === 'actions'),
@@ -184,9 +251,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       <CommandList>
         <CommandEmpty>Nenhum resultado encontrado.</CommandEmpty>
         
-        {groupedCommands.favorites.length > 0 && (
-          <CommandGroup heading="Favoritos">
-            {groupedCommands.favorites.map((command) => (
+        {groupedCommands.quick.length > 0 && (
+          <CommandGroup heading="Ações Rápidas">
+            {groupedCommands.quick.map((command) => (
               <CommandItem key={command.id} onSelect={command.action}>
                 <div className="flex items-center gap-2 w-full">
                   {command.icon}
@@ -196,10 +263,36 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                       <div className="text-xs text-muted-foreground">{command.subtitle}</div>
                     )}
                   </div>
+                  {command.shortcut && (
+                    <Badge variant="outline" className="text-xs">
+                      {command.shortcut}
+                    </Badge>
+                  )}
                 </div>
               </CommandItem>
             ))}
           </CommandGroup>
+        )}
+
+        {groupedCommands.favorites.length > 0 && (
+          <>
+            <CommandSeparator />
+            <CommandGroup heading="Favoritos">
+              {groupedCommands.favorites.map((command) => (
+                <CommandItem key={command.id} onSelect={command.action}>
+                  <div className="flex items-center gap-2 w-full">
+                    {command.icon}
+                    <div className="flex-1">
+                      <div className="font-medium">{command.title}</div>
+                      {command.subtitle && (
+                        <div className="text-xs text-muted-foreground">{command.subtitle}</div>
+                      )}
+                    </div>
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </>
         )}
 
         {groupedCommands.recent.length > 0 && (
@@ -236,6 +329,11 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                     <div className="text-xs text-muted-foreground">{command.subtitle}</div>
                   )}
                 </div>
+                {command.shortcut && (
+                  <Badge variant="outline" className="text-xs">
+                    {command.shortcut}
+                  </Badge>
+                )}
               </div>
             </CommandItem>
           ))}

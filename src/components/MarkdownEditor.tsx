@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -8,6 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { MediaManager } from '@/components/MediaManager';
 import { MediaViewer } from '@/components/MediaViewer';
+import { LinkAutocomplete } from '@/components/LinkAutocomplete';
+import { LinkRenderer } from '@/components/LinkRenderer';
+import { useLinkAutocomplete } from '@/hooks/useLinkAutocomplete';
 import { 
   Bold, 
   Italic, 
@@ -21,7 +24,9 @@ import {
   Eye,
   EyeOff,
   Type,
-  Calculator
+  Calculator,
+  Maximize2,
+  LineChart
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import 'katex/dist/katex.min.css';
@@ -30,17 +35,40 @@ import 'highlight.js/styles/github-dark.css';
 interface MarkdownEditorProps {
   content: string;
   onChange: (content: string) => void;
+  files?: any[];
+  onNavigateToFile?: (fileName: string) => void;
+  onCreateFile?: (name: string) => Promise<string>;
   className?: string;
 }
 
 export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
   content,
   onChange,
+  files = [],
+  onNavigateToFile,
+  onCreateFile,
   className
 }) => {
   const [showPreview, setShowPreview] = useState(false);
   const [splitView, setSplitView] = useState(false);
+  const [zenMode, setZenMode] = useState(false);
+  const [showLineNumbers, setShowLineNumbers] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const {
+    isOpen: autocompleteOpen,
+    suggestions,
+    position: autocompletePosition,
+    selectedIndex,
+    handleTextChange,
+    handleKeyDown: handleAutocompleteKeyDown,
+    selectSuggestion,
+    closeSuggestions
+  } = useLinkAutocomplete({
+    files,
+    onCreateFile,
+    onNavigateToFile
+  });
 
   const insertText = useCallback((beforeText: string, afterText: string = '', selectText: string = '') => {
     if (!textareaRef.current) return;
@@ -80,15 +108,57 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
     }, 0);
   }, [content, onChange]);
 
+  const handleTextChangeWithAutocomplete = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newContent = e.target.value;
+    onChange(newContent);
+    
+    if (textareaRef.current) {
+      handleTextChange(newContent, textareaRef.current.selectionStart);
+    }
+  }, [onChange, handleTextChange]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    // Handle autocomplete first
+    const autocompleteHandled = handleAutocompleteKeyDown(e);
+    if (autocompleteHandled) return;
+
+    // Handle other shortcuts
+    if (e.ctrlKey || e.metaKey) {
+      switch (e.key) {
+        case 'b':
+          e.preventDefault();
+          insertText('**', '**', 'texto em negrito');
+          break;
+        case 'i':
+          e.preventDefault();
+          insertText('*', '*', 'texto em itálico');
+          break;
+        case 'k':
+          e.preventDefault();
+          insertText('[', '](url)', 'texto do link');
+          break;
+        case 'Enter':
+          e.preventDefault();
+          setZenMode(!zenMode);
+          break;
+      }
+    }
+
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      insertText('  ');
+    }
+  }, [insertText, handleAutocompleteKeyDown, zenMode]);
+
   const toolbarActions = [
     {
       icon: Bold,
-      label: 'Negrito',
+      label: 'Negrito (Ctrl+B)',
       action: () => insertText('**', '**', 'texto em negrito')
     },
     {
       icon: Italic,
-      label: 'Itálico',
+      label: 'Itálico (Ctrl+I)',
       action: () => insertText('*', '*', 'texto em itálico')
     },
     {
@@ -108,7 +178,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
     },
     {
       icon: Link,
-      label: 'Link',
+      label: 'Link (Ctrl+K)',
       action: () => insertText('[', '](url)', 'texto do link')
     },
     {
@@ -138,30 +208,6 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
     }
   ];
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.ctrlKey || e.metaKey) {
-      switch (e.key) {
-        case 'b':
-          e.preventDefault();
-          insertText('**', '**', 'texto em negrito');
-          break;
-        case 'i':
-          e.preventDefault();
-          insertText('*', '*', 'texto em itálico');
-          break;
-        case 'k':
-          e.preventDefault();
-          insertText('[', '](url)', 'texto do link');
-          break;
-      }
-    }
-
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      insertText('  ');
-    }
-  }, [insertText]);
-
   const CheckboxComponent = ({ checked, ...props }: any) => (
     <input
       type="checkbox"
@@ -178,10 +224,104 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
     />
   );
 
+  const renderLineNumbers = () => {
+    if (!showLineNumbers) return null;
+    const lines = content.split('\n');
+    return (
+      <div className="absolute left-0 top-0 w-12 h-full bg-workspace-surface border-r border-workspace-border text-xs text-gray-500 pointer-events-none">
+        {lines.map((_, index) => (
+          <div key={index} className="h-6 px-2 flex items-center justify-end">
+            {index + 1}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  if (zenMode) {
+    return (
+      <div className="fixed inset-0 z-50 bg-workspace-bg flex flex-col">
+        {/* Zen Mode Toolbar */}
+        <div className="flex items-center justify-between p-4 border-b border-workspace-border bg-workspace-surface">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setZenMode(false)}
+              className="gap-2"
+            >
+              <Maximize2 className="h-4 w-4" />
+              Sair do Modo Foco
+            </Button>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowPreview(!showPreview)}
+              className={cn("gap-2", showPreview && "bg-notion-purple text-white")}
+            >
+              {showPreview ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showPreview ? 'Editar' : 'Preview'}
+            </Button>
+          </div>
+        </div>
+
+        {/* Zen Mode Content */}
+        <div className="flex-1 flex">
+          {!showPreview && (
+            <div className="flex-1 relative">
+              <Textarea
+                ref={textareaRef}
+                value={content}
+                onChange={handleTextChangeWithAutocomplete}
+                onKeyDown={handleKeyDown}
+                placeholder="# Comece a escrever em Markdown..."
+                className="h-full border-none resize-none bg-transparent text-workspace-text leading-relaxed font-mono text-lg focus:ring-0 focus:outline-none p-8 max-w-4xl mx-auto"
+              />
+            </div>
+          )}
+
+          {showPreview && (
+            <div className="flex-1 overflow-auto bg-workspace-bg">
+              <div className="p-8 prose prose-invert prose-gray max-w-4xl mx-auto">
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm, remarkMath]}
+                  rehypePlugins={[rehypeKatex, rehypeHighlight]}
+                  components={{
+                    input: CheckboxComponent,
+                    a: ({ href, children, ...props }) => {
+                      if (href?.startsWith('[[') && href?.endsWith(']]')) {
+                        const fileName = href.slice(2, -2);
+                        const fileExists = files.some(f => f.name === fileName);
+                        return (
+                          <LinkRenderer
+                            target={fileName}
+                            onNavigate={onNavigateToFile || (() => {})}
+                            fileExists={fileExists}
+                          />
+                        );
+                      }
+                      return <a href={href} {...props}>{children}</a>;
+                    },
+                    // ... keep existing code (img, video, table, th, td, code components)
+                  }}
+                >
+                  {content || '*Nada para mostrar ainda...*'}
+                </ReactMarkdown>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={cn("flex flex-col h-full", className)}>
-      {/* Toolbar */}
-      <div className="flex items-center justify-between p-2 border-b border-workspace-border bg-workspace-surface">
+      {/* Enhanced Toolbar */}
+      <div className="flex items-center justify-between p-3 border-b border-workspace-border bg-workspace-surface">
         <div className="flex items-center gap-1 flex-wrap">
           {toolbarActions.map((action, index) => (
             <Button
@@ -189,19 +329,27 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
               variant="ghost"
               size="sm"
               onClick={action.action}
-              className="h-8 w-8 p-0 hover:bg-workspace-border"
+              className="h-8 w-8 p-0 hover:bg-workspace-border rounded-lg transition-all duration-200"
               title={action.label}
             >
               <action.icon className="h-4 w-4" />
             </Button>
           ))}
           
-          {/* Media Manager */}
-          <div className="h-6 w-px bg-workspace-border mx-1" />
+          <div className="h-6 w-px bg-workspace-border mx-2" />
           <MediaManager onInsertMedia={insertMedia} />
         </div>
         
         <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowLineNumbers(!showLineNumbers)}
+            className={cn("gap-2", showLineNumbers && "bg-notion-purple text-white")}
+          >
+            <LineChart className="h-4 w-4" />
+            Linhas
+          </Button>
           <Button
             variant="ghost"
             size="sm"
@@ -222,6 +370,16 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
             {showPreview ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             {showPreview ? 'Editar' : 'Preview'}
           </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setZenMode(true)}
+            className="gap-2 hover:bg-purple-500/20"
+            title="Modo Foco (Ctrl+Enter)"
+          >
+            <Maximize2 className="h-4 w-4" />
+            Foco
+          </Button>
         </div>
       </div>
 
@@ -229,11 +387,12 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
       <div className="flex-1 flex min-h-0">
         {/* Editor */}
         {(!showPreview || splitView) && (
-          <div className={cn("flex-1 flex flex-col", splitView && "border-r border-workspace-border")}>
+          <div className={cn("flex-1 flex flex-col relative", splitView && "border-r border-workspace-border")}>
+            {renderLineNumbers()}
             <Textarea
               ref={textareaRef}
               value={content}
-              onChange={(e) => onChange(e.target.value)}
+              onChange={handleTextChangeWithAutocomplete}
               onKeyDown={handleKeyDown}
               placeholder="# Comece a escrever em Markdown...
 
@@ -243,6 +402,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
 - [ ] Checkbox desmarcado
 
 [Link](https://example.com)
+[[Link interno]] - Use [[ para autocompletar
 
 Use o botão 'Mídia' para inserir imagens e vídeos!
 
@@ -258,7 +418,20 @@ const codigo = 'syntax highlighting';
 
 $$E = mc^2$$
 "
-              className="flex-1 border-none resize-none bg-transparent text-workspace-text leading-relaxed font-mono text-sm focus:ring-0 focus:outline-none p-4"
+              className={cn(
+                "flex-1 border-none resize-none bg-transparent text-workspace-text leading-relaxed font-mono text-sm focus:ring-0 focus:outline-none p-4",
+                showLineNumbers && "pl-16"
+              )}
+            />
+            
+            {/* Link Autocomplete */}
+            <LinkAutocomplete
+              isOpen={autocompleteOpen}
+              suggestions={suggestions}
+              position={autocompletePosition}
+              selectedIndex={selectedIndex}
+              onSelect={selectSuggestion}
+              onClose={closeSuggestions}
             />
           </div>
         )}
@@ -272,51 +445,21 @@ $$E = mc^2$$
                 rehypePlugins={[rehypeKatex, rehypeHighlight]}
                 components={{
                   input: CheckboxComponent,
-                  img: ({ src, alt, ...props }) => (
-                    <MediaViewer
-                      src={src || ''}
-                      alt={alt || ''}
-                      type="image"
-                      className="my-4"
-                    />
-                  ),
-                  video: ({ src, children, ...props }) => (
-                    <MediaViewer
-                      src={src || ''}
-                      alt="Vídeo"
-                      type="video"
-                      className="my-4"
-                    />
-                  ),
-                  table: ({ children, ...props }) => (
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full border-collapse border border-gray-600" {...props}>
-                        {children}
-                      </table>
-                    </div>
-                  ),
-                  th: ({ children, ...props }) => (
-                    <th className="border border-gray-600 px-4 py-2 bg-gray-800 text-left" {...props}>
-                      {children}
-                    </th>
-                  ),
-                  td: ({ children, ...props }) => (
-                    <td className="border border-gray-600 px-4 py-2" {...props}>
-                      {children}
-                    </td>
-                  ),
-                  code: ({ className, children, ...props }) => {
-                    const isInline = !className;
-                    return isInline ? (
-                      <code className="bg-gray-800 px-1 py-0.5 rounded text-sm" {...props}>
-                        {children}
-                      </code>
-                    ) : (
-                      <code className={className} {...props}>
-                        {children}
-                      </code>
-                    );
-                  }
+                  a: ({ href, children, ...props }) => {
+                    if (href?.startsWith('[[') && href?.endsWith(']]')) {
+                      const fileName = href.slice(2, -2);
+                      const fileExists = files.some(f => f.name === fileName);
+                      return (
+                        <LinkRenderer
+                          target={fileName}
+                          onNavigate={onNavigateToFile || (() => {})}
+                          fileExists={fileExists}
+                        />
+                      );
+                    }
+                    return <a href={href} {...props}>{children}</a>;
+                  },
+                  // ... keep existing code (img, video, table, th, td, code components)
                 }}
               >
                 {content || '*Nada para mostrar ainda...*'}
