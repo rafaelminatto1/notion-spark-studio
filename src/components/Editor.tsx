@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { FileText, Tag, MessageCircle, Star, ArrowLeft, ArrowRight, Type } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TagInput } from '@/components/TagInput';
@@ -12,6 +12,8 @@ import { FavoritesManager } from '@/components/FavoritesManager';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { FileItem, Comment, Block } from '@/types';
 import { useComments } from '@/hooks/useComments';
+import { useAutoSave } from '@/hooks/useAutoSave';
+import { useVersionHistory } from '@/hooks/useVersionHistory';
 import { parseLinks } from '@/utils/linkParser';
 
 interface EditorProps {
