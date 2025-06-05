@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 
 interface IndexedDBConfig {
@@ -14,7 +13,7 @@ interface IndexedDBConfig {
 
 const DEFAULT_CONFIG: IndexedDBConfig = {
   dbName: 'NotionCloneDB',
-  version: 1,
+  version: 2, // Incrementado para adicionar novas tabelas
   objectStores: [
     {
       name: 'files',
@@ -36,6 +35,21 @@ const DEFAULT_CONFIG: IndexedDBConfig = {
     {
       name: 'workspace',
       keyPath: 'id'
+    },
+    {
+      name: 'backups',
+      keyPath: 'id',
+      indexes: [
+        { name: 'timestamp', keyPath: 'timestamp' }
+      ]
+    },
+    {
+      name: 'health_reports',
+      keyPath: 'id',
+      indexes: [
+        { name: 'timestamp', keyPath: 'timestamp' },
+        { name: 'health', keyPath: 'health' }
+      ]
     }
   ]
 };
@@ -63,16 +77,23 @@ export const useIndexedDB = (config: IndexedDBConfig = DEFAULT_CONFIG) => {
           const database = (event.target as IDBOpenDBRequest).result;
           
           config.objectStores.forEach(storeConfig => {
-            if (!database.objectStoreNames.contains(storeConfig.name)) {
-              const store = database.createObjectStore(storeConfig.name, {
-                keyPath: storeConfig.keyPath,
-                autoIncrement: storeConfig.autoIncrement
-              });
-
-              storeConfig.indexes?.forEach(index => {
-                store.createIndex(index.name, index.keyPath, { unique: index.unique });
-              });
+            // Remover store existente se necessário para atualização
+            if (database.objectStoreNames.contains(storeConfig.name)) {
+              try {
+                database.deleteObjectStore(storeConfig.name);
+              } catch (e) {
+                console.log('Store não precisou ser removido:', storeConfig.name);
+              }
             }
+
+            const store = database.createObjectStore(storeConfig.name, {
+              keyPath: storeConfig.keyPath,
+              autoIncrement: storeConfig.autoIncrement
+            });
+
+            storeConfig.indexes?.forEach(index => {
+              store.createIndex(index.name, index.keyPath, { unique: index.unique });
+            });
           });
         };
       } catch (err) {

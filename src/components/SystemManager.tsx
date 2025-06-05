@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,7 +16,8 @@ import {
   AlertTriangle,
   Info,
   Clock,
-  HardDrive
+  HardDrive,
+  Activity
 } from 'lucide-react';
 import { FileItem } from '@/types';
 import { useAutoSave } from '@/hooks/useAutoSave';
@@ -25,6 +25,7 @@ import { useImportExport } from '@/hooks/useImportExport';
 import { useVersionHistory } from '@/hooks/useVersionHistory';
 import { useValidation } from '@/hooks/useValidation';
 import { usePerformance } from '@/hooks/usePerformance';
+import { HealthDashboard } from './HealthDashboard';
 
 interface SystemManagerProps {
   files: FileItem[];
@@ -86,14 +87,35 @@ export const SystemManager: React.FC<SystemManagerProps> = ({
         </Badge>
       </div>
 
-      <Tabs defaultValue="autosave" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+      <Tabs defaultValue="health" className="w-full">
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="health">Health</TabsTrigger>
           <TabsTrigger value="autosave">Auto-save</TabsTrigger>
           <TabsTrigger value="import-export">Import/Export</TabsTrigger>
           <TabsTrigger value="versions">Versões</TabsTrigger>
           <TabsTrigger value="validation">Validação</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="health" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="h-5 w-5" />
+                System Health Check
+              </CardTitle>
+              <CardDescription>
+                Monitoramento da integridade e saúde do sistema
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <HealthDashboard
+                files={files}
+                onUpdateFile={onUpdateFile}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="autosave" className="space-y-4">
           <Card>
