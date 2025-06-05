@@ -12,7 +12,8 @@ import { SystemManager } from '@/components/SystemManager';
 import { useWorkspaceContext } from '@/hooks/useWorkspace';
 import { useFileSystem } from '@/hooks/useFileSystem';
 import { Palette, Layout, Cog, Database } from 'lucide-react';
-import { useTheme } from '@/hooks/useTheme';
+import { useTheme } from '@/components/ThemeProvider';
+import { ThemeEditor } from '@/components/ThemeEditor';
 import { Edit, Plus } from 'lucide-react';
 
 export const WorkspaceSettings: React.FC = () => {
