@@ -5,6 +5,7 @@ import { TagInput } from '@/components/TagInput';
 import { Backlinks } from '@/components/Backlinks';
 import { CommentsPanel } from '@/components/CommentsPanel';
 import { BlockEditor } from '@/components/BlockEditor';
+import { AdvancedEditor } from '@/components/AdvancedEditor';
 import { FavoritesManager } from '@/components/FavoritesManager';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { FileItem, Comment, Block } from '@/types';
@@ -173,6 +174,15 @@ export const Editor: React.FC<EditorProps> = ({
       properties: {}
     }];
   };
+
+  const handleCreateFileFromName = useCallback((name: string) => {
+    const fileId = onCreateFile(name);
+    // Navigate to the new file
+    const newFile = files.find(f => f.name === name);
+    if (newFile) {
+      onNavigateToFile(newFile.id);
+    }
+  }, [onCreateFile, onNavigateToFile, files]);
 
   // Calculate backlinks for the current file
   const findBacklinks = (files: FileItem[], fileName: string): FileItem[] => {
@@ -363,21 +373,17 @@ export const Editor: React.FC<EditorProps> = ({
       <div className="flex-1 p-6 relative" ref={editorRef}>
         {useBlockEditor ? (
           <BlockEditor
-            blocks={contentToBlocks(file.content || '')}
-            onBlocksChange={handleBlocksChange}
+            blocks={[]} // Convert content to blocks
+            onBlocksChange={() => {}} // Handle block changes
           />
         ) : (
-          <div 
-            className={`relative ${showComments ? 'cursor-crosshair' : ''}`}
-            onClick={(e) => {/* handle editor click */}}
-          >
-            <textarea
-              value={file.content || ''}
-              onChange={(e) => onUpdateFile(file.id, { content: e.target.value })}
-              placeholder="Comece a escrever..."
-              className="w-full h-96 bg-transparent border-none resize-none text-gray-200 leading-relaxed text-base focus:ring-0 focus:outline-none"
-            />
-          </div>
+          <AdvancedEditor
+            content={file.content || ''}
+            onChange={handleContentChange}
+            files={files}
+            onNavigateToFile={onNavigateToFile}
+            onCreateFile={handleCreateFileFromName}
+          />
         )}
 
         {/* Comments Overlay */}
@@ -398,12 +404,7 @@ export const Editor: React.FC<EditorProps> = ({
       {/* Backlinks */}
       <div className="border-t border-notion-dark-border p-6">
         <Backlinks
-          backlinks={files.filter(f => 
-            f.type === 'file' && 
-            f.content && 
-            f.name !== file.name &&
-            f.content.includes(`[[${file.name}]]`)
-          )}
+          backlinks={backlinks}
           onNavigate={onNavigateToFile}
         />
       </div>
