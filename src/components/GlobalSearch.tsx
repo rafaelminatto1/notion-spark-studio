@@ -65,6 +65,12 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Convert our date range format to react-day-picker format
+  const selectedDateRange = filters.dateRange ? {
+    from: filters.dateRange.start,
+    to: filters.dateRange.end
+  } : undefined;
+
   return (
     <div className={cn("relative", className)}>
       <div className="relative">
@@ -147,7 +153,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
                     <PopoverContent className="w-auto p-0" align="start">
                       <CalendarComponent
                         mode="range"
-                        selected={filters.dateRange}
+                        selected={selectedDateRange}
                         onSelect={(range) => {
                           if (range?.from && range?.to) {
                             setFilters(prev => ({
