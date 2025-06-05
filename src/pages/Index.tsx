@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { Editor } from '@/components/Editor';
@@ -62,10 +61,6 @@ const Index = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey) {
         switch (e.key) {
-          case 'k':
-            e.preventDefault();
-            openQuickSwitcher();
-            break;
           case '1':
             e.preventDefault();
             setActiveView('dashboard');
@@ -77,6 +72,10 @@ const Index = () => {
           case '3':
             e.preventDefault();
             setActiveView('graph');
+            break;
+          case '4':
+            e.preventDefault();
+            setActiveView('templates');
             break;
         }
       }
@@ -130,13 +129,21 @@ const Index = () => {
     setQuery: setQuickSwitcherQuery,
     open: openQuickSwitcher,
     close: closeQuickSwitcher,
-    filteredCommands
+    filteredCommands,
+    addToRecent
   } = useQuickSwitcher(
     files,
     handleNavigateToFile,
     createFile,
     handleNavigateToGraph
   );
+
+  // Add to recent when file changes
+  useEffect(() => {
+    if (currentFileId) {
+      addToRecent(currentFileId);
+    }
+  }, [currentFileId, addToRecent]);
 
   return (
     <ThemeProvider>
@@ -169,7 +176,7 @@ const Index = () => {
         
         <div className="flex-1 flex flex-col min-w-0">
           {/* Header */}
-          <div className="p-4 border-b border-notion-dark-border">
+          <div className="p-4 border-b border-border">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-4">
                 {/* Mobile Menu Button */}
@@ -234,7 +241,7 @@ const Index = () => {
               <GraphView
                 files={files}
                 currentFileId={currentFileId}
-                onFileSelect={setCurrentFileId}
+                onFileSelect={handleNavigateToFile}
               />
             )}
 

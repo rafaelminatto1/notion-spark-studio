@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   CommandDialog, 
   CommandEmpty, 
@@ -8,8 +8,9 @@ import {
   CommandItem, 
   CommandList 
 } from '@/components/ui/command';
-import { FileText, GitBranch, Plus, Search } from 'lucide-react';
+import { FileText, GitBranch, Plus, Search, Clock, Zap } from 'lucide-react';
 import { QuickSwitcherCommand } from '@/hooks/useQuickSwitcher';
+import { cn } from '@/lib/utils';
 
 interface QuickSwitcherProps {
   isOpen: boolean;
@@ -27,6 +28,21 @@ const getIcon = (iconName: string) => {
       return GitBranch;
     case 'Plus':
       return Plus;
+    case 'Clock':
+      return Clock;
+    default:
+      return FileText;
+  }
+};
+
+const getCategoryIcon = (category: string) => {
+  switch (category) {
+    case 'recent':
+      return Clock;
+    case 'command':
+      return Zap;
+    case 'create':
+      return Plus;
     default:
       return FileText;
   }
@@ -41,7 +57,13 @@ export const QuickSwitcher: React.FC<QuickSwitcherProps> = ({
 }) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
+  // Reset selected index when commands change
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [commands]);
+
   const groupedCommands = {
+    recent: commands.filter(cmd => cmd.category === 'recent'),
     files: commands.filter(cmd => cmd.category === 'file'),
     commands: commands.filter(cmd => cmd.category === 'command'),
     create: commands.filter(cmd => cmd.category === 'create')
@@ -66,38 +88,46 @@ export const QuickSwitcher: React.FC<QuickSwitcherProps> = ({
 
   return (
     <CommandDialog open={isOpen} onOpenChange={onClose}>
-      <div onKeyDown={handleKeyDown}>
+      <div onKeyDown={handleKeyDown} className="overflow-hidden">
         <CommandInput
-          placeholder="Buscar arquivos, comandos... (Digite + para criar)"
+          placeholder="Search files, create notes... (Ctrl+K or Ctrl+P)"
           value={query}
           onValueChange={onQueryChange}
-          className="border-0 focus:ring-0"
+          className="border-0 focus:ring-0 text-sm"
         />
         
-        <CommandList className="max-h-96">
-          <CommandEmpty className="py-6 text-center text-sm text-gray-500">
-            <div className="flex flex-col items-center gap-2">
+        <CommandList className="max-h-96 overflow-y-auto">
+          <CommandEmpty className="py-8 text-center text-sm text-gray-500">
+            <div className="flex flex-col items-center gap-3">
               <Search className="h-8 w-8 text-gray-400" />
-              <p>Nenhum resultado encontrado</p>
-              <p className="text-xs">Digite + seguido do nome para criar um novo arquivo</p>
+              <div>
+                <p className="font-medium">No results found</p>
+                <p className="text-xs mt-1">
+                  {query ? `Try a different search term` : 'Start typing to search files and commands'}
+                </p>
+              </div>
             </div>
           </CommandEmpty>
 
-          {groupedCommands.files.length > 0 && (
-            <CommandGroup heading="Arquivos">
-              {groupedCommands.files.map((command, index) => {
+          {groupedCommands.recent.length > 0 && (
+            <CommandGroup heading="Recent Files">
+              {groupedCommands.recent.map((command, index) => {
                 const Icon = getIcon(command.icon || 'FileText');
+                const isSelected = index === selectedIndex;
                 return (
                   <CommandItem
                     key={command.id}
                     onSelect={() => command.action()}
-                    className="flex items-center gap-3 px-3 py-2 cursor-pointer"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 cursor-pointer",
+                      isSelected && "bg-accent"
+                    )}
                   >
-                    <Icon className="h-4 w-4 text-gray-400" />
+                    <Clock className="h-4 w-4 text-orange-400" />
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium">{command.label}</div>
+                      <div className="font-medium text-sm">{command.label}</div>
                       {command.description && (
-                        <div className="text-xs text-gray-500 truncate">
+                        <div className="text-xs text-muted-foreground truncate">
                           {command.description}
                         </div>
                       )}
@@ -108,21 +138,61 @@ export const QuickSwitcher: React.FC<QuickSwitcherProps> = ({
             </CommandGroup>
           )}
 
-          {groupedCommands.commands.length > 0 && (
-            <CommandGroup heading="Comandos">
-              {groupedCommands.commands.map((command) => {
+          {groupedCommands.files.length > 0 && (
+            <CommandGroup heading="Files">
+              {groupedCommands.files.map((command, index) => {
                 const Icon = getIcon(command.icon || 'FileText');
+                const adjustedIndex = index + groupedCommands.recent.length;
+                const isSelected = adjustedIndex === selectedIndex;
                 return (
                   <CommandItem
                     key={command.id}
                     onSelect={() => command.action()}
-                    className="flex items-center gap-3 px-3 py-2 cursor-pointer"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 cursor-pointer",
+                      isSelected && "bg-accent"
+                    )}
                   >
-                    <Icon className="h-4 w-4 text-notion-purple" />
+                    <Icon className="h-4 w-4 text-blue-400" />
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium">{command.label}</div>
+                      <div className="font-medium text-sm">{command.label}</div>
+                      {command.description && command.description !== 'No tags' && (
+                        <div className="text-xs text-muted-foreground truncate">
+                          {command.description}
+                        </div>
+                      )}
+                    </div>
+                    {command.score && command.score > 80 && (
+                      <div className="text-xs text-green-500 font-medium">
+                        {Math.round(command.score)}%
+                      </div>
+                    )}
+                  </CommandItem>
+                );
+              })}
+            </CommandGroup>
+          )}
+
+          {groupedCommands.commands.length > 0 && (
+            <CommandGroup heading="Commands">
+              {groupedCommands.commands.map((command, index) => {
+                const Icon = getIcon(command.icon || 'Zap');
+                const adjustedIndex = index + groupedCommands.recent.length + groupedCommands.files.length;
+                const isSelected = adjustedIndex === selectedIndex;
+                return (
+                  <CommandItem
+                    key={command.id}
+                    onSelect={() => command.action()}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 cursor-pointer",
+                      isSelected && "bg-accent"
+                    )}
+                  >
+                    <Icon className="h-4 w-4 text-purple-400" />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-sm">{command.label}</div>
                       {command.description && (
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-muted-foreground">
                           {command.description}
                         </div>
                       )}
@@ -134,20 +204,25 @@ export const QuickSwitcher: React.FC<QuickSwitcherProps> = ({
           )}
 
           {groupedCommands.create.length > 0 && (
-            <CommandGroup heading="Criar">
-              {groupedCommands.create.map((command) => {
+            <CommandGroup heading="Create">
+              {groupedCommands.create.map((command, index) => {
                 const Icon = getIcon(command.icon || 'Plus');
+                const adjustedIndex = index + groupedCommands.recent.length + groupedCommands.files.length + groupedCommands.commands.length;
+                const isSelected = adjustedIndex === selectedIndex;
                 return (
                   <CommandItem
                     key={command.id}
                     onSelect={() => command.action()}
-                    className="flex items-center gap-3 px-3 py-2 cursor-pointer"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 cursor-pointer",
+                      isSelected && "bg-accent"
+                    )}
                   >
-                    <Icon className="h-4 w-4 text-green-500" />
+                    <Icon className="h-4 w-4 text-green-400" />
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium">{command.label}</div>
+                      <div className="font-medium text-sm">{command.label}</div>
                       {command.description && (
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-muted-foreground">
                           {command.description}
                         </div>
                       )}
@@ -158,6 +233,15 @@ export const QuickSwitcher: React.FC<QuickSwitcherProps> = ({
             </CommandGroup>
           )}
         </CommandList>
+        
+        {/* Keyboard hints */}
+        <div className="border-t px-3 py-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-4">
+            <span><kbd className="bg-muted px-1 rounded">↑↓</kbd> Navigate</span>
+            <span><kbd className="bg-muted px-1 rounded">Enter</kbd> Select</span>
+            <span><kbd className="bg-muted px-1 rounded">Esc</kbd> Close</span>
+          </div>
+        </div>
       </div>
     </CommandDialog>
   );
