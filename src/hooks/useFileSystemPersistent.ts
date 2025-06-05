@@ -5,6 +5,8 @@ import { useActivityHistory } from './useActivityHistory';
 import { useFavoritesAdvanced } from './useFavoritesAdvanced';
 
 export const useFileSystemPersistent = () => {
+  console.log('useFileSystemPersistent initializing...');
+  
   const { isReady, get, getAll, set, remove, query } = useIndexedDB();
   const { logFileCreate, logFileUpdate, logFileDelete, logFileRename } = useActivityHistory();
   const { addToFavorites } = useFavoritesAdvanced();
@@ -14,14 +16,24 @@ export const useFileSystemPersistent = () => {
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
 
+  console.log('IndexedDB ready:', isReady, 'Files count:', files.length);
+
   // Load files from IndexedDB on startup
   useEffect(() => {
     const loadFiles = async () => {
-      if (!isReady) return;
+      console.log('Loading files from IndexedDB...');
+      
+      if (!isReady) {
+        console.log('IndexedDB not ready yet...');
+        return;
+      }
       
       try {
         const savedFiles = await getAll<FileItem>('files');
+        console.log('Loaded files from IndexedDB:', savedFiles.length);
+        
         const savedWorkspace = await get<any>('workspace', 'current');
+        console.log('Loaded workspace:', savedWorkspace);
         
         if (savedFiles.length > 0) {
           setFiles(savedFiles);
@@ -32,6 +44,7 @@ export const useFileSystemPersistent = () => {
             setExpandedFolders(new Set(savedWorkspace.expandedFolders));
           }
         } else {
+          console.log('No saved files, creating default files...');
           // Initialize with default files
           const defaultFiles: FileItem[] = [
             {
@@ -71,11 +84,14 @@ export const useFileSystemPersistent = () => {
           setFiles(defaultFiles);
           setCurrentFileId('3');
           setExpandedFolders(new Set(['1', '2']));
+          
+          console.log('Default files created and saved');
         }
       } catch (error) {
         console.error('Error loading files:', error);
       } finally {
         setIsLoading(false);
+        console.log('File loading complete');
       }
     };
 
@@ -94,6 +110,7 @@ export const useFileSystemPersistent = () => {
           expandedFolders: Array.from(expandedFolders),
           lastSaved: new Date()
         });
+        console.log('Workspace state saved');
       } catch (error) {
         console.error('Error saving workspace:', error);
       }
@@ -103,6 +120,8 @@ export const useFileSystemPersistent = () => {
   }, [currentFileId, expandedFolders, isReady, isLoading, set]);
 
   const createFile = useCallback(async (name: string, parentId?: string, type: 'file' | 'folder' = 'file') => {
+    console.log('Creating file:', name, type, parentId);
+    
     const newFile: FileItem = {
       id: Date.now().toString(),
       name,
@@ -124,6 +143,7 @@ export const useFileSystemPersistent = () => {
         setCurrentFileId(newFile.id);
       }
       
+      console.log('File created successfully:', newFile.id);
       return newFile.id;
     } catch (error) {
       console.error('Error creating file:', error);

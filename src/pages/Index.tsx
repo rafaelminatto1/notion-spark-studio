@@ -17,6 +17,8 @@ import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useMobileDetection } from '@/hooks/useMobileDetection';
 
 const Index = () => {
+  console.log('Index component rendering...');
+  
   const [activeView, setActiveView] = useState<ViewMode>('dashboard');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
@@ -29,8 +31,11 @@ const Index = () => {
     currentFileId,
     createFile,
     updateFile,
-    setCurrentFileId
+    setCurrentFileId,
+    isLoading
   } = useFileSystem();
+
+  console.log('Files loaded:', files.length, 'Loading:', isLoading);
 
   const { favorites } = useFavorites();
   const { navigateTo } = useNavigation();
@@ -43,12 +48,14 @@ const Index = () => {
   }, [activeView, isMobile]);
 
   const handleNavigateToFile = (fileId: string) => {
+    console.log('Navigating to file:', fileId);
     setCurrentFileId(fileId);
     navigateTo(fileId);
     setActiveView('editor');
   };
 
   const handleCreateFromTemplate = async (template: any) => {
+    console.log('Creating from template:', template);
     const fileId = await createFile(template.name, undefined, 'file');
     await updateFile(fileId, { 
       content: template.content,
@@ -62,6 +69,7 @@ const Index = () => {
   };
 
   const handleViewChange = (view: string) => {
+    console.log('View changing to:', view);
     setActiveView(view as ViewMode);
   };
 
@@ -93,7 +101,23 @@ const Index = () => {
     }
   }, [currentFileId, addToRecent]);
 
+  // Show loading state
+  if (isLoading) {
+    console.log('Showing loading state...');
+    return (
+      <ThemeProvider>
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p className="text-muted-foreground">Carregando...</p>
+          </div>
+        </div>
+      </ThemeProvider>
+    );
+  }
+
   if (showWorkspaceSettings) {
+    console.log('Showing workspace settings...');
     return (
       <ThemeProvider>
         <WorkspaceProvider>
@@ -114,6 +138,8 @@ const Index = () => {
       </ThemeProvider>
     );
   }
+
+  console.log('Rendering main app...');
 
   return (
     <ThemeProvider>
