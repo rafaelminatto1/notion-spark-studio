@@ -30,7 +30,7 @@ interface SystemManagerProps {
   files: FileItem[];
   currentFile?: FileItem;
   onUpdateFile: (id: string, updates: Partial<FileItem>) => void;
-  onCreateFile: (name: string, parentId?: string, type?: 'file' | 'folder') => string;
+  onCreateFile: (name: string, parentId?: string, type?: 'file' | 'folder') => Promise<string>;
 }
 
 export const SystemManager: React.FC<SystemManagerProps> = ({

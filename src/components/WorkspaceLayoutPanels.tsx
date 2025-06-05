@@ -17,7 +17,7 @@ interface WorkspaceLayoutPanelsProps {
   favorites: string[];
   onFileSelect: (fileId: string) => void;
   onToggleFolder: (folderId: string) => void;
-  onCreateFile: (name: string, parentId?: string, type?: 'file' | 'folder') => string;
+  onCreateFile: (name: string, parentId?: string, type?: 'file' | 'folder') => Promise<string>;
   onUpdateFile: (id: string, updates: Partial<FileItem>) => void;
   onDeleteFile: (id: string) => void;
   onNavigateToFile: (fileId: string) => void;
@@ -107,8 +107,8 @@ export const WorkspaceLayoutPanels: React.FC<WorkspaceLayoutPanelsProps> = ({
     case 'templates':
       return (
         <TemplatesManager
-          onCreateFromTemplate={(template) => {
-            const fileId = onCreateFile(template.name);
+          onCreateFromTemplate={async (template) => {
+            const fileId = await onCreateFile(template.name);
             onUpdateFile(fileId, { 
               content: template.content,
               emoji: template.emoji 

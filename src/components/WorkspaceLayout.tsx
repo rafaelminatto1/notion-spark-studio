@@ -12,7 +12,7 @@ interface WorkspaceLayoutProps {
   activeView: string;
   onViewChange: (view: string) => void;
   onNavigateToFile: (fileId: string) => void;
-  onCreateFile: (name: string, parentId?: string, type?: 'file' | 'folder') => string;
+  onCreateFile: (name: string, parentId?: string, type?: 'file' | 'folder') => Promise<string>;
 }
 
 export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
