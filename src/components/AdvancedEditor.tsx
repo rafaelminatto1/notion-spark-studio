@@ -27,20 +27,27 @@ export const AdvancedEditor: React.FC<AdvancedEditorProps> = ({
   className
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [selectedIndex, setSelectedIndex] = useState(0);
   const [previewFile, setPreviewFile] = useState<FileItem | null>(null);
   const [previewPosition, setPreviewPosition] = useState({ x: 0, y: 0 });
   const [showPreview, setShowPreview] = useState(false);
 
   const {
     isOpen,
-    query,
     suggestions,
     position,
-    openAutocomplete,
-    closeAutocomplete,
-    setQuery
-  } = useLinkAutocomplete(files);
+    selectedIndex,
+    handleTextChange,
+    handleKeyDown,
+    selectSuggestion,
+    closeSuggestions
+  } = useLinkAutocomplete({
+    files,
+    onCreateFile: async (name: string) => {
+      onCreateFile(name);
+      return name;
+    },
+    onNavigateToFile
+  });
 
   const insertMedia = useCallback((markdown: string) => {
     if (!textareaRef.current) return;
@@ -58,80 +65,13 @@ export const AdvancedEditor: React.FC<AdvancedEditorProps> = ({
     }, 0);
   }, [content, onChange]);
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (isOpen) {
-      switch (e.key) {
-        case 'ArrowDown':
-          e.preventDefault();
-          setSelectedIndex(prev => (prev + 1) % suggestions.length);
-          break;
-        case 'ArrowUp':
-          e.preventDefault();
-          setSelectedIndex(prev => prev === 0 ? suggestions.length - 1 : prev - 1);
-          break;
-        case 'Enter':
-          e.preventDefault();
-          if (suggestions[selectedIndex]) {
-            handleSelectSuggestion(suggestions[selectedIndex]);
-          }
-          break;
-        case 'Escape':
-          e.preventDefault();
-          closeAutocomplete();
-          break;
-      }
-    }
-  }, [isOpen, suggestions, selectedIndex, closeAutocomplete]);
-
-  const handleSelectSuggestion = useCallback((suggestion: any) => {
-    if (!textareaRef.current) return;
-
-    const textarea = textareaRef.current;
-    const cursorPos = textarea.selectionStart;
-    const textBeforeCursor = content.slice(0, cursorPos);
-    const textAfterCursor = content.slice(cursorPos);
-    
-    const linkStart = textBeforeCursor.lastIndexOf('[[');
-    const beforeLink = content.slice(0, linkStart);
-    const newLink = `[[${suggestion.name}]]`;
-    
-    const newContent = beforeLink + newLink + textAfterCursor;
-    onChange(newContent);
-    
-    if (!suggestion.exists && suggestion.name !== 'create-new') {
-      onCreateFile(suggestion.name);
-    }
-    
-    closeAutocomplete();
-    
-    setTimeout(() => {
-      const newPos = linkStart + newLink.length;
-      textarea.setSelectionRange(newPos, newPos);
-      textarea.focus();
-    }, 0);
-  }, [content, onChange, onCreateFile, closeAutocomplete]);
-
   const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newContent = e.target.value;
     const cursorPos = e.target.selectionStart;
     
     onChange(newContent);
-    
-    const textBeforeCursor = newContent.slice(0, cursorPos);
-    const linkMatch = textBeforeCursor.match(/\[\[([^\]]*?)$/);
-    
-    if (linkMatch) {
-      const query = linkMatch[1];
-      const rect = e.target.getBoundingClientRect();
-      const x = rect.left + 20;
-      const y = rect.top + 60;
-      
-      openAutocomplete(query, x, y);
-      setSelectedIndex(0);
-    } else {
-      closeAutocomplete();
-    }
-  }, [onChange, openAutocomplete, closeAutocomplete]);
+    handleTextChange(newContent, cursorPos);
+  }, [onChange, handleTextChange]);
 
   const handleMouseEnter = useCallback((e: React.MouseEvent, linkText: string) => {
     const targetFile = files.find(f => f.name === linkText && f.type === 'file');
@@ -210,10 +150,6 @@ Use o botão 'Mídia' para inserir imagens e vídeos
     );
   };
 
-  useEffect(() => {
-    setSelectedIndex(0);
-  }, [suggestions]);
-
   return (
     <div className="relative">
       {renderContentWithLinks()}
@@ -223,8 +159,8 @@ Use o botão 'Mídia' para inserir imagens e vídeos
         suggestions={suggestions}
         position={position}
         selectedIndex={selectedIndex}
-        onSelect={handleSelectSuggestion}
-        onClose={closeAutocomplete}
+        onSelect={selectSuggestion}
+        onClose={closeSuggestions}
       />
       
       <LinkPreview
