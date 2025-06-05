@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { Folder, FolderOpen, FileText, Plus, Search, Settings, ChevronRight, ChevronDown, MoreHorizontal, Tag, Sparkles } from 'lucide-react';
+import { Folder, FolderOpen, FileText, Plus, Search, Settings, ChevronRight, ChevronDown, MoreHorizontal, Tag, Sparkles, LayoutPanelLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FileItem } from '@/types';
@@ -41,6 +41,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [newItemName, setNewItemName] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showTagsPanel, setShowTagsPanel] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const { tagTree } = useTags(allFiles);
 
@@ -96,9 +97,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div key={item.id} className="select-none">
           <div 
             className={cn(
-              "flex items-center gap-2 px-3 py-2 text-sm rounded-lg cursor-pointer group transition-all duration-200 hover:bg-workspace-surface/60 hover:scale-[1.02] hover:shadow-sm",
-              currentFileId === item.id && "bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-white shadow-lg border border-purple-500/30",
-              "ml-" + (level * 3)
+              "flex items-center gap-2 px-3 py-2.5 text-sm rounded-xl cursor-pointer group transition-all duration-300 hover:bg-gradient-to-r hover:from-purple-500/10 hover:to-blue-500/10 hover:scale-[1.02] hover:shadow-lg hover:shadow-purple-500/10",
+              currentFileId === item.id && "bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-white shadow-xl border border-purple-500/30 scale-[1.02]",
+              level > 0 && "ml-4"
             )} 
             onClick={() => {
               if (item.type === 'file') {
@@ -112,31 +113,37 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="h-5 w-5 p-0 hover:bg-transparent transition-transform duration-200 hover:scale-110" 
+                className="h-6 w-6 p-0 hover:bg-transparent transition-all duration-300 hover:scale-125" 
                 onClick={e => {
                   e.stopPropagation();
                   onToggleFolder(item.id);
                 }}
               >
                 {expandedFolders.has(item.id) ? 
-                  <ChevronDown className="h-3 w-3 text-blue-400" /> : 
-                  <ChevronRight className="h-3 w-3 text-blue-400" />
+                  <ChevronDown className="h-4 w-4 text-blue-400 transition-transform duration-300" /> : 
+                  <ChevronRight className="h-4 w-4 text-blue-400 transition-transform duration-300" />
                 }
               </Button>
             )}
             
-            <div className="flex items-center gap-2 flex-1 min-w-0">
-              {item.emoji && <span className="text-base animate-fade-in">{item.emoji}</span>}
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              {item.emoji && (
+                <span className="text-lg animate-fade-in transition-transform duration-300 group-hover:scale-110">
+                  {item.emoji}
+                </span>
+              )}
               {item.type === 'folder' ? 
                 expandedFolders.has(item.id) ? 
-                  <FolderOpen className="h-4 w-4 text-blue-400 transition-colors duration-200" /> : 
-                  <Folder className="h-4 w-4 text-blue-400 transition-colors duration-200" /> : 
-                <FileText className="h-4 w-4 text-gray-400 group-hover:text-gray-300 transition-colors duration-200" />
+                  <FolderOpen className="h-5 w-5 text-blue-400 transition-all duration-300 group-hover:text-blue-300" /> : 
+                  <Folder className="h-5 w-5 text-blue-400 transition-all duration-300 group-hover:text-blue-300" /> : 
+                <FileText className="h-5 w-5 text-gray-400 group-hover:text-gray-300 transition-all duration-300" />
               }
-              <span className="truncate flex-1 font-medium">{item.name}</span>
+              <span className="truncate flex-1 font-medium transition-all duration-300 group-hover:text-white">
+                {item.name}
+              </span>
             </div>
 
-            <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity duration-200">
+            <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
               <Button 
                 variant="ghost" 
                 size="sm" 
@@ -147,28 +154,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     type: 'file'
                   });
                 }} 
-                className="h-6 w-6 p-0 hover:bg-purple-500/20 hover:scale-110 transition-all duration-200"
+                className="h-7 w-7 p-0 hover:bg-purple-500/20 hover:scale-125 transition-all duration-300 rounded-full"
               >
-                <Plus className="h-3 w-3" />
+                <Plus className="h-3.5 w-3.5" />
               </Button>
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="h-6 w-6 p-0 hover:bg-gray-500/20 hover:scale-110 transition-all duration-200"
+                className="h-7 w-7 p-0 hover:bg-gray-500/20 hover:scale-125 transition-all duration-300 rounded-full"
               >
-                <MoreHorizontal className="h-3 w-3" />
+                <MoreHorizontal className="h-3.5 w-3.5" />
               </Button>
             </div>
           </div>
 
           {item.type === 'folder' && expandedFolders.has(item.id) && item.children && (
-            <div className="ml-4 animate-fade-in">
+            <div className="ml-2 animate-fade-in transition-all duration-300">
               {renderFileTree(item.children, level + 1)}
               {isCreating?.parentId === item.id && (
-                <div className="flex items-center gap-2 px-3 py-2 ml-3 animate-fade-in">
+                <div className="flex items-center gap-3 px-3 py-2 ml-6 animate-fade-in">
                   {isCreating.type === 'folder' ? 
-                    <Folder className="h-4 w-4 text-blue-400" /> : 
-                    <FileText className="h-4 w-4 text-gray-400" />
+                    <Folder className="h-5 w-5 text-blue-400" /> : 
+                    <FileText className="h-5 w-5 text-gray-400" />
                   }
                   <Input
                     value={newItemName}
@@ -178,7 +185,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       if (e.key === 'Escape') setIsCreating(null);
                     }}
                     onBlur={handleCreateItem}
-                    className="h-7 text-sm bg-workspace-surface border-purple-500/30 focus:border-purple-500/60 transition-colors duration-200"
+                    className="h-8 text-sm bg-background/60 backdrop-blur-sm border-purple-500/30 focus:border-purple-500/60 transition-all duration-300 rounded-lg"
                     placeholder={isCreating.type === 'folder' ? 'Nova pasta' : 'Nova página'}
                     autoFocus
                   />
@@ -190,14 +197,34 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ));
   };
 
+  if (isCollapsed) {
+    return (
+      <div className="w-16 bg-gradient-to-b from-background to-background/80 border-r border-border/60 flex flex-col h-screen shadow-xl">
+        <div className="p-4 border-b border-border/60">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsCollapsed(false)}
+            className="h-8 w-8 p-0 rounded-full hover:bg-purple-500/20 transition-all duration-300"
+          >
+            <LayoutPanelLeft className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-80 bg-gradient-to-b from-workspace-bg to-workspace-surface border-r border-workspace-border flex flex-col h-screen shadow-xl">
-      {/* Header with gradient */}
-      <div className="p-6 border-b border-workspace-border bg-gradient-to-r from-purple-500/10 to-blue-500/10">
+    <div className="w-80 bg-gradient-to-b from-background via-background/95 to-background/90 border-r border-border/60 flex flex-col h-screen shadow-xl backdrop-blur-sm">
+      {/* Enhanced Header */}
+      <div className="p-6 border-b border-border/60 bg-gradient-to-r from-purple-500/5 to-blue-500/5 backdrop-blur-sm">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <Sparkles className="h-6 w-6 text-purple-400 animate-pulse" />
-            <h1 className="font-bold text-xl bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+            <div className="relative">
+              <Sparkles className="h-7 w-7 text-purple-400 animate-pulse" />
+              <div className="absolute inset-0 bg-purple-400/20 rounded-full blur-xl animate-pulse"></div>
+            </div>
+            <h1 className="font-bold text-xl bg-gradient-to-r from-purple-400 via-blue-400 to-purple-400 bg-clip-text text-transparent animate-gradient-x">
               Notion Spark
             </h1>
           </div>
@@ -207,31 +234,38 @@ export const Sidebar: React.FC<SidebarProps> = ({
               size="sm"
               onClick={() => setShowTagsPanel(!showTagsPanel)}
               className={cn(
-                "h-8 w-8 p-0 rounded-full transition-all duration-200 hover:scale-110",
-                showTagsPanel && "bg-purple-500/20 text-purple-400 shadow-lg"
+                "h-9 w-9 p-0 rounded-full transition-all duration-300 hover:scale-110",
+                showTagsPanel && "bg-purple-500/20 text-purple-400 shadow-lg shadow-purple-500/25"
               )}
             >
               <Tag className="h-4 w-4" />
             </Button>
-            <Settings className="h-5 w-5 text-gray-400 cursor-pointer hover:text-purple-400 transition-colors duration-200 hover:scale-110" />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsCollapsed(true)}
+              className="h-9 w-9 p-0 rounded-full hover:bg-gray-500/20 transition-all duration-300 hover:scale-110"
+            >
+              <LayoutPanelLeft className="h-4 w-4" />
+            </Button>
           </div>
         </div>
         
         {/* Enhanced Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <div className="relative group">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 transition-colors duration-300 group-focus-within:text-purple-400" />
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar páginas..."
-            className="pl-10 bg-workspace-surface/50 border-workspace-border/60 focus:border-purple-500/60 focus:bg-workspace-surface transition-all duration-200 rounded-lg"
+            className="pl-10 bg-background/60 backdrop-blur-sm border-border/60 focus:border-purple-500/60 focus:bg-background/80 transition-all duration-300 rounded-xl shadow-sm hover:shadow-md focus:shadow-lg"
           />
         </div>
       </div>
 
       {/* Enhanced Tags Panel */}
       {showTagsPanel && (
-        <div className="border-b border-workspace-border p-4 bg-gradient-to-r from-purple-500/5 to-blue-500/5 animate-fade-in">
+        <div className="border-b border-border/60 p-4 bg-gradient-to-r from-purple-500/5 to-blue-500/5 animate-fade-in backdrop-blur-sm">
           <TagsPanel
             tags={tagTree}
             selectedTags={selectedTags}
@@ -245,30 +279,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="p-4 space-y-3">
         <Button
           variant="ghost"
-          className="w-full justify-start gap-3 text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-purple-500/20 hover:to-blue-500/20 transition-all duration-200 hover:scale-[1.02] rounded-lg"
+          className="w-full justify-start gap-3 text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-purple-500/20 hover:to-blue-500/20 transition-all duration-300 hover:scale-[1.02] rounded-xl shadow-sm hover:shadow-lg group"
           onClick={() => setIsCreating({ type: 'file' })}
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
           <span className="font-medium">Nova Página</span>
         </Button>
         <Button
           variant="ghost"
-          className="w-full justify-start gap-3 text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-blue-500/20 hover:to-purple-500/20 transition-all duration-200 hover:scale-[1.02] rounded-lg"
+          className="w-full justify-start gap-3 text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-blue-500/20 hover:to-purple-500/20 transition-all duration-300 hover:scale-[1.02] rounded-xl shadow-sm hover:shadow-lg group"
           onClick={() => setIsCreating({ type: 'folder' })}
         >
-          <Folder className="h-4 w-4" />
+          <Folder className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
           <span className="font-medium">Nova Pasta</span>
         </Button>
       </div>
 
       {/* Enhanced File Tree */}
-      <div className="flex-1 overflow-y-auto px-2 scrollbar-thin scrollbar-thumb-workspace-border scrollbar-track-transparent">
+      <div className="flex-1 overflow-y-auto px-3 pb-4 scrollbar-thin scrollbar-thumb-border/60 scrollbar-track-transparent hover:scrollbar-thumb-border/80">
         {isCreating && !isCreating.parentId && (
-          <div className="flex items-center gap-2 px-3 py-2 mb-2 animate-fade-in">
+          <div className="flex items-center gap-3 px-3 py-2 mb-3 animate-fade-in">
             {isCreating.type === 'folder' ? (
-              <Folder className="h-4 w-4 text-blue-400" />
+              <Folder className="h-5 w-5 text-blue-400" />
             ) : (
-              <FileText className="h-4 w-4 text-gray-400" />
+              <FileText className="h-5 w-5 text-gray-400" />
             )}
             <Input
               value={newItemName}
@@ -278,22 +312,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 if (e.key === 'Escape') setIsCreating(null);
               }}
               onBlur={handleCreateItem}
-              className="h-7 text-sm bg-workspace-surface border-purple-500/30 focus:border-purple-500/60 transition-colors duration-200"
+              className="h-8 text-sm bg-background/60 backdrop-blur-sm border-purple-500/30 focus:border-purple-500/60 transition-all duration-300 rounded-lg"
               placeholder={isCreating.type === 'folder' ? 'Nova pasta' : 'Nova página'}
               autoFocus
             />
           </div>
         )}
-        {renderFileTree(filteredFiles)}
+        <div className="space-y-1">
+          {renderFileTree(filteredFiles)}
+        </div>
       </div>
 
       {/* Enhanced Footer */}
-      <div className="p-4 border-t border-workspace-border bg-gradient-to-r from-purple-500/5 to-blue-500/5">
+      <div className="p-4 border-t border-border/60 bg-gradient-to-r from-purple-500/5 to-blue-500/5 backdrop-blur-sm">
         <div className="flex items-center gap-2 text-xs text-gray-400">
           <Tag className="h-3 w-3" />
           <span>Tags: {tagTree.length} categorias</span>
-          <div className="ml-auto flex items-center gap-1">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+          <div className="ml-auto flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-sm shadow-green-400/50"></div>
             <span>Online</span>
           </div>
         </div>

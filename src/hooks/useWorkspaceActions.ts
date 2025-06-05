@@ -56,13 +56,16 @@ export const useWorkspaceActions = ({
       name
     };
     setSavedWorkspaces([...savedWorkspaces, newWorkspace]);
+    return newWorkspace.id;
   }, [currentWorkspace, savedWorkspaces, setSavedWorkspaces]);
 
   const loadWorkspace = useCallback((workspaceId: string) => {
     const workspace = savedWorkspaces.find(w => w.id === workspaceId);
     if (workspace) {
       setCurrentWorkspace(workspace);
+      return true;
     }
+    return false;
   }, [savedWorkspaces, setCurrentWorkspace]);
 
   const deleteWorkspace = useCallback((workspaceId: string) => {
@@ -72,6 +75,56 @@ export const useWorkspaceActions = ({
   const resetToDefault = useCallback(() => {
     setCurrentWorkspace(DEFAULT_WORKSPACE);
   }, [setCurrentWorkspace, DEFAULT_WORKSPACE]);
+
+  const duplicateWorkspace = useCallback((workspaceId: string, newName: string) => {
+    const workspace = savedWorkspaces.find(w => w.id === workspaceId);
+    if (workspace) {
+      const duplicatedWorkspace = {
+        ...workspace,
+        id: Date.now().toString(),
+        name: newName
+      };
+      setSavedWorkspaces([...savedWorkspaces, duplicatedWorkspace]);
+      return duplicatedWorkspace.id;
+    }
+    return null;
+  }, [savedWorkspaces, setSavedWorkspaces]);
+
+  const exportWorkspace = useCallback((workspaceId?: string) => {
+    const workspace = workspaceId 
+      ? savedWorkspaces.find(w => w.id === workspaceId)
+      : currentWorkspace;
+    
+    if (workspace) {
+      const dataStr = JSON.stringify(workspace, null, 2);
+      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+      
+      const exportFileDefaultName = `workspace-${workspace.name.toLowerCase().replace(/\s+/g, '-')}.json`;
+      
+      const linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', exportFileDefaultName);
+      linkElement.click();
+    }
+  }, [savedWorkspaces, currentWorkspace]);
+
+  const importWorkspace = useCallback((file: File) => {
+    return new Promise<string | null>((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const workspace = JSON.parse(e.target?.result as string) as WorkspaceLayout;
+          workspace.id = Date.now().toString(); // New ID to avoid conflicts
+          setSavedWorkspaces([...savedWorkspaces, workspace]);
+          resolve(workspace.id);
+        } catch (error) {
+          console.error('Error importing workspace:', error);
+          resolve(null);
+        }
+      };
+      reader.readAsText(file);
+    });
+  }, [savedWorkspaces, setSavedWorkspaces]);
 
   return {
     updatePanel,
@@ -83,6 +136,9 @@ export const useWorkspaceActions = ({
     saveWorkspace,
     loadWorkspace,
     deleteWorkspace,
-    resetToDefault
+    resetToDefault,
+    duplicateWorkspace,
+    exportWorkspace,
+    importWorkspace
   };
 };
