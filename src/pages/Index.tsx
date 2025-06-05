@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { Editor } from '@/components/Editor';
@@ -6,6 +7,7 @@ import { Dashboard } from '@/components/Dashboard';
 import { ViewTabs, ViewMode } from '@/components/ViewTabs';
 import { QuickSwitcher } from '@/components/QuickSwitcher';
 import { GlobalSearch } from '@/components/GlobalSearch';
+import { CommandPalette } from '@/components/CommandPalette';
 import { TemplatesManager } from '@/components/TemplatesManager';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -21,6 +23,7 @@ const Index = () => {
   const [activeView, setActiveView] = useState<ViewMode>('dashboard');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   
   const {
     files,
@@ -76,6 +79,10 @@ const Index = () => {
           case '4':
             e.preventDefault();
             setActiveView('templates');
+            break;
+          case 'p':
+            e.preventDefault();
+            setIsCommandPaletteOpen(true);
             break;
         }
       }
@@ -262,6 +269,16 @@ const Index = () => {
           commands={filteredCommands}
           query={quickSwitcherQuery}
           onQueryChange={setQuickSwitcherQuery}
+        />
+
+        {/* Command Palette */}
+        <CommandPalette
+          files={files}
+          isOpen={isCommandPaletteOpen}
+          onClose={() => setIsCommandPaletteOpen(false)}
+          onFileSelect={handleNavigateToFile}
+          onCreateFile={createFile}
+          favorites={favorites}
         />
       </div>
     </ThemeProvider>
