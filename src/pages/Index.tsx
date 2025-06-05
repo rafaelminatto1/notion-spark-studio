@@ -1,18 +1,16 @@
 
 import React, { useState, useEffect } from 'react';
-import { Sidebar } from '@/components/Sidebar';
-import { Editor } from '@/components/Editor';
-import { GraphView } from '@/components/GraphView';
-import { Dashboard } from '@/components/Dashboard';
 import { ViewTabs, ViewMode } from '@/components/ViewTabs';
 import { QuickSwitcher } from '@/components/QuickSwitcher';
 import { GlobalSearch } from '@/components/GlobalSearch';
 import { CommandPalette } from '@/components/CommandPalette';
-import { TemplatesManager } from '@/components/TemplatesManager';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { WorkspaceProvider } from '@/components/WorkspaceProvider';
+import { WorkspaceLayout } from '@/components/WorkspaceLayout';
+import { WorkspaceSettings } from '@/components/WorkspaceSettings';
 import { Button } from '@/components/ui/button';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Settings } from 'lucide-react';
 import { useFileSystem } from '@/hooks/useFileSystem';
 import { useQuickSwitcher } from '@/hooks/useQuickSwitcher';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -24,22 +22,18 @@ const Index = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [showWorkspaceSettings, setShowWorkspaceSettings] = useState(false);
   
   const {
     files,
     currentFileId,
-    expandedFolders,
     createFile,
     updateFile,
-    deleteFile,
-    toggleFolder,
-    getFileTree,
-    getCurrentFile,
     setCurrentFileId
   } = useFileSystem();
 
-  const { favorites, toggleFavorite } = useFavorites();
-  const { navigateTo, goBack, goForward, canGoBack, canGoForward } = useNavigation();
+  const { favorites } = useFavorites();
+  const { navigateTo } = useNavigation();
 
   // Check if mobile
   useEffect(() => {
@@ -84,6 +78,10 @@ const Index = () => {
             e.preventDefault();
             setIsCommandPaletteOpen(true);
             break;
+          case ',':
+            e.preventDefault();
+            setShowWorkspaceSettings(true);
+            break;
         }
       }
     };
@@ -91,9 +89,6 @@ const Index = () => {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
-
-  const fileTree = getFileTree();
-  const currentFile = getCurrentFile();
 
   const handleNavigateToFile = (fileId: string) => {
     setCurrentFileId(fileId);
@@ -112,22 +107,6 @@ const Index = () => {
 
   const handleNavigateToGraph = () => {
     setActiveView('graph');
-  };
-
-  const handleGoBack = () => {
-    const fileId = goBack();
-    if (fileId) {
-      setCurrentFileId(fileId);
-      setActiveView('editor');
-    }
-  };
-
-  const handleGoForward = () => {
-    const fileId = goForward();
-    if (fileId) {
-      setCurrentFileId(fileId);
-      setActiveView('editor');
-    }
   };
 
   const {
@@ -152,135 +131,114 @@ const Index = () => {
     }
   }, [currentFileId, addToRecent]);
 
+  if (showWorkspaceSettings) {
+    return (
+      <ThemeProvider>
+        <WorkspaceProvider>
+          <div className="min-h-screen bg-background">
+            <div className="p-4 border-b border-border flex items-center justify-between">
+              <Button
+                variant="ghost"
+                onClick={() => setShowWorkspaceSettings(false)}
+              >
+                ← Voltar
+              </Button>
+              <h1 className="text-lg font-semibold">Configurações do Workspace</h1>
+              <div />
+            </div>
+            <WorkspaceSettings />
+          </div>
+        </WorkspaceProvider>
+      </ThemeProvider>
+    );
+  }
+
   return (
     <ThemeProvider>
-      <div className="min-h-screen bg-background text-foreground flex w-full">
-        {/* Mobile Sidebar Backdrop */}
-        {isMobile && isMobileSidebarOpen && (
-          <div 
-            className="fixed inset-0 bg-black/50 z-40 md:hidden"
-            onClick={() => setIsMobileSidebarOpen(false)}
-          />
-        )}
-        
-        {/* Sidebar */}
-        <div className={cn(
-          "fixed inset-y-0 left-0 z-50 md:relative md:translate-x-0 transition-transform duration-300 ease-in-out",
-          isMobile && !isMobileSidebarOpen && "-translate-x-full"
-        )}>
-          <Sidebar
-            files={fileTree}
-            currentFileId={currentFileId}
-            expandedFolders={expandedFolders}
-            onFileSelect={setCurrentFileId}
-            onToggleFolder={toggleFolder}
-            onCreateFile={createFile}
-            onUpdateFile={updateFile}
-            onDeleteFile={deleteFile}
-            allFiles={files}
-          />
-        </div>
-        
-        <div className="flex-1 flex flex-col min-w-0">
-          {/* Header */}
-          <div className="p-4 border-b border-border">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                {/* Mobile Menu Button */}
-                {isMobile && (
+      <WorkspaceProvider>
+        <div className="min-h-screen bg-background text-foreground flex w-full">
+          {/* Mobile Sidebar Backdrop */}
+          {isMobile && isMobileSidebarOpen && (
+            <div 
+              className="fixed inset-0 bg-black/50 z-40 md:hidden"
+              onClick={() => setIsMobileSidebarOpen(false)}
+            />
+          )}
+          
+          <div className="flex-1 flex flex-col min-w-0">
+            {/* Header */}
+            <div className="p-4 border-b border-border">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  {/* Mobile Menu Button */}
+                  {isMobile && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+                      className="md:hidden"
+                    >
+                      {isMobileSidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+                    </Button>
+                  )}
+                  
+                  <ViewTabs
+                    activeView={activeView}
+                    onViewChange={setActiveView}
+                  />
+                </div>
+                
+                {/* Search and Controls */}
+                <div className="flex items-center gap-4 min-w-0 flex-1 max-w-md">
+                  <GlobalSearch
+                    files={files}
+                    onFileSelect={handleNavigateToFile}
+                    className="flex-1"
+                  />
+                  
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-                    className="md:hidden"
+                    onClick={() => setShowWorkspaceSettings(true)}
+                    className="h-8 w-8 p-0"
                   >
-                    {isMobileSidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+                    <Settings className="h-4 w-4" />
                   </Button>
-                )}
-                
-                <ViewTabs
-                  activeView={activeView}
-                  onViewChange={setActiveView}
-                />
-              </div>
-              
-              {/* Search and Controls */}
-              <div className="flex items-center gap-4 min-w-0 flex-1 max-w-md">
-                <GlobalSearch
-                  files={files}
-                  onFileSelect={handleNavigateToFile}
-                  className="flex-1"
-                />
-                
-                <ThemeToggle />
+                  
+                  <ThemeToggle />
+                </div>
               </div>
             </div>
+
+            {/* Content Area - Now using WorkspaceLayout */}
+            <WorkspaceLayout
+              activeView={activeView}
+              onViewChange={setActiveView}
+              onNavigateToFile={handleNavigateToFile}
+              onCreateFile={createFile}
+            />
           </div>
 
-          {/* Content Area */}
-          <div className="flex-1 min-h-0">
-            {activeView === 'dashboard' && (
-              <Dashboard
-                files={files}
-                favorites={favorites}
-                onNavigateToFile={handleNavigateToFile}
-                onCreateFile={createFile}
-              />
-            )}
-            
-            {activeView === 'editor' && (
-              <Editor
-                file={currentFile}
-                files={files}
-                favorites={favorites}
-                onUpdateFile={updateFile}
-                onNavigateToFile={handleNavigateToFile}
-                onCreateFile={createFile}
-                onToggleFavorite={toggleFavorite}
-                onGoBack={handleGoBack}
-                onGoForward={handleGoForward}
-                canGoBack={canGoBack}
-                canGoForward={canGoForward}
-              />
-            )}
-            
-            {activeView === 'graph' && (
-              <GraphView
-                files={files}
-                currentFileId={currentFileId}
-                onFileSelect={handleNavigateToFile}
-              />
-            )}
+          {/* Quick Switcher */}
+          <QuickSwitcher
+            isOpen={isQuickSwitcherOpen}
+            onClose={closeQuickSwitcher}
+            commands={filteredCommands}
+            query={quickSwitcherQuery}
+            onQueryChange={setQuickSwitcherQuery}
+          />
 
-            {activeView === 'templates' && (
-              <div className="p-6">
-                <TemplatesManager
-                  onCreateFromTemplate={handleCreateFromTemplate}
-                />
-              </div>
-            )}
-          </div>
+          {/* Command Palette */}
+          <CommandPalette
+            files={files}
+            isOpen={isCommandPaletteOpen}
+            onClose={() => setIsCommandPaletteOpen(false)}
+            onFileSelect={handleNavigateToFile}
+            onCreateFile={createFile}
+            favorites={favorites}
+          />
         </div>
-
-        {/* Quick Switcher */}
-        <QuickSwitcher
-          isOpen={isQuickSwitcherOpen}
-          onClose={closeQuickSwitcher}
-          commands={filteredCommands}
-          query={quickSwitcherQuery}
-          onQueryChange={setQuickSwitcherQuery}
-        />
-
-        {/* Command Palette */}
-        <CommandPalette
-          files={files}
-          isOpen={isCommandPaletteOpen}
-          onClose={() => setIsCommandPaletteOpen(false)}
-          onFileSelect={handleNavigateToFile}
-          onCreateFile={createFile}
-          favorites={favorites}
-        />
-      </div>
+      </WorkspaceProvider>
     </ThemeProvider>
   );
 };
