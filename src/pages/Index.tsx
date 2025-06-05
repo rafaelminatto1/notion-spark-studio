@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ViewTabs, ViewMode } from '@/components/ViewTabs';
 import { QuickSwitcher } from '@/components/QuickSwitcher';
@@ -109,6 +108,10 @@ const Index = () => {
     setActiveView('graph');
   };
 
+  const handleViewChange = (view: string) => {
+    setActiveView(view as ViewMode);
+  };
+
   const {
     isOpen: isQuickSwitcherOpen,
     query: quickSwitcherQuery,
@@ -213,7 +216,7 @@ const Index = () => {
             {/* Content Area - Now using WorkspaceLayout */}
             <WorkspaceLayout
               activeView={activeView}
-              onViewChange={setActiveView}
+              onViewChange={handleViewChange}
               onNavigateToFile={handleNavigateToFile}
               onCreateFile={createFile}
             />
