@@ -1,10 +1,14 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { FileItem } from '@/types';
 import { useIndexedDB } from './useIndexedDB';
+import { useActivityHistory } from './useActivityHistory';
+import { useFavoritesAdvanced } from './useFavoritesAdvanced';
 
 export const useFileSystemPersistent = () => {
   const { isReady, get, getAll, set, remove, query } = useIndexedDB();
+  const { logFileCreate, logFileUpdate, logFileDelete, logFileRename } = useActivityHistory();
+  const { addToFavorites } = useFavoritesAdvanced();
+  
   const [files, setFiles] = useState<FileItem[]>([]);
   const [currentFileId, setCurrentFileId] = useState<string | null>(null);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
@@ -113,6 +117,9 @@ export const useFileSystemPersistent = () => {
       await set('files', newFile);
       setFiles(prev => [...prev, newFile]);
       
+      // Log da atividade
+      logFileCreate(newFile);
+      
       if (type === 'file') {
         setCurrentFileId(newFile.id);
       }
@@ -122,7 +129,7 @@ export const useFileSystemPersistent = () => {
       console.error('Error creating file:', error);
       throw error;
     }
-  }, [set]);
+  }, [set, logFileCreate]);
 
   const updateFile = useCallback(async (id: string, updates: Partial<FileItem>) => {
     try {
@@ -139,14 +146,26 @@ export const useFileSystemPersistent = () => {
       setFiles(prev => prev.map(file => 
         file.id === id ? updatedFile : file
       ));
+
+      // Log da atividade apenas se for uma mudança significativa
+      if (updates.content !== undefined || updates.name !== undefined) {
+        if (updates.name && updates.name !== existingFile.name) {
+          logFileRename(existingFile.name, updates.name, id);
+        } else {
+          logFileUpdate(updatedFile);
+        }
+      }
     } catch (error) {
       console.error('Error updating file:', error);
       throw error;
     }
-  }, [files, set]);
+  }, [files, set, logFileUpdate, logFileRename]);
 
   const deleteFile = useCallback(async (id: string) => {
     try {
+      const fileToDelete = files.find(f => f.id === id);
+      if (!fileToDelete) return;
+
       // Find all child files/folders to delete
       const toDelete = [id];
       const findChildren = (parentId: string) => {
@@ -166,6 +185,9 @@ export const useFileSystemPersistent = () => {
         await remove('files', fileId);
       }
 
+      // Log da atividade
+      logFileDelete(fileToDelete.name, id);
+
       // Update local state
       setFiles(prev => prev.filter(file => !toDelete.includes(file.id)));
       
@@ -176,7 +198,7 @@ export const useFileSystemPersistent = () => {
       console.error('Error deleting file:', error);
       throw error;
     }
-  }, [files, currentFileId, remove]);
+  }, [files, currentFileId, remove, logFileDelete]);
 
   const toggleFolder = useCallback((folderId: string) => {
     setExpandedFolders(prev => {
@@ -220,7 +242,7 @@ export const useFileSystemPersistent = () => {
   }, [files, currentFileId]);
 
   const searchFiles = useCallback(async (searchTerm: string) => {
-    if (!isReady) return [];
+    if (!isReady || !searchTerm.trim()) return [];
     
     try {
       const allFiles = await query<FileItem>('files', 'type', 'file');
@@ -235,6 +257,13 @@ export const useFileSystemPersistent = () => {
     }
   }, [isReady, query]);
 
+  const addToFavoritesList = useCallback(async (fileId: string, category?: string, notes?: string) => {
+    const file = files.find(f => f.id === fileId);
+    if (file) {
+      await addToFavorites(file, category, notes);
+    }
+  }, [files, addToFavorites]);
+
   return {
     files,
     currentFileId,
@@ -247,6 +276,7 @@ export const useFileSystemPersistent = () => {
     getFileTree,
     getCurrentFile,
     setCurrentFileId,
-    searchFiles
+    searchFiles,
+    addToFavoritesList
   };
 };
