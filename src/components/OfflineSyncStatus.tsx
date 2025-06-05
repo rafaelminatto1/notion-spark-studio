@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
-import { Wifi, WifiOff, Sync, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Wifi, WifiOff, RefreshCw, AlertTriangle, CheckCircle } from 'lucide-react';
 
 export const OfflineSyncStatus: React.FC = () => {
   const {
@@ -46,7 +46,7 @@ export const OfflineSyncStatus: React.FC = () => {
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">Sincronização:</span>
           <div className="flex items-center gap-2">
-            {isSyncing && <Sync className="w-3 h-3 animate-spin" />}
+            {isSyncing && <RefreshCw className="w-3 h-3 animate-spin" />}
             <Badge variant={isSyncing ? "secondary" : "outline"}>
               {isSyncing ? "Sincronizando..." : "Inativo"}
             </Badge>
@@ -105,7 +105,7 @@ export const OfflineSyncStatus: React.FC = () => {
                 disabled={isSyncing}
                 className="flex-1"
               >
-                <Sync className="w-3 h-3 mr-1" />
+                <RefreshCw className="w-3 h-3 mr-1" />
                 Forçar Sync
               </Button>
             )}
