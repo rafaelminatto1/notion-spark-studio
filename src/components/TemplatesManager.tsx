@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { FileText, Copy, Trash2, Plus, Calendar, Briefcase, BookOpen, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -444,7 +443,7 @@ export const TemplatesManager: React.FC<TemplatesManagerProps> = ({
               <div>
                 <label className="text-sm font-medium text-gray-300">Conteúdo</label>
                 <p className="text-xs text-gray-500 mb-2">
-                  Use variáveis: {{`{{date}}`}}, {{`{{time}}`}}, {{`{{title}}`}}, {{`{{subject}}`}}, {{`{{topic}}`}}
+                  Use variáveis: {'{{'}`date`{'}}' }, {'{{'}`time`{'}}' }, {'{{'}`title`{'}}' }, {'{{'}`subject`{'}}' }, {'{{'}`topic`{'}}' }
                 </p>
                 <Textarea
                   value={newTemplate.content || ''}
