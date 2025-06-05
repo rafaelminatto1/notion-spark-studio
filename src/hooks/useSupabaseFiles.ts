@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useSupabaseAuth } from './useSupabaseAuth';
 
 export interface SupabaseFile {
   id: string;
@@ -24,8 +25,15 @@ export const useSupabaseFiles = () => {
   const [files, setFiles] = useState<SupabaseFile[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { user } = useSupabaseAuth();
 
   const loadFiles = useCallback(async () => {
+    if (!user) {
+      setFiles([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('files')
@@ -42,7 +50,13 @@ export const useSupabaseFiles = () => {
         return;
       }
 
-      setFiles(data || []);
+      // Cast the data to ensure proper typing
+      const typedData = data?.map(file => ({
+        ...file,
+        type: file.type as 'file' | 'folder'
+      })) || [];
+
+      setFiles(typedData);
     } catch (error) {
       console.error('Error loading files:', error);
       toast({
@@ -53,10 +67,12 @@ export const useSupabaseFiles = () => {
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [toast, user]);
 
   useEffect(() => {
     loadFiles();
+
+    if (!user) return;
 
     // Set up realtime subscription
     const channel = supabase
@@ -78,7 +94,7 @@ export const useSupabaseFiles = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [loadFiles]);
+  }, [loadFiles, user]);
 
   const createFile = useCallback(async (
     name: string, 
@@ -87,6 +103,15 @@ export const useSupabaseFiles = () => {
     content?: string,
     emoji?: string
   ) => {
+    if (!user) {
+      toast({
+        title: "Erro de autenticação",
+        description: "Usuário não autenticado",
+        variant: "destructive"
+      });
+      return null;
+    }
+
     try {
       const { data, error } = await supabase
         .from('files')
@@ -95,7 +120,8 @@ export const useSupabaseFiles = () => {
           type,
           parent_id: parentId,
           content: content || '',
-          emoji
+          emoji,
+          user_id: user.id
         })
         .select()
         .single();
@@ -125,9 +151,18 @@ export const useSupabaseFiles = () => {
       });
       return null;
     }
-  }, [toast]);
+  }, [toast, user]);
 
   const updateFile = useCallback(async (id: string, updates: Partial<SupabaseFile>) => {
+    if (!user) {
+      toast({
+        title: "Erro de autenticação", 
+        description: "Usuário não autenticado",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('files')
@@ -159,9 +194,18 @@ export const useSupabaseFiles = () => {
         variant: "destructive"
       });
     }
-  }, [toast]);
+  }, [toast, user]);
 
   const deleteFile = useCallback(async (id: string) => {
+    if (!user) {
+      toast({
+        title: "Erro de autenticação",
+        description: "Usuário não autenticado", 
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('files')
@@ -190,7 +234,7 @@ export const useSupabaseFiles = () => {
         variant: "destructive"
       });
     }
-  }, [toast]);
+  }, [toast, user]);
 
   return {
     files,
