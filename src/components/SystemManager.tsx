@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -164,7 +165,14 @@ export const SystemManager: React.FC<SystemManagerProps> = ({
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button onClick={() => exportFiles(files)} className="w-full">
+                <Button 
+                  onClick={() => exportFiles({
+                    includeMetadata: true,
+                    format: 'json',
+                    includeMedia: false
+                  })} 
+                  className="w-full"
+                >
                   Exportar todos os arquivos
                 </Button>
                 {currentFile && (
