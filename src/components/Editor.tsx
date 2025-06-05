@@ -1,11 +1,13 @@
+
 import React, { useState, useCallback, useRef } from 'react';
-import { FileText, Tag, MessageCircle, Star, ArrowLeft, ArrowRight } from 'lucide-react';
+import { FileText, Tag, MessageCircle, Star, ArrowLeft, ArrowRight, Type } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TagInput } from '@/components/TagInput';
 import { Backlinks } from '@/components/Backlinks';
 import { CommentsPanel } from '@/components/CommentsPanel';
 import { BlockEditor } from '@/components/BlockEditor';
 import { AdvancedEditor } from '@/components/AdvancedEditor';
+import { MarkdownEditor } from '@/components/MarkdownEditor';
 import { FavoritesManager } from '@/components/FavoritesManager';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { FileItem, Comment, Block } from '@/types';
@@ -41,6 +43,7 @@ export const Editor: React.FC<EditorProps> = ({
 }) => {
   const [showComments, setShowComments] = useState(false);
   const [useBlockEditor, setUseBlockEditor] = useState(false);
+  const [useMarkdownEditor, setUseMarkdownEditor] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -339,7 +342,22 @@ export const Editor: React.FC<EditorProps> = ({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setUseBlockEditor(!useBlockEditor)}
+              onClick={() => {
+                setUseMarkdownEditor(!useMarkdownEditor);
+                setUseBlockEditor(false);
+              }}
+              className={`gap-2 ${useMarkdownEditor ? 'bg-notion-purple text-white' : 'text-gray-400 hover:text-white'}`}
+            >
+              <Type className="h-4 w-4" />
+              Markdown
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setUseBlockEditor(!useBlockEditor);
+                setUseMarkdownEditor(false);
+              }}
               className={`gap-2 ${useBlockEditor ? 'bg-notion-purple text-white' : 'text-gray-400 hover:text-white'}`}
             >
               Blocos
@@ -371,7 +389,13 @@ export const Editor: React.FC<EditorProps> = ({
 
       {/* Content */}
       <div className="flex-1 p-6 relative" ref={editorRef}>
-        {useBlockEditor ? (
+        {useMarkdownEditor ? (
+          <MarkdownEditor
+            content={file.content || ''}
+            onChange={handleContentChange}
+            className="h-full"
+          />
+        ) : useBlockEditor ? (
           <BlockEditor
             blocks={[]} // Convert content to blocks
             onBlocksChange={() => {}} // Handle block changes
