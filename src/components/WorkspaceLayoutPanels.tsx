@@ -107,7 +107,7 @@ export const WorkspaceLayoutPanels: React.FC<WorkspaceLayoutPanelsProps> = ({
     case 'templates':
       return (
         <TemplatesManager
-          onUseTemplate={async (template) => {
+          onCreateFromTemplate={async (template) => {
             const fileId = await onCreateFile(template.name);
             onUpdateFile(fileId, { 
               content: template.content,
