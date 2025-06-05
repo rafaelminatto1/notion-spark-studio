@@ -126,7 +126,7 @@ export const useQuickSwitcher = (
           addToRecent(file.id);
           close();
         },
-        category: (!query && recentFiles.includes(file.id)) ? 'recent' : 'file' as const,
+        category: (!query && recentFiles.includes(file.id)) ? 'recent' as const : 'file' as const,
         score: query ? fuzzyMatch(file.name, query) : 1
       }))
       .filter(cmd => !query || cmd.score! > 0)
@@ -167,7 +167,7 @@ export const useQuickSwitcher = (
         onCreateFile(query);
         close();
       },
-      category: 'create',
+      category: 'create' as const,
       score: 95
     }];
   }, [query, onCreateFile, close, files]);
