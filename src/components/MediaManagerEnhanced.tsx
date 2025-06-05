@@ -16,7 +16,7 @@ import {
   X, 
   AlertCircle, 
   CheckCircle,
-  Compress,
+  Compass,
   FileText,
   Camera
 } from 'lucide-react';
@@ -343,7 +343,7 @@ export const MediaManagerEnhanced: React.FC<MediaManagerEnhancedProps> = ({
 
             {compressionStats && (
               <Alert>
-                <Compress className="h-4 w-4" />
+                <Compass className="h-4 w-4" />
                 <AlertDescription>
                   Compressão aplicada: {formatFileSize(compressionStats.original)} → {formatFileSize(compressionStats.compressed)} 
                   <Badge variant="secondary" className="ml-2">

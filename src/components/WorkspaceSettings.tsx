@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -268,7 +267,9 @@ export const WorkspaceSettings: React.FC = () => {
             files={files}
             currentFile={currentFile}
             onUpdateFile={updateFile}
-            onCreateFile={createFile}
+            onCreateFile={async (name: string, parentId?: string, type?: 'file' | 'folder') => {
+              return await createFile(name, parentId, type);
+            }}
           />
         </TabsContent>
       </Tabs>

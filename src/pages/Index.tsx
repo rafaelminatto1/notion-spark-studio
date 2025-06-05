@@ -48,9 +48,9 @@ const Index = () => {
     setActiveView('editor');
   };
 
-  const handleCreateFromTemplate = (template: any) => {
-    const fileId = createFile(template.name, undefined, 'file');
-    updateFile(fileId, { 
+  const handleCreateFromTemplate = async (template: any) => {
+    const fileId = await createFile(template.name, undefined, 'file');
+    await updateFile(fileId, { 
       content: template.content,
       emoji: template.emoji 
     });
