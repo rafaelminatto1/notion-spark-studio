@@ -15,6 +15,7 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { useNavigation } from '@/hooks/useNavigation';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useMobileDetection } from '@/hooks/useMobileDetection';
+import { useSessionManager } from '@/hooks/useSessionManager';
 
 const Index = () => {
   const [activeView, setActiveView] = useState<ViewMode>('dashboard');
@@ -34,6 +35,12 @@ const Index = () => {
 
   const { favorites } = useFavorites();
   const { navigateTo } = useNavigation();
+  const { createSession, updateActivity } = useSessionManager();
+
+  // Initialize session on app start
+  useEffect(() => {
+    createSession('default-user');
+  }, [createSession]);
 
   // Close mobile sidebar when view changes
   useEffect(() => {
@@ -41,6 +48,14 @@ const Index = () => {
       setIsMobileSidebarOpen(false);
     }
   }, [activeView, isMobile]);
+
+  // Track view changes
+  useEffect(() => {
+    updateActivity({
+      type: 'view_changed',
+      view: activeView
+    });
+  }, [activeView, updateActivity]);
 
   const handleNavigateToFile = (fileId: string) => {
     setCurrentFileId(fileId);
