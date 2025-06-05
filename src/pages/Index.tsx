@@ -1,27 +1,28 @@
+
 import React, { useState, useEffect } from 'react';
-import { ViewTabs, ViewMode } from '@/components/ViewTabs';
+import { ViewMode } from '@/components/ViewTabs';
 import { QuickSwitcher } from '@/components/QuickSwitcher';
-import { GlobalSearch } from '@/components/GlobalSearch';
 import { CommandPalette } from '@/components/CommandPalette';
 import { ThemeProvider } from '@/components/ThemeProvider';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { WorkspaceProvider } from '@/components/WorkspaceProvider';
 import { WorkspaceLayout } from '@/components/WorkspaceLayout';
 import { WorkspaceSettings } from '@/components/WorkspaceSettings';
+import { AppHeader } from '@/components/AppHeader';
 import { Button } from '@/components/ui/button';
-import { Menu, X, Settings } from 'lucide-react';
 import { useFileSystem } from '@/hooks/useFileSystem';
 import { useQuickSwitcher } from '@/hooks/useQuickSwitcher';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useNavigation } from '@/hooks/useNavigation';
-import { cn } from '@/lib/utils';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { useMobileDetection } from '@/hooks/useMobileDetection';
 
 const Index = () => {
   const [activeView, setActiveView] = useState<ViewMode>('dashboard');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [showWorkspaceSettings, setShowWorkspaceSettings] = useState(false);
+  
+  const isMobile = useMobileDetection();
   
   const {
     files,
@@ -34,60 +35,12 @@ const Index = () => {
   const { favorites } = useFavorites();
   const { navigateTo } = useNavigation();
 
-  // Check if mobile
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
   // Close mobile sidebar when view changes
   useEffect(() => {
     if (isMobile) {
       setIsMobileSidebarOpen(false);
     }
   }, [activeView, isMobile]);
-
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.metaKey || e.ctrlKey) {
-        switch (e.key) {
-          case '1':
-            e.preventDefault();
-            setActiveView('dashboard');
-            break;
-          case '2':
-            e.preventDefault();
-            setActiveView('editor');
-            break;
-          case '3':
-            e.preventDefault();
-            setActiveView('graph');
-            break;
-          case '4':
-            e.preventDefault();
-            setActiveView('templates');
-            break;
-          case 'p':
-            e.preventDefault();
-            setIsCommandPaletteOpen(true);
-            break;
-          case ',':
-            e.preventDefault();
-            setShowWorkspaceSettings(true);
-            break;
-        }
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
 
   const handleNavigateToFile = (fileId: string) => {
     setCurrentFileId(fileId);
@@ -111,6 +64,12 @@ const Index = () => {
   const handleViewChange = (view: string) => {
     setActiveView(view as ViewMode);
   };
+
+  useKeyboardShortcuts({
+    onViewChange: setActiveView,
+    onOpenCommandPalette: () => setIsCommandPaletteOpen(true),
+    onOpenSettings: () => setShowWorkspaceSettings(true)
+  });
 
   const {
     isOpen: isQuickSwitcherOpen,
@@ -170,50 +129,18 @@ const Index = () => {
           
           <div className="flex-1 flex flex-col min-w-0">
             {/* Header */}
-            <div className="p-4 border-b border-border">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  {/* Mobile Menu Button */}
-                  {isMobile && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-                      className="md:hidden"
-                    >
-                      {isMobileSidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-                    </Button>
-                  )}
-                  
-                  <ViewTabs
-                    activeView={activeView}
-                    onViewChange={setActiveView}
-                  />
-                </div>
-                
-                {/* Search and Controls */}
-                <div className="flex items-center gap-4 min-w-0 flex-1 max-w-md">
-                  <GlobalSearch
-                    files={files}
-                    onFileSelect={handleNavigateToFile}
-                    className="flex-1"
-                  />
-                  
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowWorkspaceSettings(true)}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Settings className="h-4 w-4" />
-                  </Button>
-                  
-                  <ThemeToggle />
-                </div>
-              </div>
-            </div>
+            <AppHeader
+              activeView={activeView}
+              onViewChange={setActiveView}
+              isMobile={isMobile}
+              isMobileSidebarOpen={isMobileSidebarOpen}
+              onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+              files={files}
+              onFileSelect={handleNavigateToFile}
+              onShowSettings={() => setShowWorkspaceSettings(true)}
+            />
 
-            {/* Content Area - Now using WorkspaceLayout */}
+            {/* Content Area */}
             <WorkspaceLayout
               activeView={activeView}
               onViewChange={handleViewChange}
