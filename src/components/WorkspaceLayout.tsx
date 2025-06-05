@@ -9,21 +9,9 @@ import { useNavigation } from '@/hooks/useNavigation';
 import { usePanelCollapse } from '@/hooks/usePanelCollapse';
 import { cn } from '@/lib/utils';
 
-interface WorkspaceLayoutProps {
-  activeView: string;
-  onViewChange: (view: string) => void;
-  onNavigateToFile: (fileId: string) => void;
-  onCreateFile: (name: string, parentId?: string, type?: 'file' | 'folder') => Promise<string>;
-}
-
-export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
-  activeView,
-  onViewChange,
-  onNavigateToFile,
-  onCreateFile
-}) => {
+export const WorkspaceLayout: React.FC = () => {
   const { currentWorkspace, resizePanel } = useWorkspaceContext();
-  const { files, currentFileId, expandedFolders, updateFile, deleteFile, toggleFolder, getFileTree, getCurrentFile, setCurrentFileId } = useFileSystem();
+  const { files, currentFileId, expandedFolders, updateFile, deleteFile, toggleFolder, getFileTree, getCurrentFile, setCurrentFileId, createFile } = useFileSystem();
   const { favorites, toggleFavorite } = useFavorites();
   const { navigateTo, goBack, goForward, canGoBack, canGoForward } = useNavigation();
   
@@ -33,6 +21,15 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
       properties: true
     }
   });
+
+  const handleNavigateToFile = (fileId: string) => {
+    setCurrentFileId(fileId);
+    navigateTo(fileId);
+  };
+
+  const handleCreateFile = async (name: string, parentId?: string, type?: 'file' | 'folder') => {
+    return await createFile(name, parentId, type);
+  };
 
   const visiblePanels = currentWorkspace.panels.filter(panel => panel.isVisible);
   const leftPanels = visiblePanels.filter(p => p.position === 'left');
@@ -101,10 +98,10 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
                 favorites={favorites}
                 onFileSelect={setCurrentFileId}
                 onToggleFolder={toggleFolder}
-                onCreateFile={onCreateFile}
+                onCreateFile={handleCreateFile}
                 onUpdateFile={updateFile}
                 onDeleteFile={deleteFile}
-                onNavigateToFile={onNavigateToFile}
+                onNavigateToFile={handleNavigateToFile}
                 onToggleFavorite={toggleFavorite}
                 onGoBack={goBack}
                 onGoForward={goForward}
