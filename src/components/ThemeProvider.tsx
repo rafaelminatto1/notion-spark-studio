@@ -53,12 +53,33 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   }, [theme]);
 
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', actualTheme === 'dark');
+    const root = document.documentElement;
+    root.classList.toggle('dark', actualTheme === 'dark');
+    
+    // Add smooth theme transition
+    root.style.setProperty('--theme-transition', 'all 0.3s ease');
+    
+    // Apply workspace theme colors if available
+    if (actualTheme === 'dark') {
+      root.style.setProperty('--workspace-bg', '#0f0f0f');
+      root.style.setProperty('--workspace-surface', '#1a1a1a');
+      root.style.setProperty('--workspace-border', '#282828');
+      root.style.setProperty('--workspace-text', '#ffffff');
+      root.style.setProperty('--workspace-text-muted', '#a1a1a1');
+    } else {
+      root.style.setProperty('--workspace-bg', '#ffffff');
+      root.style.setProperty('--workspace-surface', '#f8f9fa');
+      root.style.setProperty('--workspace-border', '#e5e7eb');
+      root.style.setProperty('--workspace-text', '#1f2937');
+      root.style.setProperty('--workspace-text-muted', '#6b7280');
+    }
   }, [actualTheme]);
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, actualTheme }}>
-      {children}
+      <div className="transition-colors duration-300">
+        {children}
+      </div>
     </ThemeContext.Provider>
   );
 };
