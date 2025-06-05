@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -7,13 +6,14 @@ import rehypeKatex from 'rehype-katex';
 import rehypeHighlight from 'rehype-highlight';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { MediaManager } from '@/components/MediaManager';
+import { MediaViewer } from '@/components/MediaViewer';
 import { 
   Bold, 
   Italic, 
   List, 
   ListOrdered, 
   Link, 
-  Image, 
   Code, 
   Quote,
   Table,
@@ -56,11 +56,26 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
     
     onChange(newContent);
 
-    // Reposicionar cursor
     setTimeout(() => {
       const newStart = start + beforeText.length;
       const newEnd = newStart + textToUse.length;
       textarea.setSelectionRange(newStart, newEnd);
+      textarea.focus();
+    }, 0);
+  }, [content, onChange]);
+
+  const insertMedia = useCallback((markdown: string) => {
+    if (!textareaRef.current) return;
+
+    const textarea = textareaRef.current;
+    const start = textarea.selectionStart;
+    const newContent = content.substring(0, start) + '\n' + markdown + '\n' + content.substring(start);
+    
+    onChange(newContent);
+
+    setTimeout(() => {
+      const newPosition = start + markdown.length + 2;
+      textarea.setSelectionRange(newPosition, newPosition);
       textarea.focus();
     }, 0);
   }, [content, onChange]);
@@ -95,11 +110,6 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
       icon: Link,
       label: 'Link',
       action: () => insertText('[', '](url)', 'texto do link')
-    },
-    {
-      icon: Image,
-      label: 'Imagem',
-      action: () => insertText('![', '](url)', 'alt text')
     },
     {
       icon: Code,
@@ -146,14 +156,12 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
       }
     }
 
-    // Tab para indentação
     if (e.key === 'Tab') {
       e.preventDefault();
       insertText('  ');
     }
   }, [insertText]);
 
-  // Componente customizado para checkboxes interativos
   const CheckboxComponent = ({ checked, ...props }: any) => (
     <input
       type="checkbox"
@@ -173,7 +181,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
   return (
     <div className={cn("flex flex-col h-full", className)}>
       {/* Toolbar */}
-      <div className="flex items-center justify-between p-2 border-b border-notion-dark-border bg-notion-dark-hover">
+      <div className="flex items-center justify-between p-2 border-b border-workspace-border bg-workspace-surface">
         <div className="flex items-center gap-1 flex-wrap">
           {toolbarActions.map((action, index) => (
             <Button
@@ -181,12 +189,16 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
               variant="ghost"
               size="sm"
               onClick={action.action}
-              className="h-8 w-8 p-0 hover:bg-notion-dark-border"
+              className="h-8 w-8 p-0 hover:bg-workspace-border"
               title={action.label}
             >
               <action.icon className="h-4 w-4" />
             </Button>
           ))}
+          
+          {/* Media Manager */}
+          <div className="h-6 w-px bg-workspace-border mx-1" />
+          <MediaManager onInsertMedia={insertMedia} />
         </div>
         
         <div className="flex items-center gap-2">
@@ -217,7 +229,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
       <div className="flex-1 flex min-h-0">
         {/* Editor */}
         {(!showPreview || splitView) && (
-          <div className={cn("flex-1 flex flex-col", splitView && "border-r border-notion-dark-border")}>
+          <div className={cn("flex-1 flex flex-col", splitView && "border-r border-workspace-border")}>
             <Textarea
               ref={textareaRef}
               value={content}
@@ -231,7 +243,8 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
 - [ ] Checkbox desmarcado
 
 [Link](https://example.com)
-![Imagem](url-da-imagem)
+
+Use o botão 'Mídia' para inserir imagens e vídeos!
 
 ```javascript
 const codigo = 'syntax highlighting';
@@ -245,27 +258,34 @@ const codigo = 'syntax highlighting';
 
 $$E = mc^2$$
 "
-              className="flex-1 border-none resize-none bg-transparent text-gray-200 leading-relaxed font-mono text-sm focus:ring-0 focus:outline-none p-4"
+              className="flex-1 border-none resize-none bg-transparent text-workspace-text leading-relaxed font-mono text-sm focus:ring-0 focus:outline-none p-4"
             />
           </div>
         )}
 
         {/* Preview */}
         {showPreview && (
-          <div className={cn("flex-1 overflow-auto bg-notion-dark", !splitView && "w-full")}>
+          <div className={cn("flex-1 overflow-auto bg-workspace-bg", !splitView && "w-full")}>
             <div className="p-4 prose prose-invert prose-gray max-w-none">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm, remarkMath]}
                 rehypePlugins={[rehypeKatex, rehypeHighlight]}
                 components={{
                   input: CheckboxComponent,
-                  // Customizar outros componentes se necessário
                   img: ({ src, alt, ...props }) => (
-                    <img
-                      src={src}
-                      alt={alt}
-                      className="max-w-full h-auto rounded-lg shadow-lg"
-                      {...props}
+                    <MediaViewer
+                      src={src || ''}
+                      alt={alt || ''}
+                      type="image"
+                      className="my-4"
+                    />
+                  ),
+                  video: ({ src, children, ...props }) => (
+                    <MediaViewer
+                      src={src || ''}
+                      alt="Vídeo"
+                      type="video"
+                      className="my-4"
                     />
                   ),
                   table: ({ children, ...props }) => (
