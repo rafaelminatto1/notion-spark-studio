@@ -77,10 +77,25 @@ export const useWorkspaceThemes = () => {
     }
   }, []);
 
-  const createCustomTheme = (theme: Omit<CustomTheme, 'id'>) => {
-    const newTheme = {
-      ...theme,
-      id: Date.now().toString()
+  const createCustomTheme = (name: string) => {
+    const newTheme: CustomTheme = {
+      id: Date.now().toString(),
+      name,
+      colors: {
+        primary: '#7c3aed',
+        secondary: '#4f46e5',
+        background: '#ffffff',
+        surface: '#f8f9fa',
+        text: '#1f2937',
+        textSecondary: '#6b7280',
+        border: '#e5e7eb',
+        accent: '#8b5cf6'
+      },
+      typography: {
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        fontSize: 14,
+        fontWeight: 400
+      }
     };
     setCustomThemes(prev => [...prev, newTheme]);
     return newTheme.id;

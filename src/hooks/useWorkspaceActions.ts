@@ -32,6 +32,10 @@ export const useWorkspaceActions = ({
     });
   }, [currentWorkspace.panels, updatePanel]);
 
+  const updatePanelVisibility = useCallback((panelId: string, isVisible: boolean) => {
+    updatePanel(panelId, { isVisible });
+  }, [updatePanel]);
+
   const resizePanel = useCallback((panelId: string, newSize: number) => {
     updatePanel(panelId, { size: Math.max(0, Math.min(100, newSize)) });
   }, [updatePanel]);
@@ -42,6 +46,8 @@ export const useWorkspaceActions = ({
       settings: { ...currentWorkspace.settings, ...updates }
     });
   }, [currentWorkspace, setCurrentWorkspace]);
+
+  const updateWorkspaceSettings = updateSettings;
 
   const saveWorkspace = useCallback((name: string) => {
     const newWorkspace = {
@@ -70,8 +76,10 @@ export const useWorkspaceActions = ({
   return {
     updatePanel,
     togglePanel,
+    updatePanelVisibility,
     resizePanel,
     updateSettings,
+    updateWorkspaceSettings,
     saveWorkspace,
     loadWorkspace,
     deleteWorkspace,
