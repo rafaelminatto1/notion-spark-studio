@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -47,14 +46,9 @@ export const SystemManager: React.FC<SystemManagerProps> = ({
     enabled: autoSaveEnabled
   });
 
-  // Create wrapper function to handle async onCreateFile for useImportExport
-  const createFileWrapper = async (name: string, parentId?: string, type?: 'file' | 'folder') => {
-    return await onCreateFile(name, parentId, type);
-  };
-
   const { exportFiles, exportAsMarkdown, importFiles } = useImportExport(
     files,
-    createFileWrapper,
+    onCreateFile,
     onUpdateFile
   );
 

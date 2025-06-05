@@ -5,7 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export const useImportExport = (
   files: FileItem[],
-  onCreateFile: (name: string, parentId?: string, type?: 'file' | 'folder') => string,
+  onCreateFile: (name: string, parentId?: string, type?: 'file' | 'folder') => Promise<string>,
   onUpdateFile: (id: string, updates: Partial<FileItem>) => void
 ) => {
   const { toast } = useToast();
@@ -69,7 +69,7 @@ export const useImportExport = (
   const importFiles = useCallback((file: File) => {
     const reader = new FileReader();
     
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
         const content = e.target?.result as string;
         const importData = JSON.parse(content);
@@ -79,7 +79,7 @@ export const useImportExport = (
         }
 
         let importedCount = 0;
-        importData.files.forEach((importedFile: any) => {
+        for (const importedFile of importData.files) {
           // Verificar se já existe um arquivo com o mesmo nome
           const existingFile = files.find(f => f.name === importedFile.name);
           
@@ -93,7 +93,7 @@ export const useImportExport = (
             });
           } else {
             // Criar novo arquivo
-            const newFileId = onCreateFile(importedFile.name, importedFile.parentId, importedFile.type);
+            const newFileId = await onCreateFile(importedFile.name, importedFile.parentId, importedFile.type);
             onUpdateFile(newFileId, {
               content: importedFile.content,
               tags: importedFile.tags,
@@ -104,7 +104,7 @@ export const useImportExport = (
             });
           }
           importedCount++;
-        });
+        }
 
         toast({
           title: "Import concluído",
