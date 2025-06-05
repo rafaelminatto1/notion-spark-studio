@@ -5,37 +5,42 @@ import { useActivityHistory } from './useActivityHistory';
 import { useFavoritesAdvanced } from './useFavoritesAdvanced';
 
 export const useFileSystemPersistent = () => {
-  console.log('useFileSystemPersistent initializing...');
-  
-  const { isReady, get, getAll, set, remove, query } = useIndexedDB();
-  const { logFileCreate, logFileUpdate, logFileDelete, logFileRename } = useActivityHistory();
-  const { addToFavorites } = useFavoritesAdvanced();
+  console.log('useFileSystemPersistent: Initializing...');
   
   const [files, setFiles] = useState<FileItem[]>([]);
   const [currentFileId, setCurrentFileId] = useState<string | null>(null);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  console.log('IndexedDB ready:', isReady, 'Files count:', files.length);
+  const { isReady, get, getAll, set, remove, query } = useIndexedDB();
+  const { logFileCreate, logFileUpdate, logFileDelete, logFileRename } = useActivityHistory();
+  const { addToFavorites } = useFavoritesAdvanced();
+
+  console.log('useFileSystemPersistent: IndexedDB ready:', isReady, 'Files count:', files.length);
 
   // Load files from IndexedDB on startup
   useEffect(() => {
     const loadFiles = async () => {
-      console.log('Loading files from IndexedDB...');
+      console.log('useFileSystemPersistent: Starting to load files...');
       
       if (!isReady) {
-        console.log('IndexedDB not ready yet...');
+        console.log('useFileSystemPersistent: IndexedDB not ready yet...');
         return;
       }
       
       try {
+        setIsLoading(true);
+        console.log('useFileSystemPersistent: Getting files from IndexedDB...');
+        
         const savedFiles = await getAll<FileItem>('files');
-        console.log('Loaded files from IndexedDB:', savedFiles.length);
+        console.log('useFileSystemPersistent: Loaded files from IndexedDB:', savedFiles?.length || 0);
         
         const savedWorkspace = await get<any>('workspace', 'current');
-        console.log('Loaded workspace:', savedWorkspace);
+        console.log('useFileSystemPersistent: Loaded workspace:', savedWorkspace);
         
-        if (savedFiles.length > 0) {
+        if (savedFiles && savedFiles.length > 0) {
+          console.log('useFileSystemPersistent: Setting existing files...');
           setFiles(savedFiles);
           if (savedWorkspace?.currentFileId) {
             setCurrentFileId(savedWorkspace.currentFileId);
@@ -44,7 +49,7 @@ export const useFileSystemPersistent = () => {
             setExpandedFolders(new Set(savedWorkspace.expandedFolders));
           }
         } else {
-          console.log('No saved files, creating default files...');
+          console.log('useFileSystemPersistent: No saved files, creating default files...');
           // Initialize with default files
           const defaultFiles: FileItem[] = [
             {
@@ -77,6 +82,7 @@ export const useFileSystemPersistent = () => {
           ];
           
           // Save default files to IndexedDB
+          console.log('useFileSystemPersistent: Saving default files...');
           for (const file of defaultFiles) {
             await set('files', file);
           }
@@ -85,13 +91,18 @@ export const useFileSystemPersistent = () => {
           setCurrentFileId('3');
           setExpandedFolders(new Set(['1', '2']));
           
-          console.log('Default files created and saved');
+          console.log('useFileSystemPersistent: Default files created and saved');
         }
+        
+        setIsInitialized(true);
       } catch (error) {
-        console.error('Error loading files:', error);
+        console.error('useFileSystemPersistent: Error loading files:', error);
+        // Set empty state to prevent infinite loading
+        setFiles([]);
+        setIsInitialized(true);
       } finally {
         setIsLoading(false);
-        console.log('File loading complete');
+        console.log('useFileSystemPersistent: File loading complete');
       }
     };
 
@@ -100,7 +111,7 @@ export const useFileSystemPersistent = () => {
 
   // Save workspace state whenever it changes
   useEffect(() => {
-    if (!isReady || isLoading) return;
+    if (!isReady || isLoading || !isInitialized) return;
     
     const saveWorkspace = async () => {
       try {
@@ -110,17 +121,17 @@ export const useFileSystemPersistent = () => {
           expandedFolders: Array.from(expandedFolders),
           lastSaved: new Date()
         });
-        console.log('Workspace state saved');
+        console.log('useFileSystemPersistent: Workspace state saved');
       } catch (error) {
-        console.error('Error saving workspace:', error);
+        console.error('useFileSystemPersistent: Error saving workspace:', error);
       }
     };
 
     saveWorkspace();
-  }, [currentFileId, expandedFolders, isReady, isLoading, set]);
+  }, [currentFileId, expandedFolders, isReady, isLoading, isInitialized, set]);
 
   const createFile = useCallback(async (name: string, parentId?: string, type: 'file' | 'folder' = 'file') => {
-    console.log('Creating file:', name, type, parentId);
+    console.log('useFileSystemPersistent: Creating file:', name, type, parentId);
     
     const newFile: FileItem = {
       id: Date.now().toString(),
@@ -143,10 +154,10 @@ export const useFileSystemPersistent = () => {
         setCurrentFileId(newFile.id);
       }
       
-      console.log('File created successfully:', newFile.id);
+      console.log('useFileSystemPersistent: File created successfully:', newFile.id);
       return newFile.id;
     } catch (error) {
-      console.error('Error creating file:', error);
+      console.error('useFileSystemPersistent: Error creating file:', error);
       throw error;
     }
   }, [set, logFileCreate]);
@@ -176,7 +187,7 @@ export const useFileSystemPersistent = () => {
         }
       }
     } catch (error) {
-      console.error('Error updating file:', error);
+      console.error('useFileSystemPersistent: Error updating file:', error);
       throw error;
     }
   }, [files, set, logFileUpdate, logFileRename]);
@@ -215,7 +226,7 @@ export const useFileSystemPersistent = () => {
         setCurrentFileId(null);
       }
     } catch (error) {
-      console.error('Error deleting file:', error);
+      console.error('useFileSystemPersistent: Error deleting file:', error);
       throw error;
     }
   }, [files, currentFileId, remove, logFileDelete]);
@@ -272,7 +283,7 @@ export const useFileSystemPersistent = () => {
         file.tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     } catch (error) {
-      console.error('Error searching files:', error);
+      console.error('useFileSystemPersistent: Error searching files:', error);
       return [];
     }
   }, [isReady, query]);

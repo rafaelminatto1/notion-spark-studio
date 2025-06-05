@@ -17,15 +17,19 @@ import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useMobileDetection } from '@/hooks/useMobileDetection';
 
 const Index = () => {
-  console.log('Index component rendering...');
+  console.log('Index: Component initializing...');
   
+  const [isComponentReady, setIsComponentReady] = useState(false);
   const [activeView, setActiveView] = useState<ViewMode>('dashboard');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [showWorkspaceSettings, setShowWorkspaceSettings] = useState(false);
   
-  const isMobile = useMobileDetection();
+  console.log('Index: Initializing hooks...');
   
+  const isMobile = useMobileDetection();
+  console.log('Index: Mobile detection:', isMobile);
+
   const {
     files,
     currentFileId,
@@ -35,10 +39,19 @@ const Index = () => {
     isLoading
   } = useFileSystem();
 
-  console.log('Files loaded:', files.length, 'Loading:', isLoading);
+  console.log('Index: FileSystem hook loaded - Files:', files?.length || 0, 'Loading:', isLoading);
 
   const { favorites } = useFavorites();
+  console.log('Index: Favorites loaded:', favorites?.length || 0);
+  
   const { navigateTo } = useNavigation();
+  console.log('Index: Navigation hook loaded');
+
+  // Initialize component ready state
+  useEffect(() => {
+    console.log('Index: Setting component ready...');
+    setIsComponentReady(true);
+  }, []);
 
   // Close mobile sidebar when view changes
   useEffect(() => {
@@ -48,20 +61,24 @@ const Index = () => {
   }, [activeView, isMobile]);
 
   const handleNavigateToFile = (fileId: string) => {
-    console.log('Navigating to file:', fileId);
+    console.log('Index: Navigating to file:', fileId);
     setCurrentFileId(fileId);
     navigateTo(fileId);
     setActiveView('editor');
   };
 
   const handleCreateFromTemplate = async (template: any) => {
-    console.log('Creating from template:', template);
-    const fileId = await createFile(template.name, undefined, 'file');
-    await updateFile(fileId, { 
-      content: template.content,
-      emoji: template.emoji 
-    });
-    handleNavigateToFile(fileId);
+    console.log('Index: Creating from template:', template);
+    try {
+      const fileId = await createFile(template.name, undefined, 'file');
+      await updateFile(fileId, { 
+        content: template.content,
+        emoji: template.emoji 
+      });
+      handleNavigateToFile(fileId);
+    } catch (error) {
+      console.error('Index: Error creating from template:', error);
+    }
   };
 
   const handleNavigateToGraph = () => {
@@ -69,7 +86,7 @@ const Index = () => {
   };
 
   const handleViewChange = (view: string) => {
-    console.log('View changing to:', view);
+    console.log('Index: View changing to:', view);
     setActiveView(view as ViewMode);
   };
 
@@ -88,7 +105,7 @@ const Index = () => {
     filteredCommands,
     addToRecent
   } = useQuickSwitcher(
-    files,
+    files || [],
     handleNavigateToFile,
     createFile,
     handleNavigateToGraph
@@ -101,15 +118,19 @@ const Index = () => {
     }
   }, [currentFileId, addToRecent]);
 
-  // Show loading state
-  if (isLoading) {
-    console.log('Showing loading state...');
+  // Show loading state while component is initializing
+  if (!isComponentReady || isLoading) {
+    console.log('Index: Showing loading state - Component ready:', isComponentReady, 'FileSystem loading:', isLoading);
     return (
       <ThemeProvider>
         <div className="min-h-screen bg-background flex items-center justify-center">
           <div className="text-center space-y-4">
             <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p className="text-muted-foreground">Carregando...</p>
+            <p className="text-muted-foreground">Carregando aplicação...</p>
+            <p className="text-xs text-muted-foreground">
+              {!isComponentReady && 'Inicializando componentes...'}
+              {isComponentReady && isLoading && 'Carregando arquivos...'}
+            </p>
           </div>
         </div>
       </ThemeProvider>
@@ -117,7 +138,7 @@ const Index = () => {
   }
 
   if (showWorkspaceSettings) {
-    console.log('Showing workspace settings...');
+    console.log('Index: Showing workspace settings...');
     return (
       <ThemeProvider>
         <WorkspaceProvider>
@@ -139,7 +160,7 @@ const Index = () => {
     );
   }
 
-  console.log('Rendering main app...');
+  console.log('Index: Rendering main app with', files?.length || 0, 'files');
 
   return (
     <ThemeProvider>
@@ -161,7 +182,7 @@ const Index = () => {
               isMobile={isMobile}
               isMobileSidebarOpen={isMobileSidebarOpen}
               onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-              files={files}
+              files={files || []}
               onFileSelect={handleNavigateToFile}
               onShowSettings={() => setShowWorkspaceSettings(true)}
             />
@@ -179,19 +200,19 @@ const Index = () => {
           <QuickSwitcher
             isOpen={isQuickSwitcherOpen}
             onClose={closeQuickSwitcher}
-            commands={filteredCommands}
+            commands={filteredCommands || []}
             query={quickSwitcherQuery}
             onQueryChange={setQuickSwitcherQuery}
           />
 
           {/* Command Palette */}
           <CommandPalette
-            files={files}
+            files={files || []}
             isOpen={isCommandPaletteOpen}
             onClose={() => setIsCommandPaletteOpen(false)}
             onFileSelect={handleNavigateToFile}
             onCreateFile={createFile}
-            favorites={favorites}
+            favorites={favorites || []}
           />
         </div>
       </WorkspaceProvider>
