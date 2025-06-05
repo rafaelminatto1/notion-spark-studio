@@ -12,6 +12,8 @@ import { SystemManager } from '@/components/SystemManager';
 import { useWorkspaceContext } from '@/hooks/useWorkspace';
 import { useFileSystem } from '@/hooks/useFileSystem';
 import { Palette, Layout, Cog, Database } from 'lucide-react';
+import { useTheme } from '@/hooks/useTheme';
+import { Edit, Plus } from 'lucide-react';
 
 export const WorkspaceSettings: React.FC = () => {
   const { 
@@ -23,9 +25,12 @@ export const WorkspaceSettings: React.FC = () => {
   } = useWorkspaceContext();
   
   const { files, currentFileId, updateFile, createFile, getCurrentFile } = useFileSystem();
+  const { customTheme, setCustomTheme, availableThemes } = useTheme();
   const currentFile = getCurrentFile();
 
   const [newThemeName, setNewThemeName] = useState('');
+  const [isThemeEditorOpen, setIsThemeEditorOpen] = useState(false);
+  const [editingTheme, setEditingTheme] = useState(null);
 
   const handleSettingChange = (key: string, value: any) => {
     updateWorkspaceSettings({ [key]: value });
@@ -38,6 +43,11 @@ export const WorkspaceSettings: React.FC = () => {
     }
   };
 
+  const handleEditTheme = (theme = null) => {
+    setEditingTheme(theme);
+    setIsThemeEditorOpen(true);
+  };
+
   return (
     <div className="p-6 space-y-6 bg-background max-w-4xl mx-auto">
       <div className="space-y-2">
@@ -48,7 +58,7 @@ export const WorkspaceSettings: React.FC = () => {
       </div>
 
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="general" className="flex items-center gap-2">
             <Cog className="h-4 w-4" />
             Geral
@@ -60,6 +70,10 @@ export const WorkspaceSettings: React.FC = () => {
           <TabsTrigger value="themes" className="flex items-center gap-2">
             <Palette className="h-4 w-4" />
             Temas
+          </TabsTrigger>
+          <TabsTrigger value="advanced" className="flex items-center gap-2">
+            <Palette className="h-4 w-4" />
+            Avançado
           </TabsTrigger>
           <TabsTrigger value="system" className="flex items-center gap-2">
             <Database className="h-4 w-4" />
@@ -217,46 +231,160 @@ export const WorkspaceSettings: React.FC = () => {
         <TabsContent value="themes" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Temas Personalizados</CardTitle>
+              <CardTitle>Gerenciamento de Temas</CardTitle>
               <CardDescription>
-                Crie e gerencie seus temas personalizados
+                Crie, edite e aplique temas personalizados
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div>
+                  <Label>Tema Ativo</Label>
+                  <div className="mt-2">
+                    {customTheme ? (
+                      <div className="flex items-center justify-between p-3 border rounded-lg bg-purple-500/10">
+                        <div className="flex items-center gap-3">
+                          <div 
+                            className="w-6 h-6 rounded border-2 border-white shadow"
+                            style={{ backgroundColor: customTheme.colors.primary }}
+                          />
+                          <div>
+                            <div className="font-medium">{customTheme.name}</div>
+                            <div className="text-sm text-muted-foreground">Tema personalizado ativo</div>
+                          </div>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleEditTheme(customTheme)}
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          Editar
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="p-3 border rounded-lg bg-muted/50">
+                        <div className="text-sm text-muted-foreground">
+                          Nenhum tema personalizado ativo. Usando tema do sistema.
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label>Temas Disponíveis ({availableThemes.length})</Label>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleEditTheme()}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Novo Tema
+                    </Button>
+                  </div>
+                  
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {availableThemes.map((theme) => (
+                      <div key={theme.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className="flex gap-1">
+                            <div 
+                              className="w-4 h-4 rounded border"
+                              style={{ backgroundColor: theme.colors.primary }}
+                            />
+                            <div 
+                              className="w-4 h-4 rounded border"
+                              style={{ backgroundColor: theme.colors.background }}
+                            />
+                            <div 
+                              className="w-4 h-4 rounded border"
+                              style={{ backgroundColor: theme.colors.accent }}
+                            />
+                          </div>
+                          <div>
+                            <div className="font-medium">{theme.name}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {theme.typography.fontFamily.split(',')[0]}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex gap-2">
+                          {customTheme?.id === theme.id ? (
+                            <Badge variant="secondary">Ativo</Badge>
+                          ) : (
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => setCustomTheme(theme)}
+                            >
+                              Aplicar
+                            </Button>
+                          )}
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleEditTheme(theme)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {availableThemes.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Palette className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>Nenhum tema personalizado criado ainda.</p>
+                      <p className="text-sm">Clique em "Novo Tema" para criar seu primeiro tema.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="advanced" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Configurações Avançadas de Tema</CardTitle>
+              <CardDescription>
+                Configurações experimentais e avançadas
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Nome do novo tema"
-                  value={newThemeName}
-                  onChange={(e) => setNewThemeName(e.target.value)}
-                />
-                <Button onClick={handleCreateTheme} disabled={!newThemeName.trim()}>
-                  Criar Tema
-                </Button>
-              </div>
-
-              <div className="grid gap-2">
-                {customThemes.map((theme) => (
-                  <div key={theme.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <div className="font-medium">{theme.name}</div>
-                      <div className="flex gap-2 mt-1">
-                        <div 
-                          className="w-4 h-4 rounded border"
-                          style={{ backgroundColor: theme.colors.primary }}
-                        />
-                        <div 
-                          className="w-4 h-4 rounded border"
-                          style={{ backgroundColor: theme.colors.background }}
-                        />
-                        <div 
-                          className="w-4 h-4 rounded border"
-                          style={{ backgroundColor: theme.colors.accent }}
-                        />
-                      </div>
-                    </div>
-                    <Badge variant="secondary">Personalizado</Badge>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Transições Suaves</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Ativa animações ao trocar temas
+                    </p>
                   </div>
-                ))}
+                  <Switch
+                    checked={currentWorkspace.settings.animations}
+                    onCheckedChange={(checked) => handleSettingChange('animations', checked)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>CSS Personalizado</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Adicione CSS personalizado para ajustes finos
+                  </p>
+                  <textarea 
+                    className="w-full h-32 p-3 border rounded-lg font-mono text-sm"
+                    placeholder={`/* Exemplo: */
+.custom-element {
+  background: var(--theme-primary);
+  color: var(--theme-text);
+}`}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -273,6 +401,12 @@ export const WorkspaceSettings: React.FC = () => {
           />
         </TabsContent>
       </Tabs>
+
+      <ThemeEditor
+        isOpen={isThemeEditorOpen}
+        onClose={() => setIsThemeEditorOpen(false)}
+        selectedTheme={editingTheme}
+      />
     </div>
   );
 };
