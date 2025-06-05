@@ -164,7 +164,7 @@ export const SystemManager: React.FC<SystemManagerProps> = ({
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button onClick={() => exportFiles()} className="w-full">
+                <Button onClick={() => exportFiles(files)} className="w-full">
                   Exportar todos os arquivos
                 </Button>
                 {currentFile && (
