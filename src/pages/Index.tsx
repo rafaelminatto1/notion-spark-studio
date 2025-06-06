@@ -100,8 +100,13 @@ const Index = () => {
     await updateFile(id, updates);
   };
 
+  // Create a wrapper function that converts string to ViewMode
+  const handleViewChangeFromShortcut = (view: string) => {
+    setActiveView(view as ViewMode);
+  };
+
   useKeyboardShortcuts({
-    onViewChange: (view: string) => setActiveView(view as ViewMode),
+    onViewChange: handleViewChangeFromShortcut,
     onOpenCommandPalette: () => setIsCommandPaletteOpen(true),
     onOpenSettings: () => setShowWorkspaceSettings(true)
   });
