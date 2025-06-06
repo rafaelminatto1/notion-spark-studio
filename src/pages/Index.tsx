@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { ViewMode } from '@/components/ViewTabs';
 import { QuickSwitcher } from '@/components/QuickSwitcher';
@@ -98,13 +99,17 @@ const Index = () => {
     await updateFile(id, updates);
   };
 
-  // Create a wrapper function that converts string to ViewMode
-  const handleViewChangeFromShortcut = (view: string) => {
+  // Create wrapper functions with correct signatures
+  const handleViewChangeFromKeyboard = (view: string) => {
     setActiveView(view as ViewMode);
   };
 
+  const handleNavigateToGraphFromQuickSwitcher = () => {
+    setActiveView('graph');
+  };
+
   useKeyboardShortcuts({
-    onViewChange: handleViewChangeFromShortcut,
+    onViewChange: handleViewChangeFromKeyboard,
     onOpenCommandPalette: () => setIsCommandPaletteOpen(true),
     onOpenSettings: () => setShowWorkspaceSettings(true)
   });
@@ -127,7 +132,7 @@ const Index = () => {
     async (name: string, parentId?: string, type: 'file' | 'folder' = 'file') => {
       return await createFile(name, parentId, type);
     },
-    handleViewChangeFromShortcut
+    handleNavigateToGraphFromQuickSwitcher
   );
 
   // Add to recent when file changes
