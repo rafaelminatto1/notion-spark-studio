@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ViewMode } from '@/components/ViewTabs';
 import { QuickSwitcher } from '@/components/QuickSwitcher';
