@@ -62,7 +62,7 @@ export const useSharedWorkspaces = () => {
         .from('workspace_members')
         .select(`
           *,
-          profile:user_id (
+          profiles!inner(
             name,
             email,
             avatar
@@ -71,7 +71,22 @@ export const useSharedWorkspaces = () => {
         .eq('workspace_id', workspaceId);
 
       if (error) throw error;
-      setMembers(data || []);
+      
+      const transformedMembers: WorkspaceMember[] = (data || []).map(member => ({
+        id: member.id,
+        workspace_id: member.workspace_id,
+        user_id: member.user_id,
+        role: member.role as WorkspaceMember['role'],
+        joined_at: member.joined_at,
+        invited_by: member.invited_by,
+        profile: member.profiles ? {
+          name: member.profiles.name,
+          email: member.profiles.email,
+          avatar: member.profiles.avatar
+        } : undefined
+      }));
+      
+      setMembers(transformedMembers);
     } catch (error) {
       console.error('Error loading workspace members:', error);
     }

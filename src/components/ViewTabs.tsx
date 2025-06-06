@@ -9,12 +9,14 @@ export type ViewMode = 'dashboard' | 'editor' | 'graph' | 'templates';
 interface ViewTabsProps {
   activeView: ViewMode;
   onViewChange: (view: ViewMode) => void;
+  isMobile?: boolean;
   className?: string;
 }
 
 export const ViewTabs: React.FC<ViewTabsProps> = ({
   activeView,
   onViewChange,
+  isMobile,
   className
 }) => {
   const tabs = [
@@ -58,7 +60,7 @@ export const ViewTabs: React.FC<ViewTabsProps> = ({
             )}
           >
             <Icon className="h-4 w-4" />
-            <span className="hidden sm:inline">{tab.label}</span>
+            <span className={cn("hidden", !isMobile && "sm:inline")}>{tab.label}</span>
           </Button>
         );
       })}

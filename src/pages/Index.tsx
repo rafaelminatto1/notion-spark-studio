@@ -87,8 +87,8 @@ const Index = () => {
     setActiveView('graph');
   };
 
-  const handleViewChange = (view: string) => {
-    setActiveView(view as ViewMode);
+  const handleViewChange = (view: ViewMode) => {
+    setActiveView(view);
   };
 
   const handleCreateFile = async (name: string, parentId?: string, type: 'file' | 'folder' = 'file') => {
@@ -176,7 +176,7 @@ const Index = () => {
             {/* Header */}
             <AppHeader
               activeView={activeView}
-              onViewChange={setActiveView}
+              onViewChange={handleViewChange}
               isMobile={isMobile}
               isMobileSidebarOpen={isMobileSidebarOpen}
               onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ViewTabs } from '@/components/ViewTabs';
+import { ViewTabs, ViewMode } from '@/components/ViewTabs';
 import { GlobalSearch } from '@/components/GlobalSearch';
 import { UserProfileButton } from '@/components/UserProfileButton';
 import { WorkspaceSelector } from '@/components/WorkspaceSelector';
@@ -10,8 +10,8 @@ import { FileItem } from '@/types';
 import { useState } from 'react';
 
 interface AppHeaderProps {
-  activeView: string;
-  onViewChange: (view: string) => void;
+  activeView: ViewMode;
+  onViewChange: (view: ViewMode) => void;
   isMobile: boolean;
   isMobileSidebarOpen: boolean;
   onToggleMobileSidebar: () => void;
