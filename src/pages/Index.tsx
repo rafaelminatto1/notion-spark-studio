@@ -100,8 +100,8 @@ const Index = () => {
   };
 
   // Create wrapper functions with correct signatures
-  const handleViewChangeFromKeyboard = (view: string) => {
-    setActiveView(view as ViewMode);
+  const handleViewChangeFromKeyboard = (view: ViewMode) => {
+    setActiveView(view);
   };
 
   const handleNavigateToGraphFromQuickSwitcher = () => {
