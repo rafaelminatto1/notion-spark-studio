@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { ViewMode } from '@/components/ViewTabs';
 import { QuickSwitcher } from '@/components/QuickSwitcher';
@@ -161,19 +162,6 @@ const Index = () => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
           <p className="mt-2 text-sm text-muted-foreground">Carregando workspace...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (loadingError) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="text-red-500 text-sm mb-4">{loadingError}</div>
-          <Button onClick={() => window.location.reload()}>
-            Tentar novamente
-          </Button>
         </div>
       </div>
     );
