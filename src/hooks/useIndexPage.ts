@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { ViewMode } from '@/components/ViewTabs';
 import { useSupabaseFiles } from '@/hooks/useSupabaseFiles';
 import { useSupabaseProfile } from '@/hooks/useSupabaseProfile';
@@ -21,7 +21,7 @@ export const useIndexPage = () => {
   const { navigateTo } = useNavigation();
 
   // Convert Supabase files to the format expected by existing components
-  const convertedFiles = files.map(file => ({
+  const convertedFiles = useMemo(() => files.map(file => ({
     id: file.id,
     name: file.name,
     type: file.type as 'file' | 'folder',
@@ -35,7 +35,7 @@ export const useIndexPage = () => {
     showInSidebar: file.show_in_sidebar,
     createdAt: new Date(file.created_at),
     updatedAt: new Date(file.updated_at)
-  }));
+  })), [files]);
 
   // Close mobile sidebar when view changes
   useEffect(() => {

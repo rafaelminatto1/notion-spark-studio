@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useQuickSwitcher } from '@/hooks/useQuickSwitcher';
 import { FileItem } from '@/types';
 
@@ -24,6 +24,16 @@ export const useIndexQuickSwitcher = ({
     setActiveView('graph');
   };
 
+  const handleNavigateToFile = useMemo(() => (fileId: string) => {
+    setCurrentFileId(fileId);
+    navigateTo(fileId);
+    setActiveView('editor');
+  }, [setCurrentFileId, navigateTo, setActiveView]);
+
+  const handleCreateFile = useMemo(() => async (name: string, parentId?: string, type: 'file' | 'folder' = 'file') => {
+    return await createFile(name, parentId, type);
+  }, [createFile]);
+
   const {
     isOpen: isQuickSwitcherOpen,
     query: quickSwitcherQuery,
@@ -34,18 +44,12 @@ export const useIndexQuickSwitcher = ({
     addToRecent
   } = useQuickSwitcher(
     convertedFiles,
-    (fileId: string) => {
-      setCurrentFileId(fileId);
-      navigateTo(fileId);
-      setActiveView('editor');
-    },
-    async (name: string, parentId?: string, type: 'file' | 'folder' = 'file') => {
-      return await createFile(name, parentId, type);
-    },
+    handleNavigateToFile,
+    handleCreateFile,
     handleNavigateToGraphFromQuickSwitcher
   );
 
-  // Add to recent when file changes
+  // Add to recent when file changes - usando useMemo para evitar re-execução desnecessária
   useEffect(() => {
     if (currentFileId) {
       addToRecent(currentFileId);

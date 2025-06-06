@@ -8,6 +8,8 @@ import { useIndexKeyboardShortcuts } from '@/hooks/useIndexKeyboardShortcuts';
 import { useIndexQuickSwitcher } from '@/hooks/useIndexQuickSwitcher';
 
 const Index = () => {
+  console.log('Index component rendering');
+
   const {
     // State
     activeView,
@@ -36,6 +38,8 @@ const Index = () => {
     navigateTo
   } = useIndexPage();
 
+  console.log('Index state loaded, files:', convertedFiles.length);
+
   useIndexKeyboardShortcuts({
     setActiveView: handleViewChange,
     setIsCommandPaletteOpen,
@@ -57,7 +61,10 @@ const Index = () => {
     currentFileId
   });
 
+  console.log('Quick switcher state loaded');
+
   if (showWorkspaceSettings) {
+    console.log('Rendering workspace settings');
     return (
       <IndexWorkspaceSettings
         onClose={() => setShowWorkspaceSettings(false)}
@@ -67,9 +74,11 @@ const Index = () => {
   }
 
   if (filesLoading) {
+    console.log('Rendering loading screen');
     return <IndexLoadingScreen />;
   }
 
+  console.log('Rendering main content');
   return (
     <IndexMainContent
       activeView={activeView}
