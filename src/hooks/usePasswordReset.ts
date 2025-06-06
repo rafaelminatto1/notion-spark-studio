@@ -41,7 +41,7 @@ export const usePasswordReset = () => {
         return false;
       }
 
-      const response = data as PasswordResetResponse;
+      const response = data as unknown as PasswordResetResponse;
       if (response?.success) {
         toast({
           title: "Email enviado!",
@@ -95,7 +95,7 @@ export const usePasswordReset = () => {
         return false;
       }
 
-      const validation = validationResult as TokenValidationResponse;
+      const validation = validationResult as unknown as TokenValidationResponse;
       if (!validation?.valid) {
         toast({
           title: "Token inválido",
