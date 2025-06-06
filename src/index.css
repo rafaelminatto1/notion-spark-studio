@@ -76,12 +76,24 @@
     animation: fadeIn 0.5s ease-in-out;
   }
   
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  .animate-bounce-subtle {
+    animation: bounceSubtle 1s ease-in-out infinite;
+  }
+  
   .animation-delay-200 {
     animation-delay: 0.2s;
   }
   
   .animation-delay-400 {
     animation-delay: 0.4s;
+  }
+
+  .animation-delay-600 {
+    animation-delay: 0.6s;
   }
 
   @keyframes fadeIn {
@@ -93,5 +105,61 @@
       opacity: 1;
       transform: translateY(0);
     }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes bounceSubtle {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-5px);
+    }
+  }
+
+  /* Loading skeleton animations */
+  .animate-skeleton {
+    animation: skeleton 1.5s ease-in-out infinite;
+  }
+
+  @keyframes skeleton {
+    0% {
+      background-position: -200px 0;
+    }
+    100% {
+      background-position: calc(200px + 100%) 0;
+    }
+  }
+
+  .skeleton {
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    background-size: 200px 100%;
+    @apply animate-skeleton;
+  }
+
+  /* Smooth transitions for better UX */
+  .transition-theme {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  }
+}
+
+/* Improved focus styles for accessibility */
+@layer components {
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background;
+  }
+
+  .button-focus {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all duration-200;
   }
 }
