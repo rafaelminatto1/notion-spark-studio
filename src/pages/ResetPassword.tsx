@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -18,10 +19,11 @@ const ResetPassword = () => {
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    const accessToken = searchParams.get('access_token');
-    const refreshToken = searchParams.get('refresh_token');
+    // Check for our custom token parameter instead of Supabase's access_token
+    const token = searchParams.get('token');
     
-    if (!accessToken || !refreshToken) {
+    if (!token) {
+      console.log('No token found, redirecting to auth');
       navigate('/auth');
     }
   }, [searchParams, navigate]);
@@ -41,7 +43,7 @@ const ResetPassword = () => {
     
     if (success) {
       setTimeout(() => {
-        navigate('/');
+        navigate('/auth');
       }, 2000);
     }
   };
@@ -61,6 +63,7 @@ const ResetPassword = () => {
             <CardTitle className="text-2xl">Nova Senha</CardTitle>
             <CardDescription>
               Digite sua nova senha. Por segurança, ela deve ter pelo menos 8 caracteres.
+              Este link expira em 15 minutos.
             </CardDescription>
           </div>
         </CardHeader>

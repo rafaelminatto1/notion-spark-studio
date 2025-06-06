@@ -210,6 +210,39 @@ export type Database = {
         }
         Relationships: []
       }
+      password_reset_tokens: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          ip_address: string | null
+          token_hash: string
+          used_at: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          ip_address?: string | null
+          token_hash: string
+          used_at?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          ip_address?: string | null
+          token_hash?: string
+          used_at?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar: string | null
@@ -463,9 +496,21 @@ export type Database = {
         Args: { _email: string; _ip_address?: string; _user_agent?: string }
         Returns: undefined
       }
+      request_password_reset_with_otp: {
+        Args: { _email: string; _ip_address?: string; _user_agent?: string }
+        Returns: Json
+      }
+      use_password_reset_token: {
+        Args: { _token: string }
+        Returns: boolean
+      }
       validate_otp_token: {
         Args: { _user_id: string; _token: string; _token_type?: string }
         Returns: boolean
+      }
+      validate_password_reset_token: {
+        Args: { _token: string }
+        Returns: Json
       }
     }
     Enums: {

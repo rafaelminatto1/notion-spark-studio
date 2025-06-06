@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Mail } from 'lucide-react';
+import { Loader2, Mail, Shield } from 'lucide-react';
 import { usePasswordReset } from '@/hooks/usePasswordReset';
 
 interface ForgotPasswordDialogProps {
@@ -37,11 +37,13 @@ export const ForgotPasswordDialog: React.FC<ForgotPasswordDialogProps> = ({ chil
       <DialogContent className="sm:max-w-md">
         <DialogHeader className="space-y-3">
           <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-            <Mail className="h-6 w-6 text-primary" />
+            <Shield className="h-6 w-6 text-primary" />
           </div>
           <DialogTitle className="text-center">Esqueceu sua senha?</DialogTitle>
           <DialogDescription className="text-center">
-            Digite seu email para receber um link de reset de senha. O link expira em 15 minutos por segurança.
+            Digite seu email para receber um link seguro de reset de senha. 
+            <br />
+            <strong>O link expira em 15 minutos</strong> por segurança.
           </DialogDescription>
         </DialogHeader>
         
@@ -70,9 +72,16 @@ export const ForgotPasswordDialog: React.FC<ForgotPasswordDialogProps> = ({ chil
                 Enviando...
               </>
             ) : (
-              'Enviar link de reset'
+              <>
+                <Mail className="mr-2 h-4 w-4" />
+                Enviar link seguro
+              </>
             )}
           </Button>
+          
+          <div className="text-xs text-muted-foreground text-center">
+            Por segurança, nossos links de reset expiram em 15 minutos.
+          </div>
         </form>
       </DialogContent>
     </Dialog>

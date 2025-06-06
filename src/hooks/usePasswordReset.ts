@@ -11,22 +11,15 @@ export const usePasswordReset = () => {
     setLoading(true);
     
     try {
-      // Log da tentativa de reset de senha para auditoria
-      await supabase.rpc('log_password_reset_attempt', {
+      // Use our custom secure token function instead of Supabase's default
+      const { data, error } = await supabase.rpc('request_password_reset_with_otp', {
         _email: email,
         _ip_address: window.location.hostname,
         _user_agent: navigator.userAgent
       });
 
-      // Solicitar reset de senha
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-
       if (error) {
         console.error('Erro ao solicitar reset de senha:', error);
-        
-        // Log do erro para monitoramento
         toast({
           title: "Erro ao enviar email",
           description: "Não foi possível enviar o email de reset. Tente novamente em alguns minutos.",
@@ -35,12 +28,15 @@ export const usePasswordReset = () => {
         return false;
       }
 
-      toast({
-        title: "Email enviado!",
-        description: "Verifique sua caixa de entrada e pasta de spam. O link expira em 15 minutos.",
-      });
+      if (data?.success) {
+        toast({
+          title: "Email enviado!",
+          description: "Verifique sua caixa de entrada e pasta de spam. O link expira em 15 minutos por segurança.",
+        });
+        return true;
+      }
 
-      return true;
+      return false;
     } catch (error) {
       console.error('Erro inesperado:', error);
       toast({
@@ -58,6 +54,34 @@ export const usePasswordReset = () => {
     setLoading(true);
     
     try {
+      // First validate the token from URL params
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('token');
+      
+      if (!token) {
+        toast({
+          title: "Token inválido",
+          description: "Link de reset inválido ou expirado",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      // Validate the token using our secure function
+      const { data: validationResult, error: validationError } = await supabase.rpc('validate_password_reset_token', {
+        _token: token
+      });
+
+      if (validationError || !validationResult?.valid) {
+        toast({
+          title: "Token inválido",
+          description: validationResult?.message || "Token inválido ou expirado",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      // Update the password using Supabase Auth
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       });
@@ -72,10 +96,14 @@ export const usePasswordReset = () => {
         return false;
       }
 
-      // Log da atualização bem-sucedida
+      // Mark the token as used
+      await supabase.rpc('use_password_reset_token', {
+        _token: token
+      });
+
       toast({
         title: "Senha atualizada!",
-        description: "Sua senha foi alterada com sucesso"
+        description: "Sua senha foi alterada com sucesso. Você será redirecionado para fazer login."
       });
 
       return true;
