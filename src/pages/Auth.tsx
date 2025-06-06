@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -299,7 +298,7 @@ const Auth = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 px-4 py-8">
       <div className="w-full max-w-md animate-fade-in">
-        <Card className="shadow-2xl border-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md">
+        <Card className="shadow-2xl border-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg backdrop-saturate-150">
           <AuthHeader activeTab={activeTab} />
           
           <CardContent className="space-y-6">
@@ -337,7 +336,7 @@ const Auth = () => {
               {/* Google Login Button */}
               <Button
                 variant="outline"
-                className="w-full h-12 text-base font-medium border-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 hover:border-blue-300 dark:hover:border-blue-600 group"
+                className="w-full h-12 text-base font-medium border-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 hover:border-blue-300 dark:hover:border-blue-600 group hover:scale-[1.02]"
                 onClick={handleGoogleLogin}
                 disabled={isSubmitting}
               >
@@ -357,7 +356,7 @@ const Auth = () => {
               </div>
 
               {/* Login Tab */}
-              <TabsContent value="login" className="space-y-5">
+              <TabsContent value="login" className="space-y-5 mt-0">
                 <LoginForm
                   onSubmit={handleLogin}
                   onResetPassword={handleResetPassword}
@@ -370,7 +369,7 @@ const Auth = () => {
               </TabsContent>
 
               {/* Signup Tab */}
-              <TabsContent value="signup" className="space-y-5">
+              <TabsContent value="signup" className="space-y-5 mt-0">
                 <SignupForm
                   onSubmit={handleSignup}
                   isSubmitting={isSubmitting}

@@ -46,20 +46,27 @@ const PasswordStrengthIndicator = ({ password }: PasswordStrengthIndicatorProps)
   const requirements = getPasswordRequirements(password);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 animate-fade-in">
       <div className="flex justify-between items-center text-xs">
-        <span className="text-muted-foreground">Força da senha:</span>
-        <span className={`font-medium ${strengthInfo.textColor}`}>
+        <span className="text-muted-foreground font-medium">Força da senha:</span>
+        <span className={`font-semibold transition-colors duration-200 ${strengthInfo.textColor}`}>
           {strengthInfo.text}
         </span>
       </div>
-      <Progress value={(passwordStrength / 5) * 100} className="h-2" />
+      <Progress 
+        value={(passwordStrength / 5) * 100} 
+        className="h-2 transition-all duration-300" 
+      />
       
-      <div className="space-y-1">
+      <div className="space-y-2">
         {requirements.map((req, index) => (
-          <div key={index} className="flex items-center gap-2 text-xs">
-            <div className={`w-1.5 h-1.5 rounded-full ${req.met ? 'bg-green-500' : 'bg-gray-300'}`} />
-            <span className={req.met ? 'text-green-600' : 'text-muted-foreground'}>
+          <div key={index} className="flex items-center gap-2 text-xs transition-all duration-200">
+            <div className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${
+              req.met ? 'bg-green-500 scale-110' : 'bg-gray-300'
+            }`} />
+            <span className={`transition-colors duration-200 ${
+              req.met ? 'text-green-600 font-medium' : 'text-muted-foreground'
+            }`}>
               {req.text}
             </span>
           </div>
