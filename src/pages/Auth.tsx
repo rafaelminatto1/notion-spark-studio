@@ -8,7 +8,7 @@ import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useNavigate } from 'react-router-dom';
 import { Chrome, AlertCircle, CheckCircle2, Sparkles } from 'lucide-react';
 import AuthHeader from '@/components/auth/AuthHeader';
-import LoginForm from '@/components/auth/LoginForm';
+import { LoginForm } from '@/components/auth/LoginForm';
 import SignupForm from '@/components/auth/SignupForm';
 
 const Auth = () => {
@@ -357,15 +357,7 @@ const Auth = () => {
 
               {/* Login Tab */}
               <TabsContent value="login" className="space-y-5 mt-0">
-                <LoginForm
-                  onSubmit={handleLogin}
-                  onResetPassword={handleResetPassword}
-                  isSubmitting={isSubmitting}
-                  emailError={emailError}
-                  passwordError={passwordError}
-                  onEmailChange={handleLoginEmailChange}
-                  onPasswordChange={handleLoginPasswordChange}
-                />
+                <LoginForm />
               </TabsContent>
 
               {/* Signup Tab */}

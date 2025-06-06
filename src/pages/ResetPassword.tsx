@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Eye, EyeOff, Shield, CheckCircle } from 'lucide-react';
 import { usePasswordReset } from '@/hooks/usePasswordReset';
-import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
+import PasswordStrengthIndicator from '@/components/auth/PasswordStrengthIndicator';
 
 const ResetPassword = () => {
   const [password, setPassword] = useState('');
