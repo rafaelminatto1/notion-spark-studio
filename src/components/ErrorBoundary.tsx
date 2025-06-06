@@ -11,6 +11,7 @@ interface Props {
 interface State {
   hasError: boolean;
   error?: Error;
+  errorInfo?: ErrorInfo;
 }
 
 class ErrorBoundary extends Component<Props, State> {
@@ -19,18 +20,30 @@ class ErrorBoundary extends Component<Props, State> {
   };
 
   public static getDerivedStateFromError(error: Error): State {
+    console.error('[ErrorBoundary] Error caught:', error);
     return { hasError: true, error };
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Erro capturado pelo Error Boundary:', error, errorInfo);
+    console.error('[ErrorBoundary] Error details:', {
+      error: error.message,
+      stack: error.stack,
+      componentStack: errorInfo.componentStack
+    });
+    
+    this.setState({
+      error,
+      errorInfo
+    });
   }
 
   private handleReset = () => {
-    this.setState({ hasError: false, error: undefined });
+    console.log('[ErrorBoundary] Resetting error state');
+    this.setState({ hasError: false, error: undefined, errorInfo: undefined });
   };
 
   private handleReload = () => {
+    console.log('[ErrorBoundary] Reloading page');
     window.location.reload();
   };
 
@@ -53,6 +66,14 @@ class ErrorBoundary extends Component<Props, State> {
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription className="text-sm">
                 {this.state.error?.message || 'Erro desconhecido'}
+                {this.state.error?.stack && (
+                  <details className="mt-2">
+                    <summary className="cursor-pointer">Detalhes técnicos</summary>
+                    <pre className="text-xs mt-2 whitespace-pre-wrap break-all">
+                      {this.state.error.stack}
+                    </pre>
+                  </details>
+                )}
               </AlertDescription>
             </Alert>
 
