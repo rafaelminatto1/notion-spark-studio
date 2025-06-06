@@ -1,11 +1,15 @@
 
-import React, { useState, useCallback } from 'react';
-import { Plus, Type, List, Code, Image, Quote, Hash, Minus, GripVertical } from 'lucide-react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { Plus, GripVertical, Minus, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { Block } from '@/types';
+import { TextBlock } from './blocks/TextBlock';
+import { HeadingBlock } from './blocks/HeadingBlock';
+import { CalloutBlock } from './blocks/CalloutBlock';
+import { ToggleBlock } from './blocks/ToggleBlock';
+import { TableBlock } from './blocks/TableBlock';
+import { SlashMenu } from './blocks/SlashMenu';
 
 interface BlockEditorProps {
   blocks: Block[];
@@ -13,30 +17,33 @@ interface BlockEditorProps {
   className?: string;
 }
 
-const blockTypes: Array<{ type: Block['type']; label: string; icon: React.ComponentType<any> }> = [
-  { type: 'text', label: 'Texto', icon: Type },
-  { type: 'heading', label: 'Título', icon: Hash },
-  { type: 'list', label: 'Lista', icon: List },
-  { type: 'code', label: 'Código', icon: Code },
-  { type: 'quote', label: 'Citação', icon: Quote },
-  { type: 'image', label: 'Imagem', icon: Image },
-];
-
 export const BlockEditor: React.FC<BlockEditorProps> = ({
   blocks,
   onBlocksChange,
   className
 }) => {
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
-  const [showBlockMenu, setShowBlockMenu] = useState<string | null>(null);
   const [draggedBlock, setDraggedBlock] = useState<string | null>(null);
+  const [slashMenu, setSlashMenu] = useState<{
+    isOpen: boolean;
+    blockId: string;
+    position: { x: number; y: number };
+    query: string;
+  }>({
+    isOpen: false,
+    blockId: '',
+    position: { x: 0, y: 0 },
+    query: ''
+  });
 
-  const addBlock = useCallback((type: Block['type'], afterId?: string) => {
+  const editorRef = useRef<HTMLDivElement>(null);
+
+  const addBlock = useCallback((type: Block['type'], afterId?: string, properties?: any) => {
     const newBlock: Block = {
       id: Date.now().toString(),
       type,
       content: '',
-      properties: {}
+      properties: properties || {}
     };
 
     if (afterId) {
@@ -49,7 +56,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
     }
 
     setSelectedBlockId(newBlock.id);
-    setShowBlockMenu(null);
+    setSlashMenu({ isOpen: false, blockId: '', position: { x: 0, y: 0 }, query: '' });
   }, [blocks, onBlocksChange]);
 
   const updateBlock = useCallback((id: string, updates: Partial<Block>) => {
@@ -59,7 +66,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
   }, [blocks, onBlocksChange]);
 
   const deleteBlock = useCallback((id: string) => {
-    if (blocks.length === 1) return; // Keep at least one block
+    if (blocks.length === 1) return;
     onBlocksChange(blocks.filter(block => block.id !== id));
   }, [blocks, onBlocksChange]);
 
@@ -106,91 +113,176 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
     setDraggedBlock(null);
   };
 
+  const handleContentChange = useCallback((blockId: string, content: string) => {
+    // Check for slash command
+    if (content.endsWith('/')) {
+      const element = document.querySelector(`[data-block-id="${blockId}"]`);
+      if (element) {
+        const rect = element.getBoundingClientRect();
+        setSlashMenu({
+          isOpen: true,
+          blockId,
+          position: { x: rect.left, y: rect.bottom + 5 },
+          query: ''
+        });
+      }
+      return;
+    }
+
+    // Check if typing after slash
+    if (slashMenu.isOpen && slashMenu.blockId === blockId) {
+      const slashIndex = content.lastIndexOf('/');
+      if (slashIndex !== -1) {
+        const query = content.slice(slashIndex + 1);
+        setSlashMenu(prev => ({ ...prev, query }));
+        return;
+      } else {
+        setSlashMenu({ isOpen: false, blockId: '', position: { x: 0, y: 0 }, query: '' });
+      }
+    }
+
+    updateBlock(blockId, { content });
+  }, [updateBlock, slashMenu]);
+
+  const handleSlashMenuSelect = useCallback((type: Block['type'], properties?: any) => {
+    if (!slashMenu.blockId) return;
+
+    const block = blocks.find(b => b.id === slashMenu.blockId);
+    if (!block) return;
+
+    // Remove the slash command from content
+    const slashIndex = block.content.lastIndexOf('/');
+    const contentBeforeSlash = slashIndex > 0 ? block.content.slice(0, slashIndex) : '';
+    
+    // Update current block or create new one
+    if (contentBeforeSlash) {
+      updateBlock(slashMenu.blockId, { content: contentBeforeSlash });
+      addBlock(type, slashMenu.blockId, properties);
+    } else {
+      updateBlock(slashMenu.blockId, { type, content: '', properties: properties || {} });
+    }
+
+    setSlashMenu({ isOpen: false, blockId: '', position: { x: 0, y: 0 }, query: '' });
+  }, [slashMenu.blockId, blocks, updateBlock, addBlock]);
+
+  // Close slash menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (slashMenu.isOpen) {
+        setSlashMenu({ isOpen: false, blockId: '', position: { x: 0, y: 0 }, query: '' });
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [slashMenu.isOpen]);
+
   const renderBlock = (block: Block) => {
     const isSelected = selectedBlockId === block.id;
 
-    const baseProps = {
-      value: block.content,
-      onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => 
-        updateBlock(block.id, { content: e.target.value }),
-      onFocus: () => setSelectedBlockId(block.id),
-      className: cn(
-        "w-full bg-transparent border-none resize-none focus:ring-0 focus:outline-none text-gray-200",
-        isSelected && "ring-1 ring-notion-purple"
-      )
+    const commonProps = {
+      block,
+      isSelected,
+      onUpdate: (updates: Partial<Block>) => updateBlock(block.id, updates),
+      onFocus: () => setSelectedBlockId(block.id)
+    };
+
+    const handleContentUpdate = (content: string) => {
+      handleContentChange(block.id, content);
     };
 
     switch (block.type) {
       case 'heading':
-        return (
-          <Input
-            {...baseProps}
-            placeholder="Título"
-            className={cn(baseProps.className, "text-2xl font-bold")}
-          />
-        );
+        return <HeadingBlock {...commonProps} />;
+      case 'callout':
+        return <CalloutBlock {...commonProps} />;
+      case 'toggle':
+        return <ToggleBlock {...commonProps} />;
+      case 'table':
+        return <TableBlock {...commonProps} />;
       case 'list':
         return (
           <div className="flex items-start gap-2">
-            <span className="text-gray-400 mt-1">•</span>
-            <Input
-              {...baseProps}
-              placeholder="Item da lista"
+            <span className="text-gray-400 mt-2">•</span>
+            <TextBlock 
+              {...commonProps} 
+              onUpdate={(updates) => {
+                if (updates.content !== undefined) {
+                  handleContentUpdate(updates.content);
+                } else {
+                  updateBlock(block.id, updates);
+                }
+              }}
             />
           </div>
         );
       case 'code':
         return (
           <div className="bg-notion-dark-hover rounded-md p-3">
-            <Textarea
-              {...baseProps}
-              placeholder="Código..."
-              className={cn(baseProps.className, "font-mono text-sm")}
-              rows={3}
+            <TextBlock 
+              {...commonProps}
+              onUpdate={(updates) => {
+                if (updates.content !== undefined) {
+                  handleContentUpdate(updates.content);
+                } else {
+                  updateBlock(block.id, updates);
+                }
+              }}
             />
           </div>
         );
       case 'quote':
         return (
           <div className="border-l-4 border-notion-purple pl-4">
-            <Textarea
-              {...baseProps}
-              placeholder="Citação..."
-              className={cn(baseProps.className, "italic")}
-              rows={2}
+            <TextBlock 
+              {...commonProps}
+              onUpdate={(updates) => {
+                if (updates.content !== undefined) {
+                  handleContentUpdate(updates.content);
+                } else {
+                  updateBlock(block.id, updates);
+                }
+              }}
             />
           </div>
         );
       case 'image':
         return (
           <div className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center">
-            <Image className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-            <Input
-              {...baseProps}
-              placeholder="URL da imagem ou descrição..."
-              className="text-center"
+            <TextBlock 
+              {...commonProps}
+              onUpdate={(updates) => {
+                if (updates.content !== undefined) {
+                  handleContentUpdate(updates.content);
+                } else {
+                  updateBlock(block.id, updates);
+                }
+              }}
             />
-            <p className="text-xs text-gray-500 mt-2">
-              Cole uma URL de imagem ou descreva o que deveria aparecer aqui
-            </p>
           </div>
         );
       default:
         return (
-          <Textarea
-            {...baseProps}
-            placeholder="Escreva algo..."
-            rows={1}
+          <TextBlock 
+            {...commonProps}
+            onUpdate={(updates) => {
+              if (updates.content !== undefined) {
+                handleContentUpdate(updates.content);
+              } else {
+                updateBlock(block.id, updates);
+              }
+            }}
           />
         );
     }
   };
 
   return (
-    <div className={cn("space-y-4", className)}>
+    <div className={cn("space-y-2", className)} ref={editorRef}>
       {blocks.map((block, index) => (
         <div 
-          key={block.id} 
+          key={block.id}
+          data-block-id={block.id}
           className="group relative"
           draggable
           onDragStart={(e) => handleDragStart(e, block.id)}
@@ -203,7 +295,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
               <GripVertical className="h-4 w-4 text-gray-400 cursor-grab hover:text-white" />
             </div>
             
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               {renderBlock(block)}
             </div>
             
@@ -212,8 +304,9 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setShowBlockMenu(showBlockMenu === block.id ? null : block.id)}
+                onClick={() => addBlock('text', block.id)}
                 className="h-6 w-6 p-0"
+                title="Adicionar bloco"
               >
                 <Plus className="h-3 w-3" />
               </Button>
@@ -224,7 +317,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
                 className="h-6 w-6 p-0"
                 title="Duplicar"
               >
-                <Code className="h-3 w-3" />
+                <Copy className="h-3 w-3" />
               </Button>
               <Button
                 variant="ghost"
@@ -237,39 +330,30 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
               </Button>
             </div>
           </div>
-
-          {/* Block Menu */}
-          {showBlockMenu === block.id && (
-            <div className="absolute right-0 top-8 bg-notion-dark-hover border border-notion-dark-border rounded-lg p-2 shadow-lg z-10">
-              <div className="grid grid-cols-2 gap-1">
-                {blockTypes.map(({ type, label, icon: Icon }) => (
-                  <Button
-                    key={type}
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => addBlock(type, block.id)}
-                    className="gap-2 justify-start"
-                  >
-                    <Icon className="h-4 w-4" />
-                    {label}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       ))}
 
       {blocks.length === 0 && (
-        <Button
-          variant="ghost"
-          onClick={() => addBlock('text')}
-          className="w-full justify-start gap-2 text-gray-400 hover:text-white"
-        >
-          <Plus className="h-4 w-4" />
-          Adicionar bloco
-        </Button>
+        <div className="text-center py-8">
+          <p className="text-gray-400 mb-4">Digite / para ver comandos</p>
+          <Button
+            variant="ghost"
+            onClick={() => addBlock('text')}
+            className="gap-2 text-gray-400 hover:text-white"
+          >
+            <Plus className="h-4 w-4" />
+            Adicionar bloco
+          </Button>
+        </div>
       )}
+
+      <SlashMenu
+        isOpen={slashMenu.isOpen}
+        position={slashMenu.position}
+        onSelect={handleSlashMenuSelect}
+        onClose={() => setSlashMenu({ isOpen: false, blockId: '', position: { x: 0, y: 0 }, query: '' })}
+        query={slashMenu.query}
+      />
     </div>
   );
 };

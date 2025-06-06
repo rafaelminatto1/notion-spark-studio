@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { FileText, Tag, MessageCircle, Star, ArrowLeft, ArrowRight, Type } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -114,39 +113,70 @@ export const Editor: React.FC<EditorProps> = ({
 
   const handleBlocksChange = useCallback((blocks: Block[]) => {
     if (file) {
-      // Convert blocks to content string for compatibility
+      // Convert blocks to content string for compatibility and store blocks
       const content = blocks.map(block => {
         switch (block.type) {
           case 'heading':
-            return `# ${block.content}`;
+            const level = block.properties?.level || 1;
+            return `${'#'.repeat(level)} ${block.content}`;
           case 'list':
             return `- ${block.content}`;
           case 'code':
             return `\`\`\`\n${block.content}\n\`\`\``;
           case 'quote':
             return `> ${block.content}`;
+          case 'callout':
+            return `> **${block.properties?.type || 'info'}**: ${block.content}`;
           default:
             return block.content;
         }
       }).join('\n\n');
       
-      onUpdateFile(file.id, { content });
+      onUpdateFile(file.id, { 
+        content,
+        blocks: blocks // Store blocks data for future editing
+      });
     }
   }, [file, onUpdateFile]);
 
-  const contentToBlocks = (content: string): Block[] => {
-    if (!content) return [];
+  const contentToBlocks = (content: string, existingBlocks?: Block[]): Block[] => {
+    // If we have existing blocks, use them
+    if (existingBlocks && existingBlocks.length > 0) {
+      return existingBlocks;
+    }
+
+    // Otherwise, parse from content
+    if (!content) return [{
+      id: 'default',
+      type: 'text',
+      content: '',
+      properties: {}
+    }];
     
-    const lines = content.split('\n');
+    const lines = content.split('\n').filter(line => line.trim());
     const blocks: Block[] = [];
     
     lines.forEach((line, index) => {
-      if (line.startsWith('# ')) {
+      if (line.startsWith('### ')) {
+        blocks.push({
+          id: `block-${index}`,
+          type: 'heading',
+          content: line.slice(4),
+          properties: { level: 3 }
+        });
+      } else if (line.startsWith('## ')) {
+        blocks.push({
+          id: `block-${index}`,
+          type: 'heading',
+          content: line.slice(3),
+          properties: { level: 2 }
+        });
+      } else if (line.startsWith('# ')) {
         blocks.push({
           id: `block-${index}`,
           type: 'heading',
           content: line.slice(2),
-          properties: {}
+          properties: { level: 1 }
         });
       } else if (line.startsWith('- ')) {
         blocks.push({
@@ -155,6 +185,17 @@ export const Editor: React.FC<EditorProps> = ({
           content: line.slice(2),
           properties: {}
         });
+      } else if (line.startsWith('> **')) {
+        // Parse callout
+        const match = line.match(/^> \*\*(\w+)\*\*: (.+)$/);
+        if (match) {
+          blocks.push({
+            id: `block-${index}`,
+            type: 'callout',
+            content: match[2],
+            properties: { type: match[1].toLowerCase() }
+          });
+        }
       } else if (line.startsWith('> ')) {
         blocks.push({
           id: `block-${index}`,
@@ -399,8 +440,8 @@ export const Editor: React.FC<EditorProps> = ({
           />
         ) : useBlockEditor ? (
           <BlockEditor
-            blocks={[]} // Convert content to blocks
-            onBlocksChange={() => {}} // Handle block changes
+            blocks={contentToBlocks(file.content || '', (file as any).blocks)}
+            onBlocksChange={handleBlocksChange}
           />
         ) : (
           <AdvancedEditor
