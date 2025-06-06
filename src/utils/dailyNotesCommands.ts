@@ -56,7 +56,7 @@ export const createDailyNotesCommands = ({
 - 
 
 ---
-*Criado automaticamente em ${format(new Date(), 'HH:mm')}``;
+*Criado automaticamente em ${format(new Date(), 'HH:mm')}*`;
 
     const fileId = await onCreateFile(filename, dailyNotesFolder.id, 'file');
     
