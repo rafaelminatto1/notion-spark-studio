@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -58,33 +57,46 @@ export const useSharedWorkspaces = () => {
 
   const loadWorkspaceMembers = useCallback(async (workspaceId: string) => {
     try {
-      const { data, error } = await supabase
+      // First get workspace members
+      const { data: membersData, error: membersError } = await supabase
         .from('workspace_members')
-        .select(`
-          *,
-          profiles!inner(
-            name,
-            email,
-            avatar
-          )
-        `)
+        .select('*')
         .eq('workspace_id', workspaceId);
 
-      if (error) throw error;
+      if (membersError) throw membersError;
+
+      // Then get profiles for each member
+      const memberIds = membersData?.map(member => member.user_id) || [];
       
-      const transformedMembers: WorkspaceMember[] = (data || []).map(member => ({
-        id: member.id,
-        workspace_id: member.workspace_id,
-        user_id: member.user_id,
-        role: member.role as WorkspaceMember['role'],
-        joined_at: member.joined_at,
-        invited_by: member.invited_by,
-        profile: member.profiles ? {
-          name: member.profiles.name,
-          email: member.profiles.email,
-          avatar: member.profiles.avatar
-        } : undefined
-      }));
+      if (memberIds.length === 0) {
+        setMembers([]);
+        return;
+      }
+
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, name, email, avatar')
+        .in('id', memberIds);
+
+      if (profilesError) throw profilesError;
+
+      // Combine the data
+      const transformedMembers: WorkspaceMember[] = (membersData || []).map(member => {
+        const profile = profilesData?.find(p => p.id === member.user_id);
+        return {
+          id: member.id,
+          workspace_id: member.workspace_id,
+          user_id: member.user_id,
+          role: member.role as WorkspaceMember['role'],
+          joined_at: member.joined_at,
+          invited_by: member.invited_by,
+          profile: profile ? {
+            name: profile.name,
+            email: profile.email,
+            avatar: profile.avatar
+          } : undefined
+        };
+      });
       
       setMembers(transformedMembers);
     } catch (error) {
