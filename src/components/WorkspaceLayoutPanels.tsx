@@ -6,6 +6,7 @@ import { GraphView } from '@/components/GraphView';
 import { Dashboard } from '@/components/Dashboard';
 import { TemplatesManager } from '@/components/TemplatesManager';
 import { PropertiesPanel } from '@/components/PropertiesPanel';
+import { DailyNotesPanel } from '@/components/DailyNotesPanel';
 import { PanelConfig } from '@/types/workspace';
 import { FileItem } from '@/types';
 
@@ -121,6 +122,16 @@ export const WorkspaceLayoutPanels: React.FC<WorkspaceLayoutPanelsProps> = ({
     case 'custom':
       if (panel.id === 'properties') {
         return <PropertiesPanel file={getCurrentFile()} onUpdateFile={onUpdateFile} />;
+      }
+      if (panel.id === 'daily-notes') {
+        return (
+          <DailyNotesPanel
+            files={files}
+            onCreateFile={onCreateFile}
+            onUpdateFile={onUpdateFile}
+            onNavigateToFile={onNavigateToFile}
+          />
+        );
       }
       return <div className="p-4 text-gray-400">Painel customizado: {panel.title}</div>;
     
