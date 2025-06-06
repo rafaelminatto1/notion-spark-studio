@@ -113,6 +113,11 @@ const Index = () => {
     setActiveView(view as ViewMode);
   };
 
+  // Create wrapper function for WorkspaceLayout that accepts string and converts to ViewMode
+  const handleViewChangeFromWorkspace = (view: string) => {
+    setActiveView(view as ViewMode);
+  };
+
   useKeyboardShortcuts({
     onViewChange: handleViewChangeFromKeyboard,
     onOpenCommandPalette: () => setIsCommandPaletteOpen(true),
@@ -212,7 +217,7 @@ const Index = () => {
             {/* Content Area */}
             <WorkspaceLayout
               activeView={activeView}
-              onViewChange={setActiveView}
+              onViewChange={handleViewChangeFromWorkspace}
               onNavigateToFile={(fileId: string) => {
                 setCurrentFileId(fileId);
                 navigateTo(fileId);
