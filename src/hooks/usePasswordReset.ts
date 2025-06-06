@@ -3,6 +3,19 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+interface PasswordResetResponse {
+  success: boolean;
+  message?: string;
+  token?: string;
+  expires_at?: string;
+}
+
+interface TokenValidationResponse {
+  valid: boolean;
+  message?: string;
+  user_id?: string;
+}
+
 export const usePasswordReset = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -28,7 +41,8 @@ export const usePasswordReset = () => {
         return false;
       }
 
-      if (data?.success) {
+      const response = data as PasswordResetResponse;
+      if (response?.success) {
         toast({
           title: "Email enviado!",
           description: "Verifique sua caixa de entrada e pasta de spam. O link expira em 15 minutos por segurança.",
@@ -72,10 +86,20 @@ export const usePasswordReset = () => {
         _token: token
       });
 
-      if (validationError || !validationResult?.valid) {
+      if (validationError) {
         toast({
           title: "Token inválido",
-          description: validationResult?.message || "Token inválido ou expirado",
+          description: "Token inválido ou expirado",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      const validation = validationResult as TokenValidationResponse;
+      if (!validation?.valid) {
+        toast({
+          title: "Token inválido",
+          description: validation?.message || "Token inválido ou expirado",
           variant: "destructive"
         });
         return false;
