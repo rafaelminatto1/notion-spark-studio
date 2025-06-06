@@ -444,6 +444,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_expired_tokens: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["app_role"]
@@ -453,6 +457,14 @@ export type Database = {
           _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
         }
+        Returns: boolean
+      }
+      log_password_reset_attempt: {
+        Args: { _email: string; _ip_address?: string; _user_agent?: string }
+        Returns: undefined
+      }
+      validate_otp_token: {
+        Args: { _user_id: string; _token: string; _token_type?: string }
         Returns: boolean
       }
     }
