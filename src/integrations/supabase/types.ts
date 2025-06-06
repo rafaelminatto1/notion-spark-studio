@@ -100,6 +100,7 @@ export type Database = {
           type: string
           updated_at: string
           user_id: string
+          workspace_id: string | null
         }
         Insert: {
           content?: string | null
@@ -116,6 +117,7 @@ export type Database = {
           type: string
           updated_at?: string
           user_id: string
+          workspace_id?: string | null
         }
         Update: {
           content?: string | null
@@ -132,6 +134,7 @@ export type Database = {
           type?: string
           updated_at?: string
           user_id?: string
+          workspace_id?: string | null
         }
         Relationships: [
           {
@@ -139,6 +142,13 @@ export type Database = {
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "files"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "files_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "shared_workspaces"
             referencedColumns: ["id"]
           },
         ]
@@ -223,6 +233,36 @@ export type Database = {
           email?: string
           id?: string
           name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      shared_workspaces: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_public: boolean | null
+          name: string
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          name: string
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          name?: string
+          owner_id?: string
           updated_at?: string
         }
         Relationships: []
@@ -322,6 +362,41 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      workspace_members: {
+        Row: {
+          id: string
+          invited_by: string | null
+          joined_at: string
+          role: string
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          id?: string
+          invited_by?: string | null
+          joined_at?: string
+          role?: string
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          id?: string
+          invited_by?: string | null
+          joined_at?: string
+          role?: string
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_members_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "shared_workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       workspace_settings: {
         Row: {

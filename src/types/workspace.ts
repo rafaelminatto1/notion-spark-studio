@@ -53,3 +53,23 @@ export interface CustomTheme {
     fontWeight: number;
   };
 }
+
+// Adicionar interfaces para workspaces compartilhados
+export interface SharedWorkspace {
+  id: string;
+  name: string;
+  description?: string;
+  owner_id: string;
+  is_public: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WorkspaceMember {
+  id: string;
+  workspace_id: string;
+  user_id: string;
+  role: 'owner' | 'admin' | 'editor' | 'viewer';
+  joined_at: string;
+  invited_by?: string;
+}
