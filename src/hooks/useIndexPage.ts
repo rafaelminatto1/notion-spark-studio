@@ -54,7 +54,7 @@ export const useIndexPage = () => {
       }));
     }, [files]);
 
-    console.log('[useIndexPage] Files converted successfully');
+    console.log('[useIndexPage] Files converted successfully, converted count:', convertedFiles.length);
 
     // Close mobile sidebar when view changes
     useEffect(() => {
@@ -99,7 +99,9 @@ export const useIndexPage = () => {
 
     const handleCreateFile = useCallback(async (name: string, parentId?: string, type: 'file' | 'folder' = 'file') => {
       console.log('[useIndexPage] handleCreateFile called with:', name, parentId, type);
-      return await createFile(name, parentId, type);
+      const fileId = await createFile(name, parentId, type);
+      console.log('[useIndexPage] File created with ID:', fileId);
+      return fileId || '';
     }, [createFile]);
 
     const handleUpdateFile = useCallback(async (id: string, updates: any) => {

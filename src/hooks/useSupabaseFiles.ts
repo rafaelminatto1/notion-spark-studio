@@ -35,13 +35,14 @@ export const useSupabaseFiles = () => {
     }
 
     try {
+      console.log('[useSupabaseFiles] Loading files for user:', user.id);
       const { data, error } = await supabase
         .from('files')
         .select('*')
         .order('created_at', { ascending: true });
 
       if (error) {
-        console.error('Error loading files:', error);
+        console.error('[useSupabaseFiles] Error loading files:', error);
         toast({
           title: "Erro ao carregar arquivos",
           description: error.message,
@@ -56,9 +57,10 @@ export const useSupabaseFiles = () => {
         type: file.type as 'file' | 'folder'
       })) || [];
 
+      console.log('[useSupabaseFiles] Files loaded successfully:', typedData.length);
       setFiles(typedData);
     } catch (error) {
-      console.error('Error loading files:', error);
+      console.error('[useSupabaseFiles] Error loading files:', error);
       toast({
         title: "Erro ao carregar arquivos",
         description: "Falha ao carregar arquivos",
@@ -70,28 +72,60 @@ export const useSupabaseFiles = () => {
   }, [toast, user]);
 
   useEffect(() => {
+    console.log('[useSupabaseFiles] Setting up subscriptions for user:', user?.id);
     loadFiles();
 
     if (!user) return;
 
+    // Create a unique channel name to avoid conflicts
+    const channelName = `files-changes-${user.id}-${Date.now()}`;
+    
     // Set up realtime subscription
     const channel = supabase
-      .channel('files-changes')
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'files'
+          table: 'files',
+          filter: `user_id=eq.${user.id}`
         },
         (payload) => {
-          console.log('Files change:', payload);
-          loadFiles();
+          console.log('[useSupabaseFiles] Realtime update received:', payload);
+          
+          if (payload.eventType === 'INSERT') {
+            const newFile = payload.new as SupabaseFile;
+            console.log('[useSupabaseFiles] Adding new file:', newFile);
+            setFiles(prev => {
+              // Check if file already exists to avoid duplicates
+              const exists = prev.find(f => f.id === newFile.id);
+              if (exists) {
+                console.log('[useSupabaseFiles] File already exists, skipping');
+                return prev;
+              }
+              console.log('[useSupabaseFiles] File added to state');
+              return [...prev, newFile];
+            });
+          } else if (payload.eventType === 'UPDATE') {
+            const updatedFile = payload.new as SupabaseFile;
+            console.log('[useSupabaseFiles] Updating file:', updatedFile);
+            setFiles(prev => prev.map(file => 
+              file.id === updatedFile.id ? updatedFile : file
+            ));
+          } else if (payload.eventType === 'DELETE') {
+            const deletedFile = payload.old as SupabaseFile;
+            console.log('[useSupabaseFiles] Deleting file:', deletedFile);
+            setFiles(prev => prev.filter(file => file.id !== deletedFile.id));
+          }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('[useSupabaseFiles] Subscription status:', status);
+      });
 
     return () => {
+      console.log('[useSupabaseFiles] Cleaning up subscription');
       supabase.removeChannel(channel);
     };
   }, [loadFiles, user]);
@@ -113,6 +147,7 @@ export const useSupabaseFiles = () => {
     }
 
     try {
+      console.log('[useSupabaseFiles] Creating file:', { name, parentId, type });
       const { data, error } = await supabase
         .from('files')
         .insert({
@@ -127,7 +162,7 @@ export const useSupabaseFiles = () => {
         .single();
 
       if (error) {
-        console.error('Error creating file:', error);
+        console.error('[useSupabaseFiles] Error creating file:', error);
         toast({
           title: "Erro ao criar arquivo",
           description: error.message,
@@ -136,14 +171,16 @@ export const useSupabaseFiles = () => {
         return null;
       }
 
+      console.log('[useSupabaseFiles] File created successfully:', data);
       toast({
         title: "Arquivo criado",
-        description: `${type === 'folder' ? 'Pasta' : 'Arquivo'} "${name}" criado com sucesso`
+        description: `${type === 'folder' ? 'Pasta' : 'Nota'} "${name}" criada com sucesso`
       });
 
+      // The realtime subscription will handle adding the file to the state
       return data.id;
     } catch (error) {
-      console.error('Error creating file:', error);
+      console.error('[useSupabaseFiles] Error creating file:', error);
       toast({
         title: "Erro ao criar arquivo",
         description: "Falha ao criar arquivo",
@@ -164,6 +201,7 @@ export const useSupabaseFiles = () => {
     }
 
     try {
+      console.log('[useSupabaseFiles] Updating file:', id, updates);
       const { error } = await supabase
         .from('files')
         .update({
@@ -173,7 +211,7 @@ export const useSupabaseFiles = () => {
         .eq('id', id);
 
       if (error) {
-        console.error('Error updating file:', error);
+        console.error('[useSupabaseFiles] Error updating file:', error);
         toast({
           title: "Erro ao atualizar arquivo",
           description: error.message,
@@ -182,12 +220,13 @@ export const useSupabaseFiles = () => {
         return;
       }
 
+      console.log('[useSupabaseFiles] File updated successfully');
       toast({
         title: "Arquivo atualizado",
         description: "Arquivo salvo com sucesso"
       });
     } catch (error) {
-      console.error('Error updating file:', error);
+      console.error('[useSupabaseFiles] Error updating file:', error);
       toast({
         title: "Erro ao atualizar arquivo",
         description: "Falha ao salvar arquivo",
@@ -207,13 +246,14 @@ export const useSupabaseFiles = () => {
     }
 
     try {
+      console.log('[useSupabaseFiles] Deleting file:', id);
       const { error } = await supabase
         .from('files')
         .delete()
         .eq('id', id);
 
       if (error) {
-        console.error('Error deleting file:', error);
+        console.error('[useSupabaseFiles] Error deleting file:', error);
         toast({
           title: "Erro ao deletar arquivo",
           description: error.message,
@@ -222,12 +262,13 @@ export const useSupabaseFiles = () => {
         return;
       }
 
+      console.log('[useSupabaseFiles] File deleted successfully');
       toast({
         title: "Arquivo deletado",
         description: "Arquivo removido com sucesso"
       });
     } catch (error) {
-      console.error('Error deleting file:', error);
+      console.error('[useSupabaseFiles] Error deleting file:', error);
       toast({
         title: "Erro ao deletar arquivo",
         description: "Falha ao remover arquivo",
