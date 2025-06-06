@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { ViewMode } from '@/components/ViewTabs';
 import { QuickSwitcher } from '@/components/QuickSwitcher';
@@ -129,7 +127,7 @@ const Index = () => {
     async (name: string, parentId?: string, type: 'file' | 'folder' = 'file') => {
       return await createFile(name, parentId, type);
     },
-    () => setActiveView('graph')
+    handleViewChangeFromShortcut
   );
 
   // Add to recent when file changes
