@@ -7,6 +7,7 @@ import { FileItem } from '@/types';
 import { cn } from '@/lib/utils';
 import { TagsPanel } from '@/components/TagsPanel';
 import { useTags } from '@/hooks/useTags';
+import { SubItemCreator } from '@/components/SubItemCreator';
 
 interface SidebarProps {
   files: (FileItem & {
@@ -42,6 +43,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showTagsPanel, setShowTagsPanel] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [showSubItemCreator, setShowSubItemCreator] = useState<string | null>(null);
 
   const { tagTree } = useTags(allFiles);
 
@@ -51,6 +53,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       setNewItemName('');
       setIsCreating(null);
     }
+  };
+
+  const handleCreateSubItem = async (name: string, parentId: string, type: 'file' | 'folder') => {
+    onCreateFile(name, parentId, type);
+    setShowSubItemCreator(null);
+    return '';
   };
 
   const handleTagSelect = (tagName: string) => {
@@ -149,10 +157,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 size="sm" 
                 onClick={e => {
                   e.stopPropagation();
-                  setIsCreating({
-                    parentId: item.type === 'folder' ? item.id : item.parentId,
-                    type: 'file'
-                  });
+                  setShowSubItemCreator(showSubItemCreator === item.id ? null : item.id);
                 }} 
                 className="h-7 w-7 p-0 hover:bg-purple-500/20 hover:scale-125 transition-all duration-300 rounded-full"
               >
@@ -167,6 +172,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </Button>
             </div>
           </div>
+
+          {/* Sub-item creator */}
+          {showSubItemCreator === item.id && (
+            <div className="ml-6 mt-2 animate-fade-in">
+              <SubItemCreator
+                parentId={item.id}
+                onCreateSubItem={handleCreateSubItem}
+              />
+            </div>
+          )}
 
           {item.type === 'folder' && expandedFolders.has(item.id) && item.children && (
             <div className="ml-2 animate-fade-in transition-all duration-300">
