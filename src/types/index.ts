@@ -1,3 +1,4 @@
+
 export interface FileItem {
   id: string;
   name: string;
@@ -44,6 +45,9 @@ export interface Template {
   category: string;
   createdAt: Date;
 }
+
+// Import Database type from database.ts first
+export type { Database } from './database';
 
 // Re-export database types
 export * from './database';

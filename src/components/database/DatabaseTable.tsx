@@ -82,7 +82,7 @@ export const DatabaseTable: React.FC<DatabaseTableProps> = ({
         return <span className="text-gray-300">{value ? Number(value).toLocaleString() : ''}</span>;
       
       case 'checkbox':
-        return <Checkbox checked={Boolean(value)} readOnly />;
+        return <Checkbox checked={Boolean(value)} disabled />;
       
       case 'select':
         const selectOption = property.options?.selectOptions?.find(opt => opt.id === value);

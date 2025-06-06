@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Database, DatabaseProperty } from '@/types/database';
 import { Button } from '@/components/ui/button';
@@ -110,8 +111,8 @@ export const DatabaseProperties: React.FC<DatabasePropertiesProps> = ({
                   />
                   <Select
                     value={property.type}
-                    onValueChange={(type: DatabaseProperty['type']) => 
-                      updateProperty(property.id, { type })
+                    onValueChange={(type) => 
+                      updateProperty(property.id, { type: type as DatabaseProperty['type'] })
                     }
                   >
                     <SelectTrigger className="w-32">
@@ -151,7 +152,7 @@ export const DatabaseProperties: React.FC<DatabasePropertiesProps> = ({
                 placeholder="Nome da propriedade"
                 className="flex-1"
               />
-              <Select value={newPropertyType} onValueChange={setNewPropertyType}>
+              <Select value={newPropertyType} onValueChange={(type) => setNewPropertyType(type as DatabaseProperty['type'])}>
                 <SelectTrigger className="w-32">
                   <SelectValue />
                 </SelectTrigger>
