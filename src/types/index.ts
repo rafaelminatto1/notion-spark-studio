@@ -1,9 +1,11 @@
+
 export interface FileItem {
   id: string;
   name: string;
   type: 'file' | 'folder';
   parentId?: string;
   content?: string;
+  blocks?: Block[];
   createdAt: Date;
   updatedAt: Date;
   tags?: string[];
@@ -27,7 +29,7 @@ export interface Comment {
 
 export interface Block {
   id: string;
-  type: 'text' | 'heading' | 'image' | 'video' | 'code' | 'quote' | 'list';
+  type: 'text' | 'heading' | 'image' | 'video' | 'code' | 'quote' | 'list' | 'callout' | 'toggle' | 'table';
   content: string;
   properties?: Record<string, any>;
   comments?: Comment[];
