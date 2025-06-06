@@ -186,7 +186,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     }}
                     onBlur={handleCreateItem}
                     className="h-8 text-sm bg-background/60 backdrop-blur-sm border-purple-500/30 focus:border-purple-500/60 transition-all duration-300 rounded-lg"
-                    placeholder={isCreating.type === 'folder' ? 'Nova pasta' : 'Nova página'}
+                    placeholder={isCreating.type === 'folder' ? 'Nova pasta' : 'Nova nota'}
                     autoFocus
                   />
                 </div>
@@ -257,7 +257,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Buscar páginas..."
+            placeholder="Buscar notas..."
             className="pl-10 bg-background/60 backdrop-blur-sm border-border/60 focus:border-purple-500/60 focus:bg-background/80 transition-all duration-300 rounded-xl shadow-sm hover:shadow-md focus:shadow-lg"
           />
         </div>
@@ -283,7 +283,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           onClick={() => setIsCreating({ type: 'file' })}
         >
           <Plus className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
-          <span className="font-medium">Nova Página</span>
+          <span className="font-medium">Nova Nota</span>
         </Button>
         <Button
           variant="ghost"
@@ -313,7 +313,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               }}
               onBlur={handleCreateItem}
               className="h-8 text-sm bg-background/60 backdrop-blur-sm border-purple-500/30 focus:border-purple-500/60 transition-all duration-300 rounded-lg"
-              placeholder={isCreating.type === 'folder' ? 'Nova pasta' : 'Nova página'}
+              placeholder={isCreating.type === 'folder' ? 'Nova pasta' : 'Nova nota'}
               autoFocus
             />
           </div>

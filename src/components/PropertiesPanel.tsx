@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { FileItem } from '@/types';
 import { TagInput } from '@/components/TagInput';
@@ -24,7 +23,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
     return (
       <div className="p-4 text-center text-gray-400">
         <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
-        <p>Selecione um arquivo para ver suas propriedades</p>
+        <p>Selecione uma nota para ver suas propriedades</p>
       </div>
     );
   }
@@ -39,7 +38,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
       <div>
         <h3 className="font-medium text-white mb-3 flex items-center gap-2">
           <FileText className="h-4 w-4" />
-          Informações do Arquivo
+          Informações da Nota
         </h3>
         
         <div className="space-y-3">
@@ -152,7 +151,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
           </div>
           <div className="flex justify-between">
             <span>Tipo:</span>
-            <span className="capitalize">{file.type}</span>
+            <span className="capitalize">{file.type === 'file' ? 'nota' : file.type}</span>
           </div>
           {file.type === 'file' && (
             <div className="flex justify-between">
