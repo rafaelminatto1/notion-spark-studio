@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Plus, GripVertical, Minus, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,7 @@ import { HeadingBlock } from './blocks/HeadingBlock';
 import { CalloutBlock } from './blocks/CalloutBlock';
 import { ToggleBlock } from './blocks/ToggleBlock';
 import { TableBlock } from './blocks/TableBlock';
+import { DatabaseBlock } from './blocks/DatabaseBlock';
 import { SlashMenu } from './blocks/SlashMenu';
 
 interface BlockEditorProps {
@@ -200,6 +200,8 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
         return <ToggleBlock {...commonProps} />;
       case 'table':
         return <TableBlock {...commonProps} />;
+      case 'database':
+        return <DatabaseBlock {...commonProps} />;
       case 'list':
         return (
           <div className="flex items-start gap-2">

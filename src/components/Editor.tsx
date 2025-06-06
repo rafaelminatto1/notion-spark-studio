@@ -1,5 +1,6 @@
+
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { FileText, Tag, MessageCircle, Star, ArrowLeft, ArrowRight, Type } from 'lucide-react';
+import { FileText, Tag, MessageCircle, Star, ArrowLeft, ArrowRight, Type, Database as DatabaseIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TagInput } from '@/components/TagInput';
 import { Backlinks } from '@/components/Backlinks';
@@ -7,6 +8,7 @@ import { CommentsPanel } from '@/components/CommentsPanel';
 import { BlockEditor } from '@/components/BlockEditor';
 import { AdvancedEditor } from '@/components/AdvancedEditor';
 import { MarkdownEditor } from '@/components/MarkdownEditor';
+import { DatabaseView } from '@/components/database/DatabaseView';
 import { FavoritesManager } from '@/components/FavoritesManager';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { FileItem, Comment, Block } from '@/types';
@@ -334,6 +336,56 @@ export const Editor: React.FC<EditorProps> = ({
         <div className="text-center">
           <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
           <p>Selecione um arquivo para editar</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Render Database View for database files
+  if (file.type === 'database' && file.database) {
+    return (
+      <div className="flex-1 flex flex-col bg-notion-dark">
+        {/* Navigation Bar */}
+        <div className="p-4 border-b border-notion-dark-border">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onGoBack}
+                disabled={!canGoBack}
+                className="gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onGoForward}
+                disabled={!canGoForward}
+                className="gap-2"
+              >
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+              <Breadcrumbs
+                currentFile={file}
+                files={files}
+                onNavigate={onNavigateToFile}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Database Content */}
+        <div className="flex-1 p-6">
+          <DatabaseView
+            database={file.database}
+            onUpdateDatabase={(updates) => 
+              onUpdateFile(file.id, { 
+                database: { ...file.database!, ...updates }
+              })
+            }
+          />
         </div>
       </div>
     );

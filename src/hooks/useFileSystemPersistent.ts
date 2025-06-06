@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { FileItem } from '@/types';
 import { useIndexedDB } from './useIndexedDB';
@@ -56,6 +55,90 @@ export const useFileSystemPersistent = () => {
               createdAt: new Date(),
               updatedAt: new Date(),
               tags: ['matemática', 'cálculo', 'universidade/primeiro-ano']
+            },
+            {
+              id: '4',
+              name: 'Projetos',
+              type: 'database',
+              parentId: '1',
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              emoji: '📊',
+              database: {
+                id: '4',
+                name: 'Projetos',
+                properties: [
+                  {
+                    id: 'name',
+                    name: 'Nome',
+                    type: 'text'
+                  },
+                  {
+                    id: 'status',
+                    name: 'Status',
+                    type: 'select',
+                    options: {
+                      selectOptions: [
+                        { id: 'todo', name: 'A fazer', color: '#ef4444' },
+                        { id: 'doing', name: 'Em progresso', color: '#f59e0b' },
+                        { id: 'done', name: 'Concluído', color: '#10b981' }
+                      ]
+                    }
+                  },
+                  {
+                    id: 'priority',
+                    name: 'Prioridade',
+                    type: 'select',
+                    options: {
+                      selectOptions: [
+                        { id: 'low', name: 'Baixa', color: '#6b7280' },
+                        { id: 'medium', name: 'Média', color: '#f59e0b' },
+                        { id: 'high', name: 'Alta', color: '#ef4444' }
+                      ]
+                    }
+                  },
+                  {
+                    id: 'deadline',
+                    name: 'Prazo',
+                    type: 'date'
+                  }
+                ],
+                rows: [
+                  {
+                    id: 'row1',
+                    properties: {
+                      name: 'Projeto Final da Disciplina',
+                      status: 'doing',
+                      priority: 'high',
+                      deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+                    },
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                  }
+                ],
+                views: [
+                  {
+                    id: 'table-view',
+                    name: 'Tabela',
+                    type: 'table',
+                    filters: [],
+                    sorts: [],
+                    visibleProperties: ['name', 'status', 'priority', 'deadline']
+                  },
+                  {
+                    id: 'kanban-view',
+                    name: 'Kanban',
+                    type: 'kanban',
+                    filters: [],
+                    sorts: [],
+                    groupBy: 'status',
+                    visibleProperties: ['name', 'priority', 'deadline']
+                  }
+                ],
+                defaultView: 'table-view',
+                createdAt: new Date(),
+                updatedAt: new Date()
+              }
             }
           ];
           
@@ -98,7 +181,7 @@ export const useFileSystemPersistent = () => {
     saveWorkspace();
   }, [currentFileId, expandedFolders, isReady, isLoading, set]);
 
-  const createFile = useCallback(async (name: string, parentId?: string, type: 'file' | 'folder' = 'file') => {
+  const createFile = useCallback(async (name: string, parentId?: string, type: 'file' | 'folder' | 'database' = 'file') => {
     const newFile: FileItem = {
       id: Date.now().toString(),
       name,
@@ -113,7 +196,7 @@ export const useFileSystemPersistent = () => {
       await set('files', newFile);
       setFiles(prev => [...prev, newFile]);
       
-      if (type === 'file') {
+      if (type === 'file' || type === 'database') {
         setCurrentFileId(newFile.id);
       }
       

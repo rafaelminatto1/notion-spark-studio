@@ -1,11 +1,11 @@
-
 export interface FileItem {
   id: string;
   name: string;
-  type: 'file' | 'folder';
+  type: 'file' | 'folder' | 'database';
   parentId?: string;
   content?: string;
   blocks?: Block[];
+  database?: Database;
   createdAt: Date;
   updatedAt: Date;
   tags?: string[];
@@ -29,7 +29,7 @@ export interface Comment {
 
 export interface Block {
   id: string;
-  type: 'text' | 'heading' | 'image' | 'video' | 'code' | 'quote' | 'list' | 'callout' | 'toggle' | 'table';
+  type: 'text' | 'heading' | 'image' | 'video' | 'code' | 'quote' | 'list' | 'callout' | 'toggle' | 'table' | 'database';
   content: string;
   properties?: Record<string, any>;
   comments?: Comment[];
@@ -44,3 +44,6 @@ export interface Template {
   category: string;
   createdAt: Date;
 }
+
+// Re-export database types
+export * from './database';

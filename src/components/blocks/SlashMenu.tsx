@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Block } from '@/types';
 import { 
   Type, Hash, List, Code, Quote, Image, Table, 
-  Info, ToggleLeft, Calendar, Calculator
+  Info, ToggleLeft, Calendar, Calculator, Database
 } from 'lucide-react';
 
 interface SlashMenuProps {
@@ -81,6 +81,13 @@ const menuItems = [
     description: 'Adicione uma tabela simples',
     icon: Table,
     keywords: ['table', 'tabela', 'grid']
+  },
+  { 
+    type: 'database' as const, 
+    label: 'Database', 
+    description: 'Crie uma base de dados estruturada',
+    icon: Database,
+    keywords: ['database', 'db', 'banco', 'dados', 'tabela', 'kanban']
   },
   { 
     type: 'callout' as const, 
