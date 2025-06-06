@@ -130,6 +130,70 @@ export const useSupabaseAuth = () => {
     }
   }, [toast]);
 
+  const resetPassword = useCallback(async (email: string) => {
+    try {
+      const redirectUrl = `${window.location.origin}/reset-password`;
+      
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: redirectUrl
+      });
+
+      if (error) {
+        toast({
+          title: "Erro ao enviar email",
+          description: error.message,
+          variant: "destructive"
+        });
+        return { error };
+      }
+
+      toast({
+        title: "Email enviado",
+        description: "Verifique sua caixa de entrada para redefinir sua senha"
+      });
+
+      return { error: null };
+    } catch (error) {
+      toast({
+        title: "Erro ao enviar email",
+        description: "Falha ao enviar email de reset",
+        variant: "destructive"
+      });
+      return { error };
+    }
+  }, [toast]);
+
+  const updatePassword = useCallback(async (newPassword: string) => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        toast({
+          title: "Erro ao atualizar senha",
+          description: error.message,
+          variant: "destructive"
+        });
+        return { error };
+      }
+
+      toast({
+        title: "Senha atualizada",
+        description: "Sua senha foi atualizada com sucesso"
+      });
+
+      return { error: null };
+    } catch (error) {
+      toast({
+        title: "Erro ao atualizar senha",
+        description: "Falha ao atualizar a senha",
+        variant: "destructive"
+      });
+      return { error };
+    }
+  }, [toast]);
+
   const signOut = useCallback(async () => {
     try {
       const { error } = await supabase.auth.signOut();
@@ -162,6 +226,8 @@ export const useSupabaseAuth = () => {
     signInWithGoogle,
     signInWithEmail,
     signUpWithEmail,
+    resetPassword,
+    updatePassword,
     signOut
   };
 };

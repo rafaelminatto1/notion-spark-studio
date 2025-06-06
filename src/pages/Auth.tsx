@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,12 +7,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, Chrome, Eye, EyeOff, AlertCircle, CheckCircle2, Shield, Sparkles } from 'lucide-react';
 
 const Auth = () => {
-  const { user, loading, signInWithGoogle, signInWithEmail, signUpWithEmail } = useSupabaseAuth();
+  const { user, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword } = useSupabaseAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -22,6 +22,7 @@ const Auth = () => {
   const [activeTab, setActiveTab] = useState('login');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [showResetDialog, setShowResetDialog] = useState(false);
   
   // Form states
   const [loginEmail, setLoginEmail] = useState('');
@@ -30,6 +31,7 @@ const Auth = () => {
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [resetEmail, setResetEmail] = useState('');
 
   // Validation states
   const [emailError, setEmailError] = useState('');
@@ -228,6 +230,36 @@ const Auth = () => {
     setIsSubmitting(false);
   };
 
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+    
+    const emailErr = validateEmail(resetEmail);
+    if (emailErr) {
+      setError(emailErr);
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      const result = await resetPassword(resetEmail);
+      
+      if (result?.error) {
+        setError('Erro ao enviar email de reset. Verifique o email e tente novamente.');
+      } else {
+        setSuccess('Email de reset enviado! Verifique sua caixa de entrada.');
+        setShowResetDialog(false);
+        setResetEmail('');
+      }
+    } catch (error) {
+      setError('Erro inesperado. Tente novamente.');
+    }
+    
+    setIsSubmitting(false);
+  };
+
   const getPasswordStrength = (password: string) => {
     let strength = 0;
     if (password.length >= 8) strength++;
@@ -414,6 +446,59 @@ const Auth = () => {
                       <AlertCircle className="h-3 w-3" />
                       {passwordError}
                     </p>}
+                  </div>
+
+                  {/* Forgot Password Link */}
+                  <div className="text-right">
+                    <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+                      <DialogTrigger asChild>
+                        <Button variant="link" className="p-0 h-auto text-sm text-blue-600 hover:text-blue-700">
+                          Esqueci minha senha
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Redefinir Senha</DialogTitle>
+                          <DialogDescription>
+                            Digite seu email para receber um link de redefinição de senha.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handleResetPassword} className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="reset-email">Email</Label>
+                            <div className="relative">
+                              <Mail className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+                              <Input
+                                id="reset-email"
+                                type="email"
+                                placeholder="seu@email.com"
+                                value={resetEmail}
+                                onChange={(e) => setResetEmail(e.target.value)}
+                                className="pl-10"
+                                required
+                              />
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              onClick={() => setShowResetDialog(false)}
+                              className="flex-1"
+                            >
+                              Cancelar
+                            </Button>
+                            <Button 
+                              type="submit" 
+                              disabled={isSubmitting}
+                              className="flex-1"
+                            >
+                              {isSubmitting ? 'Enviando...' : 'Enviar Link'}
+                            </Button>
+                          </div>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                   
                   <Button 
