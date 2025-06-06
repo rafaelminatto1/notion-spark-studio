@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { ViewMode } from '@/components/ViewTabs';
 import { QuickSwitcher } from '@/components/QuickSwitcher';
@@ -27,7 +28,7 @@ const Index = () => {
   
   const isMobile = useMobileDetection();
   
-  const { files, loading: filesLoading, createFile, updateFile, error: filesError } = useSupabaseFiles();
+  const { files, loading: filesLoading, createFile, updateFile } = useSupabaseFiles();
   const { profile, preferences } = useSupabaseProfile();
   const { favorites } = useFavorites();
   const { navigateTo } = useNavigation();
@@ -62,15 +63,6 @@ const Index = () => {
       setActiveView(preferences.default_view);
     }
   }, [preferences]);
-
-  // Handle loading errors
-  useEffect(() => {
-    if (filesError) {
-      setLoadingError('Erro ao carregar arquivos. Verifique sua conexão.');
-    } else {
-      setLoadingError(null);
-    }
-  }, [filesError]);
 
   const handleNavigateToFile = (fileId: string) => {
     setCurrentFileId(fileId);
@@ -109,7 +101,7 @@ const Index = () => {
   };
 
   useKeyboardShortcuts({
-    onViewChange: setActiveView,
+    onViewChange: (view: string) => setActiveView(view as ViewMode),
     onOpenCommandPalette: () => setIsCommandPaletteOpen(true),
     onOpenSettings: () => setShowWorkspaceSettings(true)
   });
