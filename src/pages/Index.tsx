@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ViewMode } from '@/components/ViewTabs';
 import { QuickSwitcher } from '@/components/QuickSwitcher';
@@ -24,10 +23,11 @@ const Index = () => {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [showWorkspaceSettings, setShowWorkspaceSettings] = useState(false);
   const [currentFileId, setCurrentFileId] = useState<string | null>(null);
+  const [loadingError, setLoadingError] = useState<string | null>(null);
   
   const isMobile = useMobileDetection();
   
-  const { files, loading: filesLoading, createFile, updateFile } = useSupabaseFiles();
+  const { files, loading: filesLoading, createFile, updateFile, error: filesError } = useSupabaseFiles();
   const { profile, preferences } = useSupabaseProfile();
   const { favorites } = useFavorites();
   const { navigateTo } = useNavigation();
@@ -62,6 +62,15 @@ const Index = () => {
       setActiveView(preferences.default_view);
     }
   }, [preferences]);
+
+  // Handle loading errors
+  useEffect(() => {
+    if (filesError) {
+      setLoadingError('Erro ao carregar arquivos. Verifique sua conexão.');
+    } else {
+      setLoadingError(null);
+    }
+  }, [filesError]);
 
   const handleNavigateToFile = (fileId: string) => {
     setCurrentFileId(fileId);
@@ -115,9 +124,15 @@ const Index = () => {
     addToRecent
   } = useQuickSwitcher(
     convertedFiles,
-    handleNavigateToFile,
-    handleCreateFile,
-    handleNavigateToGraph
+    (fileId: string) => {
+      setCurrentFileId(fileId);
+      navigateTo(fileId);
+      setActiveView('editor');
+    },
+    async (name: string, parentId?: string, type: 'file' | 'folder' = 'file') => {
+      return await createFile(name, parentId, type);
+    },
+    () => setActiveView('graph')
   );
 
   // Add to recent when file changes
@@ -160,6 +175,19 @@ const Index = () => {
     );
   }
 
+  if (loadingError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="text-red-500 text-sm mb-4">{loadingError}</div>
+          <Button onClick={() => window.location.reload()}>
+            Tentar novamente
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <ThemeProvider>
       <WorkspaceProvider>
@@ -176,21 +204,31 @@ const Index = () => {
             {/* Header */}
             <AppHeader
               activeView={activeView}
-              onViewChange={handleViewChange}
+              onViewChange={setActiveView}
               isMobile={isMobile}
               isMobileSidebarOpen={isMobileSidebarOpen}
               onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
               files={convertedFiles}
-              onFileSelect={handleNavigateToFile}
+              onFileSelect={(fileId: string) => {
+                setCurrentFileId(fileId);
+                navigateTo(fileId);
+                setActiveView('editor');
+              }}
               onShowSettings={() => setShowWorkspaceSettings(true)}
             />
 
             {/* Content Area */}
             <WorkspaceLayout
               activeView={activeView}
-              onViewChange={handleViewChange}
-              onNavigateToFile={handleNavigateToFile}
-              onCreateFile={handleCreateFile}
+              onViewChange={setActiveView}
+              onNavigateToFile={(fileId: string) => {
+                setCurrentFileId(fileId);
+                navigateTo(fileId);
+                setActiveView('editor');
+              }}
+              onCreateFile={async (name: string, parentId?: string, type: 'file' | 'folder' = 'file') => {
+                return await createFile(name, parentId, type);
+              }}
             />
           </div>
 
@@ -208,8 +246,14 @@ const Index = () => {
             files={convertedFiles}
             isOpen={isCommandPaletteOpen}
             onClose={() => setIsCommandPaletteOpen(false)}
-            onFileSelect={handleNavigateToFile}
-            onCreateFile={handleCreateFile}
+            onFileSelect={(fileId: string) => {
+              setCurrentFileId(fileId);
+              navigateTo(fileId);
+              setActiveView('editor');
+            }}
+            onCreateFile={async (name: string, parentId?: string, type: 'file' | 'folder' = 'file') => {
+              return await createFile(name, parentId, type);
+            }}
             favorites={favorites}
           />
         </div>

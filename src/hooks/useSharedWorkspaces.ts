@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -36,20 +37,37 @@ export const useSharedWorkspaces = () => {
   const loadWorkspaces = useCallback(async () => {
     try {
       setLoading(true);
+      
+      // Verificar se o usuário está autenticado
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setWorkspaces([]);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('shared_workspaces')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error loading workspaces:', error);
+        // Não mostrar toast para usuários não autenticados ou sem permissão
+        if (error.code !== 'PGRST301') {
+          toast({
+            title: "Erro ao carregar workspaces",
+            description: "Não foi possível carregar os workspaces",
+            variant: "destructive"
+          });
+        }
+        setWorkspaces([]);
+        return;
+      }
+
       setWorkspaces(data || []);
     } catch (error) {
-      console.error('Error loading workspaces:', error);
-      toast({
-        title: "Erro ao carregar workspaces",
-        description: "Não foi possível carregar os workspaces",
-        variant: "destructive"
-      });
+      console.error('Unexpected error loading workspaces:', error);
+      setWorkspaces([]);
     } finally {
       setLoading(false);
     }
@@ -57,13 +75,24 @@ export const useSharedWorkspaces = () => {
 
   const loadWorkspaceMembers = useCallback(async (workspaceId: string) => {
     try {
+      // Verificar se o usuário está autenticado
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setMembers([]);
+        return;
+      }
+
       // First get workspace members
       const { data: membersData, error: membersError } = await supabase
         .from('workspace_members')
         .select('*')
         .eq('workspace_id', workspaceId);
 
-      if (membersError) throw membersError;
+      if (membersError) {
+        console.error('Error loading workspace members:', membersError);
+        setMembers([]);
+        return;
+      }
 
       // Then get profiles for each member
       const memberIds = membersData?.map(member => member.user_id) || [];
@@ -78,7 +107,10 @@ export const useSharedWorkspaces = () => {
         .select('id, name, email, avatar')
         .in('id', memberIds);
 
-      if (profilesError) throw profilesError;
+      if (profilesError) {
+        console.error('Error loading profiles:', profilesError);
+        // Continue without profiles
+      }
 
       // Combine the data
       const transformedMembers: WorkspaceMember[] = (membersData || []).map(member => {
@@ -101,6 +133,7 @@ export const useSharedWorkspaces = () => {
       setMembers(transformedMembers);
     } catch (error) {
       console.error('Error loading workspace members:', error);
+      setMembers([]);
     }
   }, []);
 
@@ -322,6 +355,8 @@ export const useSharedWorkspaces = () => {
   useEffect(() => {
     if (currentWorkspace) {
       loadWorkspaceMembers(currentWorkspace.id);
+    } else {
+      setMembers([]);
     }
   }, [currentWorkspace, loadWorkspaceMembers]);
 
@@ -331,12 +366,153 @@ export const useSharedWorkspaces = () => {
     setCurrentWorkspace,
     members,
     loading,
-    createWorkspace,
-    updateWorkspace,
-    deleteWorkspace,
+    createWorkspace: useCallback(async (name: string, description?: string, isPublic = false) => {
+      try {
+        const { data: user } = await supabase.auth.getUser();
+        if (!user.user) throw new Error('User not authenticated');
+
+        const { data, error } = await supabase
+          .from('shared_workspaces')
+          .insert({
+            name,
+            description,
+            owner_id: user.user.id,
+            is_public: isPublic
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        toast({
+          title: "Workspace criado",
+          description: `Workspace "${name}" foi criado com sucesso`
+        });
+
+        await loadWorkspaces();
+        return data;
+      } catch (error) {
+        console.error('Error creating workspace:', error);
+        toast({
+          title: "Erro ao criar workspace",
+          description: "Não foi possível criar o workspace",
+          variant: "destructive"
+        });
+        return null;
+      }
+    }, [toast, loadWorkspaces]),
+    updateWorkspace: useCallback(async (workspaceId: string, updates: Partial<SharedWorkspace>) => {
+      try {
+        const { error } = await supabase
+          .from('shared_workspaces')
+          .update({
+            ...updates,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', workspaceId);
+
+        if (error) throw error;
+
+        toast({
+          title: "Workspace atualizado",
+          description: "Workspace foi atualizado com sucesso"
+        });
+
+        await loadWorkspaces();
+        if (currentWorkspace?.id === workspaceId) {
+          setCurrentWorkspace(prev => prev ? { ...prev, ...updates } : null);
+        }
+      } catch (error) {
+        console.error('Error updating workspace:', error);
+        toast({
+          title: "Erro ao atualizar workspace",
+          description: "Não foi possível atualizar o workspace",
+          variant: "destructive"
+        });
+      }
+    }, [toast, loadWorkspaces, currentWorkspace]),
+    deleteWorkspace: useCallback(async (workspaceId: string) => {
+      try {
+        const { error } = await supabase
+          .from('shared_workspaces')
+          .delete()
+          .eq('id', workspaceId);
+
+        if (error) throw error;
+
+        toast({
+          title: "Workspace removido",
+          description: "Workspace foi removido com sucesso"
+        });
+
+        await loadWorkspaces();
+        if (currentWorkspace?.id === workspaceId) {
+          setCurrentWorkspace(null);
+        }
+      } catch (error) {
+        console.error('Error deleting workspace:', error);
+        toast({
+          title: "Erro ao remover workspace",
+          description: "Não foi possível remover o workspace",
+          variant: "destructive"
+        });
+      }
+    }, [toast, loadWorkspaces, currentWorkspace]),
     inviteMember,
-    updateMemberRole,
-    removeMember,
+    updateMemberRole: useCallback(async (memberId: string, newRole: WorkspaceMember['role']) => {
+      try {
+        const { error } = await supabase
+          .from('workspace_members')
+          .update({ role: newRole })
+          .eq('id', memberId);
+
+        if (error) throw error;
+
+        toast({
+          title: "Permissão atualizada",
+          description: "Permissão do membro foi atualizada com sucesso"
+        });
+
+        // Reload members for current workspace
+        if (currentWorkspace) {
+          await loadWorkspaceMembers(currentWorkspace.id);
+        }
+      } catch (error) {
+        console.error('Error updating member role:', error);
+        toast({
+          title: "Erro ao atualizar permissão",
+          description: "Não foi possível atualizar a permissão do membro",
+          variant: "destructive"
+        });
+      }
+    }, [toast, loadWorkspaceMembers, currentWorkspace]),
+    removeMember: useCallback(async (memberId: string) => {
+      try {
+        const { error } = await supabase
+          .from('workspace_members')
+          .delete()
+          .eq('id', memberId);
+
+        if (error) throw error;
+
+        toast({
+          title: "Membro removido",
+          description: "Membro foi removido do workspace"
+        });
+
+        // Reload members for current workspace
+        if (currentWorkspace) {
+          await loadWorkspaceMembers(currentWorkspace.id);
+        }
+      } catch (error) {
+        console.error('Error removing member:', error);
+        toast({
+          title: "Erro ao remover membro",
+          description: "Não foi possível remover o membro",
+          variant: "destructive"
+        });
+      }
+    }, [toast, loadWorkspaceMembers, currentWorkspace]),
     loadWorkspaces,
     loadWorkspaceMembers
   };
