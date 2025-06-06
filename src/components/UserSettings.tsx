@@ -8,36 +8,40 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { AvatarUpload } from '@/components/AvatarUpload';
 import { 
   User, 
   Settings, 
   Palette, 
   Clock, 
-  Eye, 
-  Zap,
-  Shield,
   RotateCcw
 } from 'lucide-react';
-import { useUserSystem } from '@/hooks/useUserSystem';
+import { useSupabaseProfile } from '@/hooks/useSupabaseProfile';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useActivityHistory } from '@/hooks/useActivityHistory';
 
 export const UserSettings: React.FC = () => {
+  const { user } = useSupabaseAuth();
   const { 
-    currentUser, 
-    isLoading, 
-    updateUserPreferences, 
-    updateUserProfile, 
-    resetToDefaults 
-  } = useUserSystem();
+    profile, 
+    preferences, 
+    loading, 
+    updateProfile, 
+    updatePreferences,
+    loadProfile 
+  } = useSupabaseProfile();
   
   const { getRecentActivities } = useActivityHistory();
 
-  if (isLoading || !currentUser) {
+  if (loading || !user || !profile) {
     return <div className="p-6">Carregando configurações...</div>;
   }
 
-  const recentActivities = getRecentActivities(5);
+  const recentActivities = getRecentActivities ? getRecentActivities(5) : [];
+
+  const handleAvatarChange = (newAvatarUrl: string | null) => {
+    updateProfile({ avatar: newAvatarUrl });
+  };
 
   return (
     <div className="p-6 space-y-6 max-w-4xl mx-auto">
@@ -51,20 +55,29 @@ export const UserSettings: React.FC = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
-              </Avatar>
+              <User className="h-5 w-5" />
               Perfil
             </CardTitle>
             <CardDescription>Informações básicas do usuário</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
+            {/* Avatar Upload */}
+            <div className="flex flex-col items-center">
+              <AvatarUpload
+                userId={user.id}
+                currentAvatar={profile.avatar}
+                userName={profile.name}
+                onAvatarChange={handleAvatarChange}
+                size="lg"
+              />
+            </div>
+            
             <div className="space-y-2">
               <Label htmlFor="name">Nome</Label>
               <Input
                 id="name"
-                value={currentUser.name}
-                onChange={(e) => updateUserProfile({ name: e.target.value })}
+                value={profile.name}
+                onChange={(e) => updateProfile({ name: e.target.value })}
               />
             </div>
             
@@ -73,20 +86,13 @@ export const UserSettings: React.FC = () => {
               <Input
                 id="email"
                 type="email"
-                value={currentUser.email}
-                onChange={(e) => updateUserProfile({ email: e.target.value })}
+                value={profile.email}
+                onChange={(e) => updateProfile({ email: e.target.value })}
               />
             </div>
 
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Função</span>
-              <Badge variant={currentUser.role === 'admin' ? 'default' : 'secondary'}>
-                {currentUser.role}
-              </Badge>
-            </div>
-
             <div className="text-xs text-muted-foreground">
-              Último acesso: {currentUser.lastActiveAt.toLocaleString()}
+              Criado em: {new Date(profile.created_at).toLocaleString()}
             </div>
           </CardContent>
         </Card>
@@ -104,8 +110,8 @@ export const UserSettings: React.FC = () => {
             <div className="flex items-center justify-between">
               <Label htmlFor="theme">Tema</Label>
               <Select
-                value={currentUser.preferences.theme}
-                onValueChange={(value: any) => updateUserPreferences({ theme: value })}
+                value={preferences?.theme || 'system'}
+                onValueChange={(value: any) => updatePreferences({ theme: value })}
               >
                 <SelectTrigger className="w-32">
                   <SelectValue />
@@ -121,8 +127,8 @@ export const UserSettings: React.FC = () => {
             <div className="flex items-center justify-between">
               <Label htmlFor="defaultView">Vista padrão</Label>
               <Select
-                value={currentUser.preferences.defaultView}
-                onValueChange={(value: any) => updateUserPreferences({ defaultView: value })}
+                value={preferences?.default_view || 'editor'}
+                onValueChange={(value: any) => updatePreferences({ default_view: value })}
               >
                 <SelectTrigger className="w-32">
                   <SelectValue />
@@ -138,24 +144,24 @@ export const UserSettings: React.FC = () => {
             <div className="flex items-center justify-between">
               <Label>Modo compacto</Label>
               <Switch
-                checked={currentUser.preferences.compactMode}
-                onCheckedChange={(checked) => updateUserPreferences({ compactMode: checked })}
+                checked={preferences?.compact_mode || false}
+                onCheckedChange={(checked) => updatePreferences({ compact_mode: checked })}
               />
             </div>
 
             <div className="flex items-center justify-between">
               <Label>Mostrar números de linha</Label>
               <Switch
-                checked={currentUser.preferences.showLineNumbers}
-                onCheckedChange={(checked) => updateUserPreferences({ showLineNumbers: checked })}
+                checked={preferences?.show_line_numbers !== false}
+                onCheckedChange={(checked) => updatePreferences({ show_line_numbers: checked })}
               />
             </div>
 
             <div className="flex items-center justify-between">
               <Label>Animações</Label>
               <Switch
-                checked={currentUser.preferences.enableAnimations}
-                onCheckedChange={(checked) => updateUserPreferences({ enableAnimations: checked })}
+                checked={preferences?.enable_animations !== false}
+                onCheckedChange={(checked) => updatePreferences({ enable_animations: checked })}
               />
             </div>
           </CardContent>
@@ -174,16 +180,16 @@ export const UserSettings: React.FC = () => {
             <div className="flex items-center justify-between">
               <Label>Auto-save</Label>
               <Switch
-                checked={currentUser.preferences.autoSave}
-                onCheckedChange={(checked) => updateUserPreferences({ autoSave: checked })}
+                checked={preferences?.auto_save !== false}
+                onCheckedChange={(checked) => updatePreferences({ auto_save: checked })}
               />
             </div>
 
             <div className="flex items-center justify-between">
               <Label htmlFor="backupFreq">Backup (min)</Label>
               <Select
-                value={currentUser.preferences.backupFrequency.toString()}
-                onValueChange={(value) => updateUserPreferences({ backupFrequency: parseInt(value) })}
+                value={(preferences?.backup_frequency || 30).toString()}
+                onValueChange={(value) => updatePreferences({ backup_frequency: parseInt(value) })}
               >
                 <SelectTrigger className="w-20">
                   <SelectValue />
@@ -200,8 +206,8 @@ export const UserSettings: React.FC = () => {
             <div className="flex items-center justify-between">
               <Label htmlFor="language">Idioma</Label>
               <Select
-                value={currentUser.preferences.language}
-                onValueChange={(value: any) => updateUserPreferences({ language: value })}
+                value={preferences?.language || 'pt'}
+                onValueChange={(value: any) => updatePreferences({ language: value })}
               >
                 <SelectTrigger className="w-20">
                   <SelectValue />
@@ -217,11 +223,11 @@ export const UserSettings: React.FC = () => {
 
             <Button 
               variant="outline" 
-              onClick={resetToDefaults}
+              onClick={loadProfile}
               className="w-full"
             >
               <RotateCcw className="h-4 w-4 mr-2" />
-              Restaurar padrões
+              Recarregar configurações
             </Button>
           </CardContent>
         </Card>
