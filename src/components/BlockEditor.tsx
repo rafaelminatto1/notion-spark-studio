@@ -10,6 +10,7 @@ import { ToggleBlock } from './blocks/ToggleBlock';
 import { TableBlock } from './blocks/TableBlock';
 import { DatabaseBlock } from './blocks/DatabaseBlock';
 import { SlashMenu } from './blocks/SlashMenu';
+import { EmbedBlock } from './blocks/EmbedBlock';
 
 interface BlockEditorProps {
   blocks: Block[];
@@ -202,6 +203,16 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
         return <TableBlock {...commonProps} />;
       case 'database':
         return <DatabaseBlock {...commonProps} />;
+      
+      // Embed blocks
+      case 'embed-youtube':
+      case 'embed-twitter':
+      case 'embed-image':
+      case 'embed-pdf':
+      case 'embed-figma':
+      case 'embed-codepen':
+        return <EmbedBlock {...commonProps} />;
+      
       case 'list':
         return (
           <div className="flex items-start gap-2">

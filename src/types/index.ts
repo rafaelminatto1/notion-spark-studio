@@ -31,7 +31,7 @@ export interface Comment {
 
 export interface Block {
   id: string;
-  type: 'text' | 'heading' | 'image' | 'video' | 'code' | 'quote' | 'list' | 'callout' | 'toggle' | 'table' | 'database';
+  type: 'text' | 'heading' | 'image' | 'video' | 'code' | 'quote' | 'list' | 'callout' | 'toggle' | 'table' | 'database' | 'embed-youtube' | 'embed-twitter' | 'embed-image' | 'embed-pdf' | 'embed-figma' | 'embed-codepen';
   content: string;
   properties?: Record<string, any>;
   comments?: Comment[];
