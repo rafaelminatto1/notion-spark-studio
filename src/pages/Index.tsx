@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { ViewMode } from '@/components/ViewTabs';
 import { QuickSwitcher } from '@/components/QuickSwitcher';
@@ -23,7 +24,6 @@ const Index = () => {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [showWorkspaceSettings, setShowWorkspaceSettings] = useState(false);
   const [currentFileId, setCurrentFileId] = useState<string | null>(null);
-  const [loadingError, setLoadingError] = useState<string | null>(null);
   
   const isMobile = useMobileDetection();
   
