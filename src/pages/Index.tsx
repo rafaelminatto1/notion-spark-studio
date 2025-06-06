@@ -108,6 +108,11 @@ const Index = () => {
     setActiveView('graph');
   };
 
+  // Create wrapper function for AppHeader that accepts string and converts to ViewMode
+  const handleViewChangeFromHeader = (view: string) => {
+    setActiveView(view as ViewMode);
+  };
+
   useKeyboardShortcuts({
     onViewChange: handleViewChangeFromKeyboard,
     onOpenCommandPalette: () => setIsCommandPaletteOpen(true),
@@ -191,7 +196,7 @@ const Index = () => {
             {/* Header */}
             <AppHeader
               activeView={activeView}
-              onViewChange={setActiveView}
+              onViewChange={handleViewChangeFromHeader}
               isMobile={isMobile}
               isMobileSidebarOpen={isMobileSidebarOpen}
               onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
