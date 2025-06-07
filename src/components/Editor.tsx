@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { FileText, Tag, MessageCircle, Star, ArrowLeft, ArrowRight, Type, Database as DatabaseIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -222,12 +223,20 @@ export const Editor: React.FC<EditorProps> = ({
   };
 
   const handleCreateFileFromName = useCallback(async (name: string): Promise<string> => {
-    const fileId = await onCreateFile(name);
-    // Navigate to the new file
-    const newFile = files.find(f => f.name === name);
-    if (newFile) {
-      onNavigateToFile(newFile.id);
-    }
+    // Generate a unique file ID
+    const fileId = Date.now().toString();
+    
+    // Call the original onCreateFile function
+    onCreateFile(name);
+    
+    // Navigate to the new file after a short delay to allow file creation
+    setTimeout(() => {
+      const newFile = files.find(f => f.name === name);
+      if (newFile) {
+        onNavigateToFile(newFile.id);
+      }
+    }, 100);
+    
     return fileId;
   }, [onCreateFile, onNavigateToFile, files]);
 
