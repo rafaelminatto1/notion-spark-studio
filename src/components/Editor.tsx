@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { FileText, Tag, MessageCircle, Star, ArrowLeft, ArrowRight, Type, Database as DatabaseIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -222,13 +221,14 @@ export const Editor: React.FC<EditorProps> = ({
     }];
   };
 
-  const handleCreateFileFromName = useCallback((name: string) => {
-    const fileId = onCreateFile(name);
+  const handleCreateFileFromName = useCallback(async (name: string): Promise<string> => {
+    const fileId = await onCreateFile(name);
     // Navigate to the new file
     const newFile = files.find(f => f.name === name);
     if (newFile) {
       onNavigateToFile(newFile.id);
     }
+    return fileId;
   }, [onCreateFile, onNavigateToFile, files]);
 
   // Calculate backlinks for the current file
@@ -489,7 +489,7 @@ export const Editor: React.FC<EditorProps> = ({
             onChange={handleContentChange}
             files={files}
             onNavigateToFile={onNavigateToFile}
-            onCreateFile={onCreateFile}
+            onCreateFile={handleCreateFileFromName}
             className="h-full"
           />
         ) : useBlockEditor ? (
