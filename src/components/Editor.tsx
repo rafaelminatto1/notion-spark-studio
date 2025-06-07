@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { FileText, Tag, MessageCircle, Star, ArrowLeft, ArrowRight, Type, Database as DatabaseIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,6 +13,7 @@ import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { FileItem, Comment, Block } from '@/types';
 import { useComments } from '@/hooks/useComments';
 import { useVersionHistory } from '@/hooks/useVersionHistory';
+import { useAutoSave } from '@/hooks/useAutoSave';
 import { parseLinks } from '@/utils/linkParser';
 
 interface EditorProps {
@@ -46,7 +46,23 @@ export const Editor: React.FC<EditorProps> = ({
   const [showComments, setShowComments] = useState(false);
   const [useBlockEditor, setUseBlockEditor] = useState(false);
   const [useMarkdownEditor, setUseMarkdownEditor] = useState(false);
+  const [localContent, setLocalContent] = useState(file?.content || '');
   const editorRef = useRef<HTMLDivElement>(null);
+
+  // Initialize auto-save
+  const { forceSave } = useAutoSave({
+    file: file ? { ...file, content: localContent } : undefined,
+    onUpdateFile,
+    enabled: true,
+    interval: 30000 // 30 seconds
+  });
+
+  // Update local content when file changes
+  useEffect(() => {
+    if (file) {
+      setLocalContent(file.content || '');
+    }
+  }, [file?.id]);
 
   const {
     isAddingComment,
@@ -59,10 +75,11 @@ export const Editor: React.FC<EditorProps> = ({
   } = useComments(file?.id || null, file?.comments || []);
 
   const handleContentChange = useCallback((content: string) => {
-    if (file) {
-      onUpdateFile(file.id, { content });
-    }
-  }, [file, onUpdateFile]);
+    // Update local content immediately for responsive UI
+    setLocalContent(content);
+    
+    // Auto-save will handle the actual saving with debounce
+  }, []);
 
   const handleTagsChange = useCallback((tags: string[]) => {
     if (file) {
@@ -133,12 +150,9 @@ export const Editor: React.FC<EditorProps> = ({
         }
       }).join('\n\n');
       
-      onUpdateFile(file.id, { 
-        content,
-        blocks: blocks // Store blocks data for future editing
-      });
+      setLocalContent(content);
     }
-  }, [file, onUpdateFile]);
+  }, [file]);
 
   const contentToBlocks = (content: string, existingBlocks?: Block[]): Block[] => {
     // If we have existing blocks, use them
@@ -445,6 +459,14 @@ export const Editor: React.FC<EditorProps> = ({
             <Button
               variant="ghost"
               size="sm"
+              onClick={() => forceSave()}
+              className="gap-2 text-gray-400 hover:text-white"
+            >
+              Salvar agora
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 setUseMarkdownEditor(!useMarkdownEditor);
                 setUseBlockEditor(false);
@@ -494,7 +516,7 @@ export const Editor: React.FC<EditorProps> = ({
       <div className="flex-1 p-6 relative" ref={editorRef}>
         {useMarkdownEditor ? (
           <MarkdownEditor
-            content={file.content || ''}
+            content={localContent}
             onChange={handleContentChange}
             files={files}
             onNavigateToFile={onNavigateToFile}
@@ -503,12 +525,12 @@ export const Editor: React.FC<EditorProps> = ({
           />
         ) : useBlockEditor ? (
           <BlockEditor
-            blocks={contentToBlocks(file.content || '', (file as any).blocks)}
+            blocks={contentToBlocks(localContent, (file as any).blocks)}
             onBlocksChange={handleBlocksChange}
           />
         ) : (
           <AdvancedEditor
-            content={file.content || ''}
+            content={localContent}
             onChange={handleContentChange}
             files={files}
             onNavigateToFile={onNavigateToFile}
@@ -534,7 +556,7 @@ export const Editor: React.FC<EditorProps> = ({
       {/* Backlinks */}
       <div className="border-t border-notion-dark-border p-6">
         <Backlinks
-          backlinks={backlinks}
+          backlinks={findBacklinks(files, file.name)}
           onNavigate={onNavigateToFile}
         />
       </div>
