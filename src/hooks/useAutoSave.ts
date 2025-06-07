@@ -13,13 +13,15 @@ interface UseAutoSaveProps {
 export const useAutoSave = ({
   file,
   onUpdateFile,
-  interval = 5000, // 5 segundos
+  interval = 30000, // 30 segundos ao invés de 5
   enabled = true
 }: UseAutoSaveProps) => {
   const { toast } = useToast();
   const lastSavedContent = useRef<string>('');
   const saveTimeoutRef = useRef<NodeJS.Timeout>();
   const lastSaveTime = useRef<Date>(new Date());
+  const isTypingRef = useRef<boolean>(false);
+  const typingTimeoutRef = useRef<NodeJS.Timeout>();
 
   const save = useCallback(() => {
     if (!file || !enabled) return;
@@ -33,11 +35,14 @@ export const useAutoSave = ({
       lastSavedContent.current = currentContent;
       lastSaveTime.current = new Date();
       
-      toast({
-        title: "Auto-saved",
-        description: `${file.name} foi salvo automaticamente`,
-        duration: 2000,
-      });
+      // Mostrar toast apenas se não estiver digitando
+      if (!isTypingRef.current) {
+        toast({
+          title: "Auto-saved",
+          description: `${file.name} foi salvo automaticamente`,
+          duration: 1500,
+        });
+      }
     }
   }, [file, onUpdateFile, enabled, toast]);
 
@@ -46,6 +51,19 @@ export const useAutoSave = ({
       clearTimeout(saveTimeoutRef.current);
     }
     
+    // Detectar se o usuário está digitando
+    isTypingRef.current = true;
+    
+    // Resetar o timeout de digitação
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    
+    // Considerar que parou de digitar após 3 segundos sem mudanças
+    typingTimeoutRef.current = setTimeout(() => {
+      isTypingRef.current = false;
+    }, 3000);
+    
     saveTimeoutRef.current = setTimeout(save, interval);
   }, [save, interval]);
 
@@ -53,6 +71,7 @@ export const useAutoSave = ({
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
+    isTypingRef.current = false;
     save();
   }, [save]);
 
@@ -66,6 +85,9 @@ export const useAutoSave = ({
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
     };
   }, [file?.content, debouncedSave, enabled]);
 
@@ -78,6 +100,7 @@ export const useAutoSave = ({
   return {
     forceSave,
     getTimeSinceLastSave,
-    lastSaveTime: lastSaveTime.current
+    lastSaveTime: lastSaveTime.current,
+    isTyping: isTypingRef.current
   };
 };

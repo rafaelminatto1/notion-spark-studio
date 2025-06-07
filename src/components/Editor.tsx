@@ -13,7 +13,6 @@ import { FavoritesManager } from '@/components/FavoritesManager';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { FileItem, Comment, Block } from '@/types';
 import { useComments } from '@/hooks/useComments';
-import { useAutoSave } from '@/hooks/useAutoSave';
 import { useVersionHistory } from '@/hooks/useVersionHistory';
 import { parseLinks } from '@/utils/linkParser';
 
@@ -488,6 +487,9 @@ export const Editor: React.FC<EditorProps> = ({
           <MarkdownEditor
             content={file.content || ''}
             onChange={handleContentChange}
+            files={files}
+            onNavigateToFile={onNavigateToFile}
+            onCreateFile={onCreateFile}
             className="h-full"
           />
         ) : useBlockEditor ? (
