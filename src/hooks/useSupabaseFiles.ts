@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -156,7 +155,10 @@ export const useSupabaseFiles = () => {
           parent_id: parentId,
           content: content || '',
           emoji,
-          user_id: user.id
+          user_id: user.id,
+          is_public: false,
+          is_protected: false,
+          show_in_sidebar: true
         })
         .select()
         .single();
@@ -172,12 +174,24 @@ export const useSupabaseFiles = () => {
       }
 
       console.log('[useSupabaseFiles] File created successfully:', data);
+      
+      // Add file immediately to local state for instant feedback
+      const newFile = {
+        ...data,
+        type: data.type as 'file' | 'folder'
+      };
+      
+      setFiles(prev => {
+        const exists = prev.find(f => f.id === newFile.id);
+        if (exists) return prev;
+        return [...prev, newFile];
+      });
+
       toast({
         title: "Arquivo criado",
         description: `${type === 'folder' ? 'Pasta' : 'Nota'} "${name}" criada com sucesso`
       });
 
-      // The realtime subscription will handle adding the file to the state
       return data.id;
     } catch (error) {
       console.error('[useSupabaseFiles] Error creating file:', error);
@@ -221,10 +235,14 @@ export const useSupabaseFiles = () => {
       }
 
       console.log('[useSupabaseFiles] File updated successfully');
-      toast({
-        title: "Arquivo atualizado",
-        description: "Arquivo salvo com sucesso"
-      });
+      
+      // Only show toast if content was not updated (to avoid spam during auto-save)
+      if (!updates.content) {
+        toast({
+          title: "Arquivo atualizado",
+          description: "Arquivo salvo com sucesso"
+        });
+      }
     } catch (error) {
       console.error('[useSupabaseFiles] Error updating file:', error);
       toast({

@@ -13,7 +13,7 @@ interface UseAutoSaveProps {
 export const useAutoSave = ({
   file,
   onUpdateFile,
-  interval = 30000, // 30 segundos ao invés de 5
+  interval = 30000, // 30 segundos
   enabled = true
 }: UseAutoSaveProps) => {
   const { toast } = useToast();
@@ -35,16 +35,9 @@ export const useAutoSave = ({
       lastSavedContent.current = currentContent;
       lastSaveTime.current = new Date();
       
-      // Mostrar toast apenas se não estiver digitando
-      if (!isTypingRef.current) {
-        toast({
-          title: "Auto-saved",
-          description: `${file.name} foi salvo automaticamente`,
-          duration: 1500,
-        });
-      }
+      console.log('[useAutoSave] Content auto-saved for file:', file.name);
     }
-  }, [file, onUpdateFile, enabled, toast]);
+  }, [file, onUpdateFile, enabled]);
 
   const debouncedSave = useCallback(() => {
     if (saveTimeoutRef.current) {
@@ -73,7 +66,13 @@ export const useAutoSave = ({
     }
     isTypingRef.current = false;
     save();
-  }, [save]);
+    
+    toast({
+      title: "Arquivo salvo",
+      description: `${file?.name || 'Arquivo'} foi salvo manualmente`,
+      duration: 1500,
+    });
+  }, [save, toast, file?.name]);
 
   useEffect(() => {
     if (file && enabled) {
