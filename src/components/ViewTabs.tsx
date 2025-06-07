@@ -42,6 +42,18 @@ export const ViewTabs: React.FC<ViewTabsProps> = ({
     }
   ];
 
+  const handleTabClick = (tabId: ViewMode) => {
+    console.log('[ViewTabs] Button clicked:', tabId);
+    console.log('[ViewTabs] onViewChange function:', typeof onViewChange);
+    
+    if (typeof onViewChange === 'function') {
+      onViewChange(tabId);
+      console.log('[ViewTabs] onViewChange called successfully');
+    } else {
+      console.error('[ViewTabs] onViewChange is not a function:', onViewChange);
+    }
+  };
+
   return (
     <div className={cn("flex gap-1 p-1 bg-notion-dark-hover rounded-lg", className)}>
       {tabs.map(tab => {
@@ -51,7 +63,7 @@ export const ViewTabs: React.FC<ViewTabsProps> = ({
             key={tab.id}
             variant="ghost"
             size="sm"
-            onClick={() => onViewChange(tab.id)}
+            onClick={() => handleTabClick(tab.id)}
             className={cn(
               "gap-2 transition-all",
               activeView === tab.id
