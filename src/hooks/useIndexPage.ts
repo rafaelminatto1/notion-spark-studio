@@ -1,11 +1,10 @@
-
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { ViewMode } from '@/components/ViewTabs';
 import { useSupabaseFiles } from '@/hooks/useSupabaseFiles';
 import { useSupabaseProfile } from '@/hooks/useSupabaseProfile';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useNavigation } from '@/hooks/useNavigation';
-import { useMobileDetection } from '@/hooks/useMobileDetection';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export const useIndexPage = () => {
   console.log('[useIndexPage] Hook starting');
@@ -19,7 +18,7 @@ export const useIndexPage = () => {
   console.log('[useIndexPage] State initialized');
 
   try {
-    const isMobile = useMobileDetection();
+    const isMobile = useIsMobile();
     console.log('[useIndexPage] Mobile detection completed');
     
     const { files, loading: filesLoading, createFile, updateFile } = useSupabaseFiles();

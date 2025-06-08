@@ -16,12 +16,14 @@ interface BlockEditorProps {
   blocks: Block[];
   onBlocksChange: (blocks: Block[]) => void;
   className?: string;
+  isMobile?: boolean;
 }
 
 export const BlockEditor: React.FC<BlockEditorProps> = ({
   blocks,
   onBlocksChange,
-  className
+  className,
+  isMobile = false
 }) => {
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const [draggedBlock, setDraggedBlock] = useState<string | null>(null);
@@ -291,82 +293,128 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
   };
 
   return (
-    <div className={cn("space-y-2", className)} ref={editorRef}>
-      {blocks.map((block, index) => (
-        <div 
-          key={block.id}
-          data-block-id={block.id}
-          className="group relative"
-          draggable
-          onDragStart={(e) => handleDragStart(e, block.id)}
-          onDragOver={handleDragOver}
-          onDrop={(e) => handleDrop(e, block.id)}
-        >
-          <div className="flex items-start gap-2">
-            {/* Drag Handle */}
-            <div className="opacity-0 group-hover:opacity-100 flex items-center pt-2">
-              <GripVertical className="h-4 w-4 text-gray-400 cursor-grab hover:text-white" />
-            </div>
-            
-            <div className="flex-1 min-w-0">
-              {renderBlock(block)}
-            </div>
-            
-            {/* Block Controls */}
-            <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 pt-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => addBlock('text', block.id)}
-                className="h-6 w-6 p-0"
-                title="Adicionar bloco"
-              >
-                <Plus className="h-3 w-3" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => duplicateBlock(block.id)}
-                className="h-6 w-6 p-0"
-                title="Duplicar"
-              >
-                <Copy className="h-3 w-3" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => deleteBlock(block.id)}
-                className="h-6 w-6 p-0 text-red-400 hover:text-red-300"
-                title="Deletar"
-              >
-                <Minus className="h-3 w-3" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      ))}
-
-      {blocks.length === 0 && (
-        <div className="text-center py-8">
-          <p className="text-gray-400 mb-4">Digite / para ver comandos</p>
+    <div className={cn("relative w-full h-full flex flex-col", className)}>
+      {/* Toolbar fixa no topo em mobile */}
+      {isMobile && (
+        <div className="fixed top-0 left-0 right-0 h-16 px-2 py-1 bg-background border-b shadow-lg z-50 flex gap-2 items-center justify-center">
           <Button
+            type="button"
             variant="ghost"
+            size="lg"
+            className="flex flex-col items-center justify-center mx-1 px-2 py-2 text-base"
             onClick={() => addBlock('text')}
-            className="gap-2 text-gray-400 hover:text-white"
+            aria-label="Adicionar bloco"
           >
-            <Plus className="h-4 w-4" />
-            Adicionar bloco
+            <Plus className="h-6 w-6 mb-0.5" />
+            <span className="text-[10px] leading-tight">Novo</span>
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="lg"
+            className="flex flex-col items-center justify-center mx-1 px-2 py-2 text-base"
+            onClick={() => duplicateBlock(blocks[blocks.length-1]?.id)}
+            aria-label="Duplicar último"
+            disabled={blocks.length === 0}
+          >
+            <Copy className="h-6 w-6 mb-0.5" />
+            <span className="text-[10px] leading-tight">Duplicar</span>
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="lg"
+            className="flex flex-col items-center justify-center mx-1 px-2 py-2 text-base"
+            onClick={() => deleteBlock(blocks[blocks.length-1]?.id)}
+            aria-label="Deletar último"
+            disabled={blocks.length === 0}
+          >
+            <Minus className="h-6 w-6 mb-0.5" />
+            <span className="text-[10px] leading-tight">Deletar</span>
           </Button>
         </div>
       )}
+      {/* Editor com padding extra no mobile */}
+      <div className={cn("space-y-2 w-full flex-1 overflow-auto", isMobile ? "pt-20 pb-24 px-2" : "pt-2 pb-2 px-0")}
+        style={isMobile ? { minHeight: 'calc(100vh - 80px)' } : {}}
+        ref={editorRef}
+      >
+        {blocks.map((block, index) => (
+          <div 
+            key={block.id}
+            data-block-id={block.id}
+            className="group relative"
+            draggable
+            onDragStart={(e) => handleDragStart(e, block.id)}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, block.id)}
+          >
+            <div className="flex items-start gap-2">
+              {/* Drag Handle */}
+              <div className="opacity-0 group-hover:opacity-100 flex items-center pt-2">
+                <GripVertical className="h-4 w-4 text-gray-400 cursor-grab hover:text-white" />
+              </div>
+              
+              <div className="flex-1 min-w-0">
+                {renderBlock(block)}
+              </div>
+              
+              {/* Block Controls */}
+              <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 pt-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => addBlock('text', block.id)}
+                  className="h-6 w-6 p-0"
+                  title="Adicionar bloco"
+                >
+                  <Plus className="h-3 w-3" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => duplicateBlock(block.id)}
+                  className="h-6 w-6 p-0"
+                  title="Duplicar"
+                >
+                  <Copy className="h-3 w-3" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => deleteBlock(block.id)}
+                  className="h-6 w-6 p-0 text-red-400 hover:text-red-300"
+                  title="Deletar"
+                >
+                  <Minus className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        ))}
 
-      <SlashMenu
-        isOpen={slashMenu.isOpen}
-        position={slashMenu.position}
-        onSelect={handleSlashMenuSelect}
-        onClose={() => setSlashMenu({ isOpen: false, blockId: '', position: { x: 0, y: 0 }, query: '' })}
-        query={slashMenu.query}
-      />
+        {blocks.length === 0 && (
+          <div className="text-center py-8">
+            <p className="text-gray-400 mb-4">Digite / para ver comandos</p>
+            <Button
+              variant="ghost"
+              onClick={() => addBlock('text')}
+              className="gap-2 text-gray-400 hover:text-white"
+            >
+              <Plus className="h-4 w-4" />
+              Adicionar bloco
+            </Button>
+          </div>
+        )}
+
+        <SlashMenu
+          isOpen={slashMenu.isOpen}
+          position={slashMenu.position}
+          onSelect={handleSlashMenuSelect}
+          onClose={() => setSlashMenu({ isOpen: false, blockId: '', position: { x: 0, y: 0 }, query: '' })}
+          query={slashMenu.query}
+        />
+      </div>
     </div>
   );
 };

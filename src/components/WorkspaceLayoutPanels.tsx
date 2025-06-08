@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { Editor } from '@/components/Editor';
@@ -30,6 +29,9 @@ interface WorkspaceLayoutPanelsProps {
   getFileTree: () => any[];
   getCurrentFile: () => FileItem | undefined;
   setCurrentFileId: (id: string | null) => void;
+  isMobile?: boolean;
+  sidebarOpen?: boolean;
+  onSidebarOpenChange?: (open: boolean) => void;
 }
 
 export const WorkspaceLayoutPanels: React.FC<WorkspaceLayoutPanelsProps> = ({
@@ -51,7 +53,10 @@ export const WorkspaceLayoutPanels: React.FC<WorkspaceLayoutPanelsProps> = ({
   canGoForward,
   getFileTree,
   getCurrentFile,
-  setCurrentFileId
+  setCurrentFileId,
+  isMobile = false,
+  sidebarOpen = false,
+  onSidebarOpenChange
 }) => {
   switch (panel.type) {
     case 'sidebar':
@@ -66,6 +71,9 @@ export const WorkspaceLayoutPanels: React.FC<WorkspaceLayoutPanelsProps> = ({
           onUpdateFile={onUpdateFile}
           onDeleteFile={onDeleteFile}
           allFiles={files}
+          isMobile={isMobile}
+          open={sidebarOpen}
+          onOpenChange={onSidebarOpenChange}
         />
       );
     

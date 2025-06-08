@@ -15,6 +15,7 @@ import { useComments } from '@/hooks/useComments';
 import { useVersionHistory } from '@/hooks/useVersionHistory';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { parseLinks } from '@/utils/linkParser';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface EditorProps {
   file: FileItem | undefined;
@@ -48,6 +49,7 @@ export const Editor: React.FC<EditorProps> = ({
   const [useMarkdownEditor, setUseMarkdownEditor] = useState(false);
   const [localContent, setLocalContent] = useState(file?.content || '');
   const editorRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   // Initialize auto-save
   const { forceSave } = useAutoSave({
@@ -514,27 +516,22 @@ export const Editor: React.FC<EditorProps> = ({
 
       {/* Content */}
       <div className="flex-1 p-6 relative" ref={editorRef}>
-        {useMarkdownEditor ? (
+        {useBlockEditor ? (
+          <BlockEditor
+            blocks={contentToBlocks(localContent, (file as any).blocks)}
+            onBlocksChange={handleBlocksChange}
+            className="flex-1"
+            isMobile={isMobile}
+          />
+        ) : (
           <MarkdownEditor
             content={localContent}
             onChange={handleContentChange}
             files={files}
             onNavigateToFile={onNavigateToFile}
             onCreateFile={handleCreateFileFromName}
-            className="h-full"
-          />
-        ) : useBlockEditor ? (
-          <BlockEditor
-            blocks={contentToBlocks(localContent, (file as any).blocks)}
-            onBlocksChange={handleBlocksChange}
-          />
-        ) : (
-          <AdvancedEditor
-            content={localContent}
-            onChange={handleContentChange}
-            files={files}
-            onNavigateToFile={onNavigateToFile}
-            onCreateFile={handleCreateFileFromName}
+            className="flex-1"
+            isMobile={isMobile}
           />
         )}
 

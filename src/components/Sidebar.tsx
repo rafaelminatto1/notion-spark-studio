@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Folder, FolderOpen, FileText, Plus, Search, Settings, ChevronRight, ChevronDown, MoreHorizontal, Tag, Sparkles, LayoutPanelLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { TagsPanel } from '@/components/TagsPanel';
 import { useTags } from '@/hooks/useTags';
 import { SubItemCreator } from '@/components/SubItemCreator';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 
 interface SidebarProps {
   files: (FileItem & {
@@ -21,6 +21,9 @@ interface SidebarProps {
   onUpdateFile: (id: string, updates: Partial<FileItem>) => void;
   onDeleteFile: (id: string) => void;
   allFiles: FileItem[];
+  isMobile?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -32,7 +35,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onCreateFile,
   onUpdateFile,
   onDeleteFile,
-  allFiles
+  allFiles,
+  isMobile = false,
+  open = false,
+  onOpenChange,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreating, setIsCreating] = useState<{
@@ -212,25 +218,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ));
   };
 
-  if (isCollapsed) {
-    return (
-      <div className="w-16 bg-gradient-to-b from-background to-background/80 border-r border-border/60 flex flex-col h-screen shadow-xl">
-        <div className="p-4 border-b border-border/60">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsCollapsed(false)}
-            className="h-8 w-8 p-0 rounded-full hover:bg-purple-500/20 transition-all duration-300"
-          >
-            <LayoutPanelLeft className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="w-80 bg-gradient-to-b from-background via-background/95 to-background/90 border-r border-border/60 flex flex-col h-screen shadow-xl backdrop-blur-sm">
+  const sidebarContent = (
+    <div className="w-72 max-w-full h-full bg-background border-r border-border flex flex-col overflow-y-auto">
       {/* Enhanced Header */}
       <div className="p-6 border-b border-border/60 bg-gradient-to-r from-purple-500/5 to-blue-500/5 backdrop-blur-sm">
         <div className="flex items-center justify-between mb-6">
@@ -351,4 +340,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
     </div>
   );
+
+  if (isMobile) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="left" className="p-0 w-72 max-w-full">
+          {sidebarContent}
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  return sidebarContent;
 };

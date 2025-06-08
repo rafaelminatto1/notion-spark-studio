@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { WorkspaceLayoutPanels } from '@/components/WorkspaceLayoutPanels';
@@ -8,6 +7,7 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { useNavigation } from '@/hooks/useNavigation';
 import { usePanelCollapse } from '@/hooks/usePanelCollapse';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface WorkspaceLayoutProps {
   activeView: string;
@@ -39,6 +39,9 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
   const centerPanels = visiblePanels.filter(p => p.position === 'center');
   const rightPanels = visiblePanels.filter(p => p.position === 'right');
 
+  const isMobile = useIsMobile();
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
+
   if (visiblePanels.length === 0) {
     return (
       <div className="flex-1 p-8 text-center text-gray-400 bg-gradient-to-br from-background to-background/80">
@@ -57,6 +60,35 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
     const panelIsCollapsed = panel.isCollapsible && isCollapsed(panel.id);
     const effectiveSize = panelIsCollapsed ? 0 : panel.size;
     
+    if (panel.type === 'sidebar') {
+      return (
+        <WorkspaceLayoutPanels
+          panel={panel}
+          files={files}
+          currentFileId={currentFileId}
+          expandedFolders={expandedFolders}
+          favorites={favorites}
+          onFileSelect={setCurrentFileId}
+          onToggleFolder={toggleFolder}
+          onCreateFile={onCreateFile}
+          onUpdateFile={updateFile}
+          onDeleteFile={deleteFile}
+          onNavigateToFile={onNavigateToFile}
+          onToggleFavorite={toggleFavorite}
+          onGoBack={goBack}
+          onGoForward={goForward}
+          canGoBack={canGoBack}
+          canGoForward={canGoForward}
+          getFileTree={getFileTree}
+          getCurrentFile={getCurrentFile}
+          setCurrentFileId={setCurrentFileId}
+          isMobile={isMobile}
+          sidebarOpen={sidebarOpen}
+          onSidebarOpenChange={setSidebarOpen}
+        />
+      );
+    }
+
     return (
       <React.Fragment key={panel.id}>
         <ResizablePanel

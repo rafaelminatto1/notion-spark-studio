@@ -39,6 +39,7 @@ interface MarkdownEditorProps {
   onNavigateToFile?: (fileName: string) => void;
   onCreateFile?: (name: string) => Promise<string>;
   className?: string;
+  isMobile?: boolean;
 }
 
 export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
@@ -47,7 +48,8 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
   files = [],
   onNavigateToFile,
   onCreateFile,
-  className
+  className,
+  isMobile = false
 }) => {
   const [showPreview, setShowPreview] = useState(false);
   const [splitView, setSplitView] = useState(false);
@@ -319,72 +321,43 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
   }
 
   return (
-    <div className={cn("flex flex-col h-full", className)}>
-      {/* Enhanced Toolbar */}
-      <div className="flex items-center justify-between p-3 border-b border-workspace-border bg-workspace-surface">
-        <div className="flex items-center gap-1 flex-wrap">
-          {toolbarActions.map((action, index) => (
-            <Button
-              key={index}
-              variant="ghost"
-              size="sm"
-              onClick={action.action}
-              className="h-8 w-8 p-0 hover:bg-workspace-border rounded-lg transition-all duration-200"
-              title={action.label}
-            >
-              <action.icon className="h-4 w-4" />
-            </Button>
-          ))}
-          
-          <div className="h-6 w-px bg-workspace-border mx-2" />
-          <MediaManager onInsertMedia={insertMedia} />
-        </div>
-        
-        <div className="flex items-center gap-2">
+    <div className={cn("relative w-full h-full flex flex-col", className)}>
+      {/* Toolbar fixa no topo em mobile */}
+      <div
+        className={cn(
+          "flex gap-1 items-center border-b bg-background z-30",
+          isMobile
+            ? "fixed top-0 left-0 right-0 h-16 px-2 py-1 shadow-lg border-b z-50"
+            : "sticky top-0 px-2 py-1"
+        )}
+        style={isMobile ? { minHeight: 64 } : {}}
+      >
+        {toolbarActions.map(({ icon: Icon, label, action }, idx) => (
           <Button
+            key={label}
+            type="button"
             variant="ghost"
-            size="sm"
-            onClick={() => setShowLineNumbers(!showLineNumbers)}
-            className={cn("gap-2", showLineNumbers && "bg-notion-purple text-white")}
+            size={isMobile ? "lg" : "sm"}
+            className={cn(
+              "flex flex-col items-center justify-center",
+              isMobile ? "mx-1 px-2 py-2 text-base" : "mx-0.5 px-1 py-1 text-xs"
+            )}
+            onClick={action}
+            aria-label={label}
           >
-            <LineChart className="h-4 w-4" />
-            Linhas
+            <Icon className={isMobile ? "h-6 w-6 mb-0.5" : "h-4 w-4 mb-0.5"} />
+            {isMobile && <span className="text-[10px] leading-tight">{label.split(' ')[0]}</span>}
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setSplitView(!splitView);
-              if (!splitView) setShowPreview(true);
-            }}
-            className={cn("gap-2", splitView && "bg-notion-purple text-white")}
-          >
-            Split View
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowPreview(!showPreview)}
-            className={cn("gap-2", showPreview && !splitView && "bg-notion-purple text-white")}
-          >
-            {showPreview ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            {showPreview ? 'Editar' : 'Preview'}
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setZenMode(true)}
-            className="gap-2 hover:bg-purple-500/20"
-            title="Modo Foco (Ctrl+Enter)"
-          >
-            <Maximize2 className="h-4 w-4" />
-            Foco
-          </Button>
-        </div>
+        ))}
       </div>
-
-      {/* Editor Content */}
-      <div className="flex-1 flex min-h-0">
+      {/* Área de edição com padding extra no mobile */}
+      <div
+        className={cn(
+          "flex-1 overflow-auto w-full",
+          isMobile ? "pt-20 pb-24 px-2" : "pt-2 pb-2 px-0"
+        )}
+        style={isMobile ? { minHeight: 'calc(100vh - 80px)' } : {}}
+      >
         {/* Editor */}
         {(!showPreview || splitView) && (
           <div className={cn("flex-1 flex flex-col relative", splitView && "border-r border-workspace-border")}>
