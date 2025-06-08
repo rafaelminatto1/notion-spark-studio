@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -76,7 +77,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = 'auto';
-      const newHeight = Math.max(textarea.scrollHeight, isMobile ? 300 : 200);
+      const newHeight = Math.max(textarea.scrollHeight, isMobile ? 400 : 300);
       textarea.style.height = newHeight + 'px';
     }
   }, [isMobile]);
@@ -411,7 +412,7 @@ $$E = mc^2$$
               className={cn(
                 "flex-1 border-none resize-none bg-transparent text-workspace-text leading-relaxed font-mono text-sm focus:ring-0 focus:outline-none p-4 overflow-y-auto",
                 showLineNumbers && "pl-16",
-                isMobile ? "min-h-[300px] max-h-[70vh]" : "min-h-[200px] max-h-[60vh]"
+                isMobile ? "min-h-[400px] max-h-[70vh]" : "min-h-[300px] max-h-[60vh]"
               )}
               style={{ height: 'auto' }}
             />
@@ -452,7 +453,7 @@ $$E = mc^2$$
                     return <a href={href} {...props}>{children}</a>;
                   },
                   img: ({ src, alt, ...props }) => (
-                    <MediaViewer src={src} alt={alt} {...props} />
+                    <MediaViewer src={src} alt={alt} type="image" {...props} />
                   ),
                   video: ({ src, ...props }) => (
                     <MediaViewer src={src} type="video" {...props} />
@@ -467,23 +468,7 @@ $$E = mc^2$$
                   ),
                   td: ({ ...props }) => (
                     <td className="px-4 py-2 border" {...props} />
-                  ),
-                  code: ({ inline, className, children, ...props }) => {
-                    const match = /language-(\w+)/.exec(className || '');
-                    return !inline && match ? (
-                      <SyntaxHighlighter
-                        children={String(children).replace(/\n$/, '')}
-                        style={dracula}
-                        language={match[1]}
-                        PreTag="div"
-                        {...props}
-                      />
-                    ) : (
-                      <code className={className} {...props}>
-                        {children}
-                      </code>
-                    );
-                  }
+                  )
                 }}
               >
                 {content || '*Nada para mostrar ainda...*'}
