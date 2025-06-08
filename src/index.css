@@ -72,36 +72,66 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior: none;
 }
 
-/* Mobile-first responsive design */
+/* Mobile-first responsive design with Magic UI styling */
 @media (max-width: 767px) {
   .safe-area-pb {
     padding-bottom: env(safe-area-inset-bottom);
   }
   
-  /* Ensure touch targets are accessible */
+  /* Enhanced touch targets */
   button, .touch-target {
-    min-height: 44px;
-    min-width: 44px;
+    min-height: 48px;
+    min-width: 48px;
   }
   
-  /* Improve text readability on mobile */
+  /* Better mobile reading */
   body {
-    font-size: 16px; /* Prevent zoom on iOS */
+    font-size: 16px;
+    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(222.2 84% 3%) 100%);
   }
   
-  /* Better mobile scrolling */
+  /* Magic UI inspired mobile scrolling */
   .mobile-scroll {
     -webkit-overflow-scrolling: touch;
     overflow-y: auto;
+    scroll-behavior: smooth;
+  }
+  
+  /* Magic UI glassmorphism effects */
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Enhanced mobile bottom navigation */
+  .mobile-nav {
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(40px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Floating action button */
+  .fab {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.4);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  
+  .fab:active {
+    transform: scale(0.95);
   }
 }
 
 /* Tablet styles */
 @media (min-width: 768px) and (max-width: 1023px) {
   body {
-    font-size: 14px;
+    font-size: 15px;
+    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(222.2 84% 6%) 100%);
   }
 }
 
@@ -109,14 +139,26 @@ body {
 @media (min-width: 1024px) {
   body {
     font-size: 14px;
+    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(222.2 84% 6%) 50%, hsl(var(--background)) 100%);
   }
 }
 
-/* Animations */
+/* Magic UI inspired animations */
 @keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
   }
   to {
     opacity: 1;
@@ -133,8 +175,30 @@ body {
   }
 }
 
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(102, 126, 234, 0.6);
+  }
+}
+
 .animate-fade-in {
-  animation: fade-in 0.3s ease-out;
+  animation: fade-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.animate-slide-up {
+  animation: slide-up 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .animate-gradient-x {
@@ -142,34 +206,90 @@ body {
   animation: gradient-x 3s ease infinite;
 }
 
-/* Custom scrollbar - mobile friendly */
-.scrollbar-thin {
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Magic UI custom scrollbar */
+.scrollbar-magic {
   scrollbar-width: thin;
-  scrollbar-color: hsl(var(--border)) transparent;
+  scrollbar-color: rgba(102, 126, 234, 0.3) transparent;
 }
 
-.scrollbar-thin::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+.scrollbar-magic::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
 }
 
-.scrollbar-thin::-webkit-scrollbar-track {
+.scrollbar-magic::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  background-color: hsl(var(--border));
-  border-radius: 3px;
+.scrollbar-magic::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.6), rgba(118, 75, 162, 0.6));
+  border-radius: 2px;
 }
 
-.scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background-color: hsl(var(--border) / 0.8);
+.scrollbar-magic::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.8), rgba(118, 75, 162, 0.8));
 }
 
-/* Better focus indicators for accessibility */
+/* Enhanced focus indicators */
 .focus-visible:focus-visible {
   outline: 2px solid hsl(var(--primary));
   outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+}
+
+/* Magic UI button styles */
+.btn-magic {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-magic::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.btn-magic:hover::before {
+  opacity: 1;
+}
+
+.btn-magic:active {
+  transform: scale(0.98);
+}
+
+/* Magic UI card styles */
+.card-magic {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.card-magic:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  border-color: rgba(102, 126, 234, 0.3);
 }
 
 /* High contrast mode support */
@@ -189,10 +309,41 @@ body {
   }
 }
 
-/* Dark mode improvements for mobile */
-@media (prefers-color-scheme: dark) {
-  /* Better contrast for mobile reading */
-  body {
-    background-color: hsl(222.2 84% 4.9%);
-  }
+/* Magic UI input styles */
+.input-magic {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.input-magic:focus {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(102, 126, 234, 0.5);
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+/* Magic UI floating elements */
+.floating-element {
+  position: relative;
+  z-index: 10;
+}
+
+.floating-element::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border-radius: inherit;
+  z-index: -1;
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+
+.floating-element:hover::after {
+  opacity: 1;
 }

@@ -8,7 +8,7 @@ import { WorkspaceProvider } from '@/components/WorkspaceProvider';
 import { WorkspaceLayout } from '@/components/WorkspaceLayout';
 import { AppHeader } from '@/components/AppHeader';
 import { FileItem } from '@/types';
-import { Plus, Search, Star, Settings } from 'lucide-react';
+import { Plus, Search, FileText, Settings, Sparkles } from 'lucide-react';
 
 interface IndexMainContentProps {
   activeView: ViewMode;
@@ -66,18 +66,18 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
   return (
     <ThemeProvider>
       <WorkspaceProvider>
-        <div className="min-h-screen bg-background text-foreground flex w-full relative">
+        <div className="min-h-screen bg-background text-foreground flex w-full relative overflow-hidden">
           {/* Mobile Sidebar Backdrop */}
           {isMobile && isMobileSidebarOpen && (
             <div 
-              className="fixed inset-0 bg-black/50 z-40 md:hidden"
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden animate-fade-in"
               onClick={onToggleMobileSidebar}
             />
           )}
           
-          {/* Main Content Container - Mobile First */}
-          <div className="flex-1 flex flex-col min-w-0 pb-16 md:pb-0"> {/* Mobile bottom bar space */}
-            {/* Header - Hidden on mobile for more space */}
+          {/* Main Content Container - Enhanced Mobile First */}
+          <div className="flex-1 flex flex-col min-w-0 relative"> 
+            {/* Header - Enhanced for mobile */}
             {!isMobile && (
               <AppHeader
                 activeView={activeView}
@@ -96,19 +96,21 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
             )}
             
             {/* Content Area */}
-            <WorkspaceLayout
-              activeView={activeView}
-              onViewChange={handleViewChangeFromWorkspace}
-              onNavigateToFile={(fileId: string) => {
-                setCurrentFileId(fileId);
-                navigateTo(fileId);
-                setActiveView('editor');
-              }}
-              onCreateFile={onCreateFile}
-              sidebarOpen={isMobileSidebarOpen}
-              onSidebarOpenChange={onToggleMobileSidebar}
-              isMobile={isMobile}
-            />
+            <div className={`flex-1 ${isMobile ? 'pb-20' : ''}`}>
+              <WorkspaceLayout
+                activeView={activeView}
+                onViewChange={handleViewChangeFromWorkspace}
+                onNavigateToFile={(fileId: string) => {
+                  setCurrentFileId(fileId);
+                  navigateTo(fileId);
+                  setActiveView('editor');
+                }}
+                onCreateFile={onCreateFile}
+                sidebarOpen={isMobileSidebarOpen}
+                onSidebarOpenChange={onToggleMobileSidebar}
+                isMobile={isMobile}
+              />
+            </div>
           </div>
           
           {/* Quick Switcher */}
@@ -134,45 +136,77 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
             favorites={favorites}
           />
           
-          {/* Mobile Bottom Navigation */}
+          {/* Enhanced Mobile Bottom Navigation */}
           {isMobile && (
-            <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t border-border flex justify-around items-center h-16 shadow-lg safe-area-pb">
-              <button
-                className="flex flex-col items-center justify-center text-primary focus:outline-none p-2 rounded-lg active:bg-primary/10 transition-colors min-w-0 flex-1"
-                onClick={() => onCreateFile('Nova Nota')}
-                aria-label="Nova Nota"
-              >
-                <Plus className="h-5 w-5 mb-1" />
-                <span className="text-xs font-medium">Nova</span>
-              </button>
+            <div className="fixed bottom-0 left-0 right-0 z-50 mobile-nav safe-area-pb animate-slide-up">
+              <div className="flex items-center justify-around h-16 px-4">
+                {/* Create Button - Enhanced */}
+                <button
+                  className="flex flex-col items-center justify-center p-3 rounded-2xl transition-all duration-300 hover:bg-white/10 active:scale-95 group"
+                  onClick={() => onCreateFile('Nova Nota')}
+                  aria-label="Nova Nota"
+                >
+                  <div className="relative">
+                    <Plus className="h-6 w-6 text-white group-active:scale-110 transition-transform duration-200" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full opacity-0 group-active:opacity-20 transition-opacity"></div>
+                  </div>
+                  <span className="text-xs font-medium text-white/80 mt-1 group-active:text-white transition-colors">Nova</span>
+                </button>
+                
+                {/* Search Button - Enhanced */}
+                <button
+                  className="flex flex-col items-center justify-center p-3 rounded-2xl transition-all duration-300 hover:bg-white/10 active:scale-95 group"
+                  onClick={() => setIsCommandPaletteOpen(true)}
+                  aria-label="Buscar"
+                >
+                  <div className="relative">
+                    <Search className="h-6 w-6 text-white group-active:scale-110 transition-transform duration-200" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-blue-500 rounded-full opacity-0 group-active:opacity-20 transition-opacity"></div>
+                  </div>
+                  <span className="text-xs font-medium text-white/80 mt-1 group-active:text-white transition-colors">Buscar</span>
+                </button>
+                
+                {/* Files Button - Enhanced */}
+                <button
+                  className="flex flex-col items-center justify-center p-3 rounded-2xl transition-all duration-300 hover:bg-white/10 active:scale-95 group"
+                  onClick={onToggleMobileSidebar}
+                  aria-label="Arquivos"
+                >
+                  <div className="relative">
+                    <FileText className="h-6 w-6 text-white group-active:scale-110 transition-transform duration-200" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full opacity-0 group-active:opacity-20 transition-opacity"></div>
+                  </div>
+                  <span className="text-xs font-medium text-white/80 mt-1 group-active:text-white transition-colors">Arquivos</span>
+                </button>
+                
+                {/* Settings Button - Enhanced */}
+                <button
+                  className="flex flex-col items-center justify-center p-3 rounded-2xl transition-all duration-300 hover:bg-white/10 active:scale-95 group"
+                  onClick={onShowSettings}
+                  aria-label="Configurações"
+                >
+                  <div className="relative">
+                    <Settings className="h-6 w-6 text-white group-active:scale-110 transition-transform duration-200" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-red-500 rounded-full opacity-0 group-active:opacity-20 transition-opacity"></div>
+                  </div>
+                  <span className="text-xs font-medium text-white/80 mt-1 group-active:text-white transition-colors">Config</span>
+                </button>
+              </div>
               
-              <button
-                className="flex flex-col items-center justify-center text-primary focus:outline-none p-2 rounded-lg active:bg-primary/10 transition-colors min-w-0 flex-1"
-                onClick={() => setIsCommandPaletteOpen(true)}
-                aria-label="Buscar"
-              >
-                <Search className="h-5 w-5 mb-1" />
-                <span className="text-xs font-medium">Buscar</span>
-              </button>
-              
-              <button
-                className="flex flex-col items-center justify-center text-primary focus:outline-none p-2 rounded-lg active:bg-primary/10 transition-colors min-w-0 flex-1"
-                onClick={onToggleMobileSidebar}
-                aria-label="Arquivos"
-              >
-                <Star className="h-5 w-5 mb-1" />
-                <span className="text-xs font-medium">Arquivos</span>
-              </button>
-              
-              <button
-                className="flex flex-col items-center justify-center text-primary focus:outline-none p-2 rounded-lg active:bg-primary/10 transition-colors min-w-0 flex-1"
-                onClick={onShowSettings}
-                aria-label="Configurações"
-              >
-                <Settings className="h-5 w-5 mb-1" />
-                <span className="text-xs font-medium">Config</span>
-              </button>
-            </nav>
+              {/* Magic indicator bar */}
+              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full opacity-60"></div>
+            </div>
+          )}
+
+          {/* Floating Create Button for Mobile */}
+          {isMobile && (
+            <button
+              className="fixed bottom-24 right-6 z-40 fab h-14 w-14 rounded-full flex items-center justify-center animate-float"
+              onClick={() => onCreateFile('Nova Nota')}
+              aria-label="Criar Nova Nota"
+            >
+              <Sparkles className="h-6 w-6 text-white" />
+            </button>
           )}
         </div>
       </WorkspaceProvider>

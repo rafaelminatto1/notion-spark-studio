@@ -77,7 +77,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = 'auto';
-      const newHeight = Math.max(textarea.scrollHeight, isMobile ? 400 : 300);
+      const newHeight = Math.max(textarea.scrollHeight, isMobile ? 500 : 400);
       textarea.style.height = newHeight + 'px';
     }
   }, [isMobile]);
@@ -172,12 +172,12 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
   const toolbarActions = [
     {
       icon: Bold,
-      label: 'Negrito (Ctrl+B)',
+      label: 'Negrito',
       action: () => insertText('**', '**', 'texto em negrito')
     },
     {
       icon: Italic,
-      label: 'Itálico (Ctrl+I)',
+      label: 'Itálico',
       action: () => insertText('*', '*', 'texto em itálico')
     },
     {
@@ -192,12 +192,12 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
     },
     {
       icon: ListOrdered,
-      label: 'Lista Numerada',
+      label: 'Numerada',
       action: () => insertText('1. ', '', 'item numerado')
     },
     {
       icon: Link,
-      label: 'Link (Ctrl+K)',
+      label: 'Link',
       action: () => insertText('[', '](url)', 'texto do link')
     },
     {
@@ -209,21 +209,6 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
       icon: Quote,
       label: 'Citação',
       action: () => insertText('> ', '', 'citação')
-    },
-    {
-      icon: Table,
-      label: 'Tabela',
-      action: () => insertText('| Coluna 1 | Coluna 2 |\n|----------|----------|\n| ', ' | Célula 2 |', 'Célula 1')
-    },
-    {
-      icon: CheckSquare,
-      label: 'Checkbox',
-      action: () => insertText('- [ ] ', '', 'tarefa')
-    },
-    {
-      icon: Calculator,
-      label: 'Fórmula Math',
-      action: () => insertText('$$', '$$', 'E = mc^2')
     }
   ];
 
@@ -259,15 +244,15 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
 
   if (zenMode) {
     return (
-      <div className="fixed inset-0 z-50 bg-workspace-bg flex flex-col">
-        {/* Zen Mode Toolbar */}
-        <div className="flex items-center justify-between p-4 border-b border-workspace-border bg-workspace-surface">
+      <div className="fixed inset-0 z-50 bg-gradient-to-br from-background via-background/95 to-background flex flex-col">
+        {/* Zen Mode Toolbar - Enhanced */}
+        <div className="flex items-center justify-between p-4 glass-effect border-b border-white/10">
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setZenMode(false)}
-              className="gap-2"
+              className="gap-2 btn-magic"
             >
               <Maximize2 className="h-4 w-4" />
               Sair do Modo Foco
@@ -279,7 +264,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
               variant="ghost"
               size="sm"
               onClick={() => setShowPreview(!showPreview)}
-              className={cn("gap-2", showPreview && "bg-notion-purple text-white")}
+              className={cn("gap-2 btn-magic", showPreview && "bg-gradient-to-r from-purple-500 to-blue-500")}
             >
               {showPreview ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               {showPreview ? 'Editar' : 'Preview'}
@@ -290,21 +275,21 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
         {/* Zen Mode Content */}
         <div className="flex-1 flex">
           {!showPreview && (
-            <div className="flex-1 relative">
+            <div className="flex-1 relative card-magic m-4">
               <Textarea
                 ref={textareaRef}
                 value={content}
                 onChange={handleTextChangeWithAutocomplete}
                 onKeyDown={handleKeyDown}
                 placeholder="# Comece a escrever em Markdown..."
-                className="h-full border-none resize-none bg-transparent text-workspace-text leading-relaxed font-mono text-lg focus:ring-0 focus:outline-none p-8 max-w-4xl mx-auto"
+                className="h-full border-none resize-none bg-transparent text-workspace-text leading-relaxed font-mono text-lg focus:ring-0 focus:outline-none p-8 max-w-4xl mx-auto input-magic"
                 style={{ height: 'auto' }}
               />
             </div>
           )}
 
           {showPreview && (
-            <div className="flex-1 overflow-auto bg-workspace-bg">
+            <div className="flex-1 overflow-auto m-4 card-magic">
               <div className="p-8 prose prose-invert prose-gray max-w-4xl mx-auto">
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm, remarkMath]}
@@ -338,16 +323,15 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
   }
 
   return (
-    <div className={cn("relative w-full h-full flex flex-col", className)}>
-      {/* Toolbar fixa no topo em mobile */}
+    <div className={cn("relative w-full h-full flex flex-col card-magic", className)}>
+      {/* Enhanced Mobile Toolbar */}
       <div
         className={cn(
-          "flex gap-1 items-center border-b bg-background z-30 overflow-x-auto",
+          "flex gap-1 items-center border-b overflow-x-auto scrollbar-magic",
           isMobile
-            ? "fixed top-0 left-0 right-0 h-16 px-2 py-1 shadow-lg border-b z-50"
-            : "sticky top-0 px-2 py-1"
+            ? "fixed top-0 left-0 right-0 h-20 px-3 py-2 glass-effect z-50 shadow-lg"
+            : "sticky top-0 px-2 py-1 bg-background/80 backdrop-blur-sm"
         )}
-        style={isMobile ? { minHeight: 64 } : {}}
       >
         {toolbarActions.map(({ icon: Icon, label, action }, idx) => (
           <Button
@@ -356,29 +340,43 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
             variant="ghost"
             size={isMobile ? "lg" : "sm"}
             className={cn(
-              "flex flex-col items-center justify-center flex-shrink-0",
-              isMobile ? "mx-1 px-2 py-2 text-base" : "mx-0.5 px-1 py-1 text-xs"
+              "flex flex-col items-center justify-center flex-shrink-0 floating-element transition-all duration-300",
+              isMobile ? "mx-1 px-3 py-3 text-base h-16 w-16 rounded-2xl" : "mx-0.5 px-2 py-2 text-xs h-10 w-10 rounded-xl"
             )}
             onClick={action}
             aria-label={label}
           >
-            <Icon className={isMobile ? "h-6 w-6 mb-0.5" : "h-4 w-4 mb-0.5"} />
-            {isMobile && <span className="text-[10px] leading-tight">{label.split(' ')[0]}</span>}
+            <Icon className={isMobile ? "h-6 w-6 mb-1" : "h-4 w-4 mb-0.5"} />
+            {isMobile && <span className="text-[10px] leading-tight font-medium">{label}</span>}
           </Button>
         ))}
+
+        {/* Preview Toggle for Mobile */}
+        {isMobile && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="lg"
+            className="flex flex-col items-center justify-center flex-shrink-0 mx-1 px-3 py-3 text-base h-16 w-16 rounded-2xl btn-magic"
+            onClick={() => setShowPreview(!showPreview)}
+            aria-label="Preview"
+          >
+            {showPreview ? <EyeOff className="h-6 w-6 mb-1" /> : <Eye className="h-6 w-6 mb-1" />}
+            <span className="text-[10px] leading-tight font-medium">Preview</span>
+          </Button>
+        )}
       </div>
       
-      {/* Área de edição com padding extra no mobile */}
+      {/* Enhanced Editor Area */}
       <div
         className={cn(
-          "flex-1 overflow-auto w-full",
-          isMobile ? "pt-20 pb-24 px-2" : "pt-2 pb-2 px-0"
+          "flex-1 overflow-auto w-full scrollbar-magic",
+          isMobile ? "pt-24 pb-24 px-3" : "pt-2 pb-2 px-0"
         )}
-        style={isMobile ? { minHeight: 'calc(100vh - 80px)' } : {}}
       >
         {/* Editor */}
         {(!showPreview || splitView) && (
-          <div className={cn("flex-1 flex flex-col relative", splitView && "border-r border-workspace-border")}>
+          <div className={cn("flex-1 flex flex-col relative card-magic m-2", splitView && "border-r border-workspace-border")}>
             {renderLineNumbers()}
             <Textarea
               ref={textareaRef}
@@ -410,9 +408,9 @@ const codigo = 'syntax highlighting';
 $$E = mc^2$$
 "
               className={cn(
-                "flex-1 border-none resize-none bg-transparent text-workspace-text leading-relaxed font-mono text-sm focus:ring-0 focus:outline-none p-4 overflow-y-auto",
+                "flex-1 border-none resize-none bg-transparent text-workspace-text leading-relaxed font-mono text-base focus:ring-0 focus:outline-none p-4 overflow-y-auto input-magic transition-all duration-300",
                 showLineNumbers && "pl-16",
-                isMobile ? "min-h-[400px] max-h-[70vh]" : "min-h-[300px] max-h-[60vh]"
+                isMobile ? "min-h-[500px] max-h-[75vh] text-lg" : "min-h-[400px] max-h-[60vh]"
               )}
               style={{ height: 'auto' }}
             />
@@ -429,10 +427,10 @@ $$E = mc^2$$
           </div>
         )}
 
-        {/* Preview */}
+        {/* Enhanced Preview */}
         {showPreview && (
-          <div className={cn("flex-1 overflow-auto bg-workspace-bg", !splitView && "w-full")}>
-            <div className="p-4 prose prose-invert prose-gray max-w-none">
+          <div className={cn("flex-1 overflow-auto card-magic m-2", !splitView && "w-full")}>
+            <div className="p-6 prose prose-invert prose-gray max-w-none">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm, remarkMath]}
                 rehypePlugins={[rehypeKatex, rehypeHighlight]}
@@ -459,15 +457,15 @@ $$E = mc^2$$
                     <MediaViewer src={src} type="video" {...props} />
                   ),
                   table: ({ ...props }) => (
-                    <div className="overflow-auto">
+                    <div className="overflow-auto card-magic p-4">
                       <table className="table-auto" {...props} />
                     </div>
                   ),
                   th: ({ ...props }) => (
-                    <th className="px-4 py-2 border" {...props} />
+                    <th className="px-4 py-2 border border-white/20" {...props} />
                   ),
                   td: ({ ...props }) => (
-                    <td className="px-4 py-2 border" {...props} />
+                    <td className="px-4 py-2 border border-white/20" {...props} />
                   )
                 }}
               >
@@ -476,6 +474,11 @@ $$E = mc^2$$
             </div>
           </div>
         )}
+      </div>
+
+      {/* Media Manager - Enhanced for Mobile */}
+      <div className={cn("absolute z-10", isMobile ? "top-24 right-4" : "top-4 right-4")}>
+        <MediaManager onInsertMedia={insertMedia} />
       </div>
     </div>
   );
