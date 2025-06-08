@@ -10,6 +10,7 @@ import { MarkdownEditor } from '@/components/MarkdownEditor';
 import { DatabaseView } from '@/components/database/DatabaseView';
 import { FavoritesManager } from '@/components/FavoritesManager';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
+import { Dashboard } from '@/components/Dashboard';
 import { FileItem, Comment, Block } from '@/types';
 import { useComments } from '@/hooks/useComments';
 import { useVersionHistory } from '@/hooks/useVersionHistory';
@@ -356,11 +357,14 @@ export const Editor: React.FC<EditorProps> = ({
 
   if (!file) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-notion-dark text-gray-400">
-        <div className="text-center">
-          <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-          <p>Selecione um arquivo para editar</p>
-        </div>
+      <div className="flex-1 bg-notion-dark">
+        <Dashboard
+          files={files}
+          favorites={favorites}
+          onNavigateToFile={onNavigateToFile}
+          onCreateFile={onCreateFile}
+          className="h-full"
+        />
       </div>
     );
   }
