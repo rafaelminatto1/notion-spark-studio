@@ -55,23 +55,23 @@ export const ViewTabs: React.FC<ViewTabsProps> = ({
   };
 
   return (
-    <div className={cn("flex gap-1 p-1 bg-notion-dark-hover rounded-lg", className)}>
+    <div className={cn("flex gap-0.5 md:gap-1 p-0.5 md:p-1 bg-notion-dark-hover rounded-lg", className)}>
       {tabs.map(tab => {
         const Icon = tab.icon;
         return (
           <Button
             key={tab.id}
             variant="ghost"
-            size="sm"
+            size={isMobile ? "sm" : "sm"}
             onClick={() => handleTabClick(tab.id)}
             className={cn(
-              "gap-2 transition-all",
+              "gap-1 md:gap-2 transition-all text-xs md:text-sm px-2 md:px-3 py-1.5 md:py-2",
               activeView === tab.id
                 ? "bg-notion-purple text-white"
                 : "text-gray-400 hover:text-white hover:bg-notion-dark-hover"
             )}
           >
-            <Icon className="h-4 w-4" />
+            <Icon className="h-3 w-3 md:h-4 md:w-4" />
             <span className={cn("hidden", !isMobile && "sm:inline")}>{tab.label}</span>
           </Button>
         );

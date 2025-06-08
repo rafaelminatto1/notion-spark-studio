@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ViewMode } from '@/components/ViewTabs';
 import { QuickSwitcher } from '@/components/QuickSwitcher';
@@ -62,9 +63,6 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
     setActiveView(view as ViewMode);
   };
 
-  // Estado para controlar ações rápidas
-  const [showSettings, setShowSettings] = useState(false);
-
   return (
     <ThemeProvider>
       <WorkspaceProvider>
@@ -76,23 +74,27 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
               onClick={onToggleMobileSidebar}
             />
           )}
-          {/* Conteúdo principal */}
-          <div className="flex-1 flex flex-col min-w-0 pb-[64px]"> {/* espaço para bottom bar */}
-            {/* Header */}
-            <AppHeader
-              activeView={activeView}
-              onViewChange={handleViewChangeFromHeader}
-              isMobile={isMobile}
-              isMobileSidebarOpen={isMobileSidebarOpen}
-              onToggleMobileSidebar={onToggleMobileSidebar}
-              files={convertedFiles}
-              onFileSelect={(fileId: string) => {
-                setCurrentFileId(fileId);
-                navigateTo(fileId);
-                setActiveView('editor');
-              }}
-              onShowSettings={onShowSettings}
-            />
+          
+          {/* Main Content Container - Mobile First */}
+          <div className="flex-1 flex flex-col min-w-0 pb-16 md:pb-0"> {/* Mobile bottom bar space */}
+            {/* Header - Hidden on mobile for more space */}
+            {!isMobile && (
+              <AppHeader
+                activeView={activeView}
+                onViewChange={handleViewChangeFromHeader}
+                isMobile={isMobile}
+                isMobileSidebarOpen={isMobileSidebarOpen}
+                onToggleMobileSidebar={onToggleMobileSidebar}
+                files={convertedFiles}
+                onFileSelect={(fileId: string) => {
+                  setCurrentFileId(fileId);
+                  navigateTo(fileId);
+                  setActiveView('editor');
+                }}
+                onShowSettings={onShowSettings}
+              />
+            )}
+            
             {/* Content Area */}
             <WorkspaceLayout
               activeView={activeView}
@@ -108,6 +110,7 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
               isMobile={isMobile}
             />
           </div>
+          
           {/* Quick Switcher */}
           <QuickSwitcher
             isOpen={isQuickSwitcherOpen}
@@ -116,6 +119,7 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
             query={quickSwitcherQuery}
             onQueryChange={setQuickSwitcherQuery}
           />
+          
           {/* Command Palette */}
           <CommandPalette
             files={convertedFiles}
@@ -129,40 +133,44 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
             onCreateFile={onCreateFile}
             favorites={favorites}
           />
-          {/* BottomBar para mobile */}
+          
+          {/* Mobile Bottom Navigation */}
           {isMobile && (
-            <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border flex justify-around items-center h-16 shadow-lg">
+            <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t border-border flex justify-around items-center h-16 shadow-lg safe-area-pb">
               <button
-                className="flex flex-col items-center justify-center text-primary focus:outline-none"
+                className="flex flex-col items-center justify-center text-primary focus:outline-none p-2 rounded-lg active:bg-primary/10 transition-colors min-w-0 flex-1"
                 onClick={() => onCreateFile('Nova Nota')}
                 aria-label="Nova Nota"
               >
-                <Plus className="h-6 w-6 mb-1" />
-                <span className="text-xs">Nova</span>
+                <Plus className="h-5 w-5 mb-1" />
+                <span className="text-xs font-medium">Nova</span>
               </button>
+              
               <button
-                className="flex flex-col items-center justify-center text-primary focus:outline-none"
+                className="flex flex-col items-center justify-center text-primary focus:outline-none p-2 rounded-lg active:bg-primary/10 transition-colors min-w-0 flex-1"
                 onClick={() => setIsCommandPaletteOpen(true)}
                 aria-label="Buscar"
               >
-                <Search className="h-6 w-6 mb-1" />
-                <span className="text-xs">Buscar</span>
+                <Search className="h-5 w-5 mb-1" />
+                <span className="text-xs font-medium">Buscar</span>
               </button>
+              
               <button
-                className="flex flex-col items-center justify-center text-primary focus:outline-none"
-                onClick={() => setActiveView('favorites' as any)}
-                aria-label="Favoritos"
+                className="flex flex-col items-center justify-center text-primary focus:outline-none p-2 rounded-lg active:bg-primary/10 transition-colors min-w-0 flex-1"
+                onClick={onToggleMobileSidebar}
+                aria-label="Arquivos"
               >
-                <Star className="h-6 w-6 mb-1" />
-                <span className="text-xs">Favoritos</span>
+                <Star className="h-5 w-5 mb-1" />
+                <span className="text-xs font-medium">Arquivos</span>
               </button>
+              
               <button
-                className="flex flex-col items-center justify-center text-primary focus:outline-none"
+                className="flex flex-col items-center justify-center text-primary focus:outline-none p-2 rounded-lg active:bg-primary/10 transition-colors min-w-0 flex-1"
                 onClick={onShowSettings}
                 aria-label="Configurações"
               >
-                <Settings className="h-6 w-6 mb-1" />
-                <span className="text-xs">Config</span>
+                <Settings className="h-5 w-5 mb-1" />
+                <span className="text-xs font-medium">Config</span>
               </button>
             </nav>
           )}

@@ -35,30 +35,36 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 
   return (
     <>
-      <header className="bg-background border-b border-border/60 px-4 py-3 flex items-center justify-between gap-4 sticky top-0 z-40 backdrop-blur-sm bg-background/95">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-lg font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+      <header className="bg-background/95 backdrop-blur-sm border-b border-border/60 px-3 md:px-4 py-2 md:py-3 flex items-center justify-between gap-2 md:gap-4 sticky top-0 z-40">
+        <div className="flex items-center gap-2 md:gap-4 min-w-0">
+          <div className="flex items-center gap-1 md:gap-2 min-w-0">
+            <span className="text-sm md:text-lg font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent truncate">
               📋 NotesFlow
             </span>
           </div>
           
-          <WorkspaceSelector 
-            onCreateWorkspace={() => setShowCreateWorkspace(true)}
-            onManageWorkspace={() => setShowWorkspaceMembers(true)}
-          />
+          {!isMobile && (
+            <WorkspaceSelector 
+              onCreateWorkspace={() => setShowCreateWorkspace(true)}
+              onManageWorkspace={() => setShowWorkspaceMembers(true)}
+            />
+          )}
         </div>
 
-        <div className="flex-1 max-w-md">
+        {/* Search - Responsive */}
+        <div className="flex-1 max-w-xs md:max-w-md">
           <GlobalSearch files={files} onFileSelect={onFileSelect} />
         </div>
 
-        <div className="flex items-center gap-2">
-          <ViewTabs 
-            activeView={activeView} 
-            onViewChange={onViewChange} 
-            isMobile={isMobile}
-          />
+        <div className="flex items-center gap-1 md:gap-2">
+          {/* Hide tabs on small mobile screens */}
+          <div className="hidden sm:block">
+            <ViewTabs 
+              activeView={activeView} 
+              onViewChange={onViewChange} 
+              isMobile={isMobile}
+            />
+          </div>
           <UserProfileButton onShowSettings={onShowSettings} />
         </div>
       </header>
