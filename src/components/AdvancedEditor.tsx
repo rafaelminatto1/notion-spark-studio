@@ -49,6 +49,19 @@ export const AdvancedEditor: React.FC<AdvancedEditorProps> = ({
     onNavigateToFile
   });
 
+  const adjustHeight = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      const newHeight = Math.max(textarea.scrollHeight, 200);
+      textarea.style.height = newHeight + 'px';
+    }
+  }, []);
+
+  useEffect(() => {
+    adjustHeight();
+  }, [content, adjustHeight]);
+
   const insertMedia = useCallback((markdown: string) => {
     if (!textareaRef.current) return;
 
@@ -62,8 +75,9 @@ export const AdvancedEditor: React.FC<AdvancedEditorProps> = ({
       const newPosition = start + markdown.length + 2;
       textarea.setSelectionRange(newPosition, newPosition);
       textarea.focus();
+      adjustHeight();
     }, 0);
-  }, [content, onChange]);
+  }, [content, onChange, adjustHeight]);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newContent = e.target.value;
@@ -71,7 +85,8 @@ export const AdvancedEditor: React.FC<AdvancedEditorProps> = ({
     
     onChange(newContent);
     handleTextChange(newContent, cursorPos);
-  }, [onChange, handleTextChange]);
+    adjustHeight();
+  }, [onChange, handleTextChange, adjustHeight]);
 
   const handleMouseEnter = useCallback((e: React.MouseEvent, linkText: string) => {
     const targetFile = files.find(f => f.name === linkText && f.type === 'file');
@@ -107,9 +122,10 @@ Use [[ para criar links entre documentos
 Use o botão 'Mídia' para inserir imagens e vídeos
 "
           className={cn(
-            "min-h-96 bg-transparent border-none resize-none text-workspace-text leading-relaxed text-base focus:ring-0 focus:outline-none pr-20",
+            "min-h-[200px] max-h-[60vh] bg-transparent border-none resize-none text-workspace-text leading-relaxed text-base focus:ring-0 focus:outline-none pr-20 overflow-y-auto",
             className
           )}
+          style={{ height: 'auto' }}
         />
         
         {links.length > 0 && (

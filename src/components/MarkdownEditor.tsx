@@ -72,6 +72,19 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
     onNavigateToFile
   });
 
+  const adjustHeight = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      const newHeight = Math.max(textarea.scrollHeight, isMobile ? 300 : 200);
+      textarea.style.height = newHeight + 'px';
+    }
+  }, [isMobile]);
+
+  useEffect(() => {
+    adjustHeight();
+  }, [content, adjustHeight]);
+
   const insertText = useCallback((beforeText: string, afterText: string = '', selectText: string = '') => {
     if (!textareaRef.current) return;
 
@@ -91,8 +104,9 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
       const newEnd = newStart + textToUse.length;
       textarea.setSelectionRange(newStart, newEnd);
       textarea.focus();
+      adjustHeight();
     }, 0);
-  }, [content, onChange]);
+  }, [content, onChange, adjustHeight]);
 
   const insertMedia = useCallback((markdown: string) => {
     if (!textareaRef.current) return;
@@ -107,8 +121,9 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
       const newPosition = start + markdown.length + 2;
       textarea.setSelectionRange(newPosition, newPosition);
       textarea.focus();
+      adjustHeight();
     }, 0);
-  }, [content, onChange]);
+  }, [content, onChange, adjustHeight]);
 
   const handleTextChangeWithAutocomplete = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newContent = e.target.value;
@@ -117,7 +132,8 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
     if (textareaRef.current) {
       handleTextChange(newContent, textareaRef.current.selectionStart);
     }
-  }, [onChange, handleTextChange]);
+    adjustHeight();
+  }, [onChange, handleTextChange, adjustHeight]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     // Handle autocomplete first
@@ -281,6 +297,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
                 onKeyDown={handleKeyDown}
                 placeholder="# Comece a escrever em Markdown..."
                 className="h-full border-none resize-none bg-transparent text-workspace-text leading-relaxed font-mono text-lg focus:ring-0 focus:outline-none p-8 max-w-4xl mx-auto"
+                style={{ height: 'auto' }}
               />
             </div>
           )}
@@ -306,8 +323,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
                         );
                       }
                       return <a href={href} {...props}>{children}</a>;
-                    },
-                    // ... keep existing code (img, video, table, th, td, code components)
+                    }
                   }}
                 >
                   {content || '*Nada para mostrar ainda...*'}
@@ -325,7 +341,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
       {/* Toolbar fixa no topo em mobile */}
       <div
         className={cn(
-          "flex gap-1 items-center border-b bg-background z-30",
+          "flex gap-1 items-center border-b bg-background z-30 overflow-x-auto",
           isMobile
             ? "fixed top-0 left-0 right-0 h-16 px-2 py-1 shadow-lg border-b z-50"
             : "sticky top-0 px-2 py-1"
@@ -339,7 +355,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
             variant="ghost"
             size={isMobile ? "lg" : "sm"}
             className={cn(
-              "flex flex-col items-center justify-center",
+              "flex flex-col items-center justify-center flex-shrink-0",
               isMobile ? "mx-1 px-2 py-2 text-base" : "mx-0.5 px-1 py-1 text-xs"
             )}
             onClick={action}
@@ -350,6 +366,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
           </Button>
         ))}
       </div>
+      
       {/* Área de edição com padding extra no mobile */}
       <div
         className={cn(
@@ -392,9 +409,11 @@ const codigo = 'syntax highlighting';
 $$E = mc^2$$
 "
               className={cn(
-                "flex-1 border-none resize-none bg-transparent text-workspace-text leading-relaxed font-mono text-sm focus:ring-0 focus:outline-none p-4",
-                showLineNumbers && "pl-16"
+                "flex-1 border-none resize-none bg-transparent text-workspace-text leading-relaxed font-mono text-sm focus:ring-0 focus:outline-none p-4 overflow-y-auto",
+                showLineNumbers && "pl-16",
+                isMobile ? "min-h-[300px] max-h-[70vh]" : "min-h-[200px] max-h-[60vh]"
               )}
+              style={{ height: 'auto' }}
             />
             
             {/* Link Autocomplete */}
@@ -432,7 +451,39 @@ $$E = mc^2$$
                     }
                     return <a href={href} {...props}>{children}</a>;
                   },
-                  // ... keep existing code (img, video, table, th, td, code components)
+                  img: ({ src, alt, ...props }) => (
+                    <MediaViewer src={src} alt={alt} {...props} />
+                  ),
+                  video: ({ src, ...props }) => (
+                    <MediaViewer src={src} type="video" {...props} />
+                  ),
+                  table: ({ ...props }) => (
+                    <div className="overflow-auto">
+                      <table className="table-auto" {...props} />
+                    </div>
+                  ),
+                  th: ({ ...props }) => (
+                    <th className="px-4 py-2 border" {...props} />
+                  ),
+                  td: ({ ...props }) => (
+                    <td className="px-4 py-2 border" {...props} />
+                  ),
+                  code: ({ inline, className, children, ...props }) => {
+                    const match = /language-(\w+)/.exec(className || '');
+                    return !inline && match ? (
+                      <SyntaxHighlighter
+                        children={String(children).replace(/\n$/, '')}
+                        style={dracula}
+                        language={match[1]}
+                        PreTag="div"
+                        {...props}
+                      />
+                    ) : (
+                      <code className={className} {...props}>
+                        {children}
+                      </code>
+                    );
+                  }
                 }}
               >
                 {content || '*Nada para mostrar ainda...*'}
