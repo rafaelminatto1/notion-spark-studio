@@ -20,6 +20,7 @@ export interface FileSystemContextType {
   deleteFile: (id: string) => Promise<void>;
   moveFile: (fileId: string, newParentId?: string, newPosition?: number) => Promise<void>;
   loadFiles: () => Promise<void>;
+  getFlatFileTree: () => (FileItem & { level: number })[];
 
   // From useFavorites
   favorites: string[];

@@ -12,7 +12,7 @@ export const useIndexPage = () => {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [showWorkspaceSettings, setShowWorkspaceSettings] = useState(false);
   
-  console.log('[useIndexPage] State initialized');
+  console.log('[useIndexPage] State initialized. Initial activeView:', activeView);
 
   try {
     const isMobile = useIsMobile();
@@ -47,14 +47,16 @@ export const useIndexPage = () => {
     useEffect(() => {
       if (!loadingPreferences && preferences?.default_view) {
         setActiveView(preferences.default_view);
+        console.log('[useIndexPage] Setting activeView from preferences to:', preferences.default_view);
       }
     }, [preferences, loadingPreferences]);
 
     const handleNavigateToFile = useCallback((fileId: string) => {
-      console.log('[useIndexPage] handleNavigateToFile called with:', fileId);
+      console.log('[useIndexPage] handleNavigateToFile called with fileId:', fileId);
       setCurrentFileId(fileId);
       navigateTo(fileId);
       setActiveView('editor');
+      console.log('[useIndexPage] activeView set to editor. currentFileId:', fileId);
     }, [setCurrentFileId, navigateTo, setActiveView]);
 
     const handleCreateFromTemplate = useCallback(async (template: any) => {
@@ -73,16 +75,20 @@ export const useIndexPage = () => {
     }, [createFile, handleNavigateToFile]);
 
     const handleViewChange = useCallback((view: ViewMode) => {
-      console.log('[useIndexPage] handleViewChange called with:', view);
+      console.log('[useIndexPage] handleViewChange called with view:', view);
       setActiveView(view);
+      console.log('[useIndexPage] activeView updated to:', view);
     }, []);
 
     const handleCreateFile = useCallback(async (name: string, parentId?: string, type: 'file' | 'folder' = 'file') => {
       console.log('[useIndexPage] handleCreateFile called with:', name, parentId, type);
       const fileId = await createFile(name, parentId, type);
       console.log('[useIndexPage] File created with ID:', fileId);
+      if (fileId) {
+        handleNavigateToFile(fileId);
+      }
       return fileId || '';
-    }, [createFile]);
+    }, [createFile, handleNavigateToFile]);
 
     const handleUpdateFile = useCallback(async (id: string, updates: any) => {
       console.log('[useIndexPage] handleUpdateFile called with:', id);

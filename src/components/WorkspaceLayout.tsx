@@ -66,8 +66,10 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
   const rightPanels = visiblePanels.filter(p => p.position === 'right');
 
   const renderContent = () => {
+    console.log('[WorkspaceLayout] renderContent called. activeView:', activeView, 'currentFileId:', currentFileId);
     switch (activeView) {
       case 'dashboard':
+        console.log('[WorkspaceLayout] Rendering Dashboard');
         return (
           <Dashboard
             files={files}
@@ -78,7 +80,9 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
         );
       case 'editor': {
         const currentFile = getCurrentFile();
+        console.log('[WorkspaceLayout] Rendering Editor. currentFile:', currentFile ? currentFile.name : 'undefined');
         if (!currentFile) {
+          console.log('[WorkspaceLayout] No file selected for Editor.');
           return (
             <div className="flex-1 p-4 md:p-8 text-center text-gray-400 bg-gradient-to-br from-background to-background/80">
               <div className="max-w-md mx-auto space-y-4">

@@ -46,6 +46,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     deleteFile: onDeleteFile,
     moveFile: onMoveFile,
     getFileTree,
+    getFlatFileTree,
   } = useFileSystemContext();
 
   const fileTree = getFileTree();
@@ -94,12 +95,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const displayFiles = useMemo(() => {
-    return fileTree;
-  }, [fileTree]);
+    return getFlatFileTree();
+  }, [getFlatFileTree]);
 
   const renderFileTree = (items: (FileItem & {
     children?: FileItem[];
-  })[], level = 0) => {
+    level?: number;
+  })[]) => {
     return (
       <VirtualizedList
         items={items}
@@ -122,7 +124,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className={cn(
                   "flex items-center gap-2 px-3 py-2.5 text-sm rounded-xl cursor-pointer group transition-all duration-300 hover:bg-gradient-to-r hover:from-purple-500/10 hover:to-blue-500/10 hover:scale-[1.02] hover:shadow-lg hover:shadow-purple-500/10 relative",
                   currentFileId === item.id && "bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-white shadow-xl border border-purple-500/30 scale-[1.02]",
-                  level > 0 && "ml-4",
+                  item.level && item.level > 0 && `ml-${item.level * 4}`,
                   isDragging && "opacity-50 scale-95",
                   isDropTarget && dragState.dropPosition === 'inside' && "bg-purple-500/10 border-2 border-dashed border-purple-500",
                   dropIndicatorClass,
@@ -206,12 +208,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     parentId={item.id}
                     onCreateSubItem={handleCreateSubItem}
                   />
-                </div>
-              )}
-
-              {item.children && expandedFolders.has(item.id) && (
-                <div className="ml-4">
-                  {renderFileTree(item.children, level + 1)}
                 </div>
               )}
             </div>

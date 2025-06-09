@@ -46,9 +46,29 @@ export const useFileSystemSupabase = () => {
     return buildTree();
   }, [files]);
 
+  // Get flat file tree for VirtualizedList
+  const getFlatFileTree = useCallback(() => {
+    const flatList: (FileItem & { level: number })[] = [];
+
+    const traverse = (items: (FileItem & { children?: FileItem[] })[], level: number) => {
+      items.forEach(item => {
+        flatList.push({ ...item, level });
+        if (item.type === 'folder' && expandedFolders.has(item.id) && item.children) {
+          traverse(item.children, level + 1);
+        }
+      });
+    };
+
+    traverse(getFileTree(), 0);
+    return flatList;
+  }, [getFileTree, expandedFolders]);
+
   // Get current file
   const getCurrentFile = useCallback(() => {
-    return currentFileId ? files.find(f => f.id === currentFileId) : undefined;
+    console.log('[useFileSystemSupabase] getCurrentFile called. currentFileId:', currentFileId, 'Files count:', files.length);
+    const file = currentFileId ? files.find(f => f.id === currentFileId) : undefined;
+    console.log('[useFileSystemSupabase] getCurrentFile result:', file ? file.name : 'undefined');
+    return file;
   }, [currentFileId, files]);
 
   // Toggle folder expanded state
@@ -95,9 +115,15 @@ export const useFileSystemSupabase = () => {
 
   // Wrapper functions that maintain the same interface
   const createFile = useCallback(async (name: string, parentId?: string, type: 'file' | 'folder' = 'file', content?: string, emoji?: string) => {
+    console.log('[useFileSystemSupabase] Attempting to create file with name:', name);
     const fileId = await supabaseFiles.createFile(name, parentId, type, content, emoji);
+    console.log('[useFileSystemSupabase] File creation result - fileId:', fileId);
+    if (fileId) {
+      setCurrentFileId(fileId); 
+      console.log('[useFileSystemSupabase] currentFileId set to:', fileId);
+    }
     return fileId || '';
-  }, [supabaseFiles.createFile]);
+  }, [supabaseFiles.createFile, setCurrentFileId]);
 
   const updateFile = useCallback(async (id: string, updates: Partial<FileItem>) => {
     // Convert FileItem updates to SupabaseFile updates
@@ -136,6 +162,7 @@ export const useFileSystemSupabase = () => {
     updateFile,
     deleteFile,
     moveFile,
-    loadFiles: supabaseFiles.loadFiles
+    loadFiles: supabaseFiles.loadFiles,
+    getFlatFileTree,
   };
 };
