@@ -46,10 +46,17 @@ export const useIndexPage = () => {
     // Set default view based on user preferences
     useEffect(() => {
       if (!loadingPreferences && preferences?.default_view) {
-        setActiveView(preferences.default_view);
-        console.log('[useIndexPage] Setting activeView from preferences to:', preferences.default_view);
+        // Only set default view to editor if there's a current file or if it's explicitly dashboard
+        if (preferences.default_view === 'editor' && !currentFileId) {
+          // If preference is editor but no file is selected, keep dashboard as default
+          setActiveView('dashboard');
+          console.log('[useIndexPage] Preference is editor but no file selected, defaulting to dashboard.');
+        } else {
+          setActiveView(preferences.default_view);
+          console.log('[useIndexPage] Setting activeView from preferences to:', preferences.default_view);
+        }
       }
-    }, [preferences, loadingPreferences]);
+    }, [preferences, loadingPreferences, currentFileId, setActiveView]);
 
     const handleNavigateToFile = useCallback((fileId: string) => {
       console.log('[useIndexPage] handleNavigateToFile called with fileId:', fileId);
