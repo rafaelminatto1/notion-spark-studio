@@ -16,10 +16,11 @@ import {
   FilePlus,
   Home,
   Star,
-  GripVertical
+  GripVertical,
+  Clock,
+  Filter
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { FileItem } from '@/types';
 import { cn } from '@/lib/utils';
 import { TagsPanel } from '@/components/TagsPanel';
@@ -28,6 +29,12 @@ import { SubItemCreator } from '@/components/SubItemCreator';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
 import { useDragAndDrop } from '@/hooks/useDragAndDrop';
+import { useAdvancedSearch } from '@/hooks/useAdvancedSearch';
+import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
+import { useRecentFiles } from '@/hooks/useRecentFiles';
+import { AdvancedSearchPanel } from '@/components/AdvancedSearchPanel';
+import { QuickActions } from '@/components/QuickActions';
+import { RecentFilesPanel } from '@/components/RecentFilesPanel';
 
 interface SidebarProps {
   files: (FileItem & {
@@ -72,8 +79,43 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [showTagsPanel, setShowTagsPanel] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showSubItemCreator, setShowSubItemCreator] = useState<string | null>(null);
+  const [activeView, setActiveView] = useState<'files' | 'search' | 'recent' | 'favorites'>('files');
 
   const { tagTree } = useTags(allFiles);
+
+  // New hooks for enhanced functionality
+  const {
+    query,
+    setQuery,
+    filters,
+    updateFilter,
+    clearFilters,
+    searchResults,
+    isAdvancedMode,
+    setIsAdvancedMode
+  } = useAdvancedSearch(allFiles);
+
+  const {
+    recentFiles,
+    addRecentFile,
+    removeRecentFile,
+    clearRecentFiles,
+    getRecentFilesWithData
+  } = useRecentFiles();
+
+  // Keyboard navigation
+  useKeyboardNavigation({
+    files: allFiles,
+    currentFileId,
+    onFileSelect: (fileId) => {
+      onFileSelect(fileId);
+      addRecentFile(fileId);
+    },
+    onCreateFile: () => setIsCreating({ type: 'file' }),
+    onCreateFolder: () => setIsCreating({ type: 'folder' }),
+    onDeleteFile: onDeleteFile,
+    enabled: !isCollapsed
+  });
 
   // Drag and Drop functionality
   const {
@@ -114,9 +156,54 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setSelectedTags(tagNames);
   };
 
-  // Filtrar arquivos por tags selecionadas
-  const filteredFiles = useMemo(() => {
-    if (selectedTags.length === 0) return files;
+  const handleFileSelect = (fileId: string) => {
+    onFileSelect(fileId);
+    addRecentFile(fileId);
+  };
+
+  // Get available tags for search
+  const availableTags = useMemo(() => {
+    const tags = new Set<string>();
+    allFiles.forEach(file => {
+      file.tags?.forEach(tag => tags.add(tag));
+    });
+    return Array.from(tags);
+  }, [allFiles]);
+
+  // Get recent files with data
+  const recentFilesWithData = getRecentFilesWithData(allFiles);
+
+  // Get favorites
+  const favoriteFiles = allFiles.filter(file => file.tags?.includes('favorite'));
+
+  // Filter files based on current view and search
+  const displayFiles = useMemo(() => {
+    let baseFiles = files;
+    
+    switch (activeView) {
+      case 'search':
+        const searchedFiles = searchResults;
+        // Convert flat list back to tree structure for search results
+        return searchedFiles.filter(f => !f.parentId).map(file => ({
+          ...file,
+          children: searchedFiles.filter(child => child.parentId === file.id)
+        }));
+      case 'recent':
+        return recentFilesWithData.filter(f => !f.parentId).map(file => ({
+          ...file,
+          children: recentFilesWithData.filter(child => child.parentId === file.id)
+        }));
+      case 'favorites':
+        return favoriteFiles.filter(f => !f.parentId).map(file => ({
+          ...file,
+          children: favoriteFiles.filter(child => child.parentId === file.id)
+        }));
+      default:
+        baseFiles = files;
+    }
+
+    // Apply tag filter if selected
+    if (selectedTags.length === 0) return baseFiles;
     
     const filterTree = (items: (FileItem & { children?: FileItem[] })[]) => {
       return items.filter(item => {
@@ -132,157 +219,135 @@ export const Sidebar: React.FC<SidebarProps> = ({
       }));
     };
 
-    return filterTree(files);
-  }, [files, selectedTags]);
+    return filterTree(baseFiles);
+  }, [files, selectedTags, activeView, searchResults, recentFilesWithData, favoriteFiles]);
 
   const renderFileTree = (items: (FileItem & {
     children?: FileItem[];
   })[], level = 0) => {
-    return items
-      .filter(item => searchQuery === '' || item.name.toLowerCase().includes(searchQuery.toLowerCase()))
-      .map(item => {
-        const isDragging = dragState.draggedItem?.id === item.id;
-        const isDropTarget = dragState.dragOverItem?.id === item.id;
-        const dropIndicatorClass = isDropTarget ? getDropTargetClass() : '';
-        
-        return (
-          <div key={item.id} className="select-none">
-            <div 
-              draggable={!isCollapsed && onMoveFile !== undefined}
-              onDragStart={(e) => handleDragStart(e, item)}
-              onDragOver={(e) => handleDragOver(e, item)}
-              onDragLeave={handleDragLeave}
-              onDrop={(e) => handleDrop(e, item)}
-              onDragEnd={handleDragEnd}
-              className={cn(
-                "flex items-center gap-2 px-3 py-2.5 text-sm rounded-xl cursor-pointer group transition-all duration-300 hover:bg-gradient-to-r hover:from-purple-500/10 hover:to-blue-500/10 hover:scale-[1.02] hover:shadow-lg hover:shadow-purple-500/10 relative",
-                currentFileId === item.id && "bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-white shadow-xl border border-purple-500/30 scale-[1.02]",
-                level > 0 && "ml-4",
-                isDragging && "opacity-50 scale-95",
-                isDropTarget && dragState.dropPosition === 'inside' && "bg-purple-500/10 border-2 border-dashed border-purple-500",
-                dropIndicatorClass
-              )} 
-              onClick={() => {
-                if (item.type === 'file') {
-                  onFileSelect(item.id);
-                } else {
-                  onToggleFolder(item.id);
-                }
-              }}
-            >
-              {/* Drop indicator lines */}
-              {isDropTarget && dragState.dropPosition === 'above' && (
-                <div className="absolute -top-1 left-0 right-0 h-0.5 bg-purple-500 rounded-full z-10" />
-              )}
-              {isDropTarget && dragState.dropPosition === 'below' && (
-                <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-purple-500 rounded-full z-10" />
-              )}
+    return items.map(item => {
+      const isDragging = dragState.draggedItem?.id === item.id;
+      const isDropTarget = dragState.dragOverItem?.id === item.id;
+      const dropIndicatorClass = isDropTarget ? getDropTargetClass() : '';
+      
+      return (
+        <div key={item.id} className="select-none">
+          <div 
+            draggable={!isCollapsed && onMoveFile !== undefined}
+            onDragStart={(e) => handleDragStart(e, item)}
+            onDragOver={(e) => handleDragOver(e, item)}
+            onDragLeave={handleDragLeave}
+            onDrop={(e) => handleDrop(e, item)}
+            onDragEnd={handleDragEnd}
+            className={cn(
+              "flex items-center gap-2 px-3 py-2.5 text-sm rounded-xl cursor-pointer group transition-all duration-300 hover:bg-gradient-to-r hover:from-purple-500/10 hover:to-blue-500/10 hover:scale-[1.02] hover:shadow-lg hover:shadow-purple-500/10 relative",
+              currentFileId === item.id && "bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-white shadow-xl border border-purple-500/30 scale-[1.02]",
+              level > 0 && "ml-4",
+              isDragging && "opacity-50 scale-95",
+              isDropTarget && dragState.dropPosition === 'inside' && "bg-purple-500/10 border-2 border-dashed border-purple-500",
+              dropIndicatorClass
+            )} 
+            onClick={() => {
+              if (item.type === 'file') {
+                handleFileSelect(item.id);
+              } else {
+                onToggleFolder(item.id);
+              }
+            }}
+          >
+            {/* Drop indicator lines */}
+            {isDropTarget && dragState.dropPosition === 'above' && (
+              <div className="absolute -top-1 left-0 right-0 h-0.5 bg-purple-500 rounded-full z-10" />
+            )}
+            {isDropTarget && dragState.dropPosition === 'below' && (
+              <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-purple-500 rounded-full z-10" />
+            )}
 
-              {/* Drag handle */}
-              {!isCollapsed && onMoveFile && (
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-grab active:cursor-grabbing">
-                  <GripVertical className="h-4 w-4 text-gray-400 hover:text-gray-300" />
-                </div>
-              )}
-
-              {item.type === 'folder' && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-6 w-6 p-0 hover:bg-transparent transition-all duration-300 hover:scale-125" 
-                  onClick={e => {
-                    e.stopPropagation();
-                    onToggleFolder(item.id);
-                  }}
-                >
-                  {expandedFolders.has(item.id) ? 
-                    <ChevronDown className="h-4 w-4 text-blue-400 transition-transform duration-300" /> : 
-                    <ChevronRight className="h-4 w-4 text-blue-400 transition-transform duration-300" />
-                  }
-                </Button>
-              )}
-              
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                {item.emoji && !isCollapsed && (
-                  <span className="text-lg animate-fade-in transition-transform duration-300 group-hover:scale-110">
-                    {item.emoji}
-                  </span>
-                )}
-                {item.type === 'folder' ? 
-                  expandedFolders.has(item.id) ? 
-                    <FolderOpen className="h-5 w-5 text-blue-400 transition-all duration-300 group-hover:text-blue-300" /> : 
-                    <Folder className="h-5 w-5 text-blue-400 transition-all duration-300 group-hover:text-blue-300" /> : 
-                  <FileText className="h-5 w-5 text-gray-400 group-hover:text-gray-300 transition-all duration-300" />
-                }
-                {!isCollapsed && (
-                  <span className="truncate flex-1 font-medium transition-all duration-300 group-hover:text-white">
-                    {item.name}
-                  </span>
-                )}
+            {/* Drag handle */}
+            {!isCollapsed && onMoveFile && (
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-grab active:cursor-grabbing">
+                <GripVertical className="h-4 w-4 text-gray-400 hover:text-gray-300" />
               </div>
+            )}
 
+            {item.type === 'folder' && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 w-6 p-0 hover:bg-transparent transition-all duration-300 hover:scale-125" 
+                onClick={e => {
+                  e.stopPropagation();
+                  onToggleFolder(item.id);
+                }}
+              >
+                {expandedFolders.has(item.id) ? 
+                  <ChevronDown className="h-4 w-4 text-blue-400 transition-transform duration-300" /> : 
+                  <ChevronRight className="h-4 w-4 text-blue-400 transition-transform duration-300" />
+                }
+              </Button>
+            )}
+            
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              {item.emoji && !isCollapsed && (
+                <span className="text-lg animate-fade-in transition-transform duration-300 group-hover:scale-110">
+                  {item.emoji}
+                </span>
+              )}
+              {item.type === 'folder' ? 
+                expandedFolders.has(item.id) ? 
+                  <FolderOpen className="h-5 w-5 text-blue-400 transition-all duration-300 group-hover:text-blue-300" /> : 
+                  <Folder className="h-5 w-5 text-blue-400 transition-all duration-300 group-hover:text-blue-300" /> : 
+                <FileText className="h-5 w-5 text-gray-400 group-hover:text-gray-300 transition-all duration-300" />
+              }
               {!isCollapsed && (
-                <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={e => {
-                      e.stopPropagation();
-                      setShowSubItemCreator(showSubItemCreator === item.id ? null : item.id);
-                    }} 
-                    className="h-7 w-7 p-0 hover:bg-purple-500/20 hover:scale-125 transition-all duration-300 rounded-full"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-7 w-7 p-0 hover:bg-gray-500/20 hover:scale-125 transition-all duration-300 rounded-full"
-                  >
-                    <MoreHorizontal className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
+                <span className="truncate flex-1 font-medium transition-all duration-300 group-hover:text-white">
+                  {item.name}
+                </span>
               )}
             </div>
 
-            {/* Sub-item creator */}
-            {!isCollapsed && showSubItemCreator === item.id && (
-              <div className="ml-6 mt-2 animate-fade-in">
-                <SubItemCreator
-                  parentId={item.id}
-                  onCreateSubItem={handleCreateSubItem}
-                />
-              </div>
-            )}
-
-            {item.type === 'folder' && expandedFolders.has(item.id) && item.children && (
-              <div className="ml-2 animate-fade-in transition-all duration-300">
-                {renderFileTree(item.children, level + 1)}
-                {!isCollapsed && isCreating?.parentId === item.id && (
-                  <div className="flex items-center gap-3 px-3 py-2 ml-6 animate-fade-in">
-                    {isCreating.type === 'folder' ? 
-                      <Folder className="h-5 w-5 text-blue-400" /> : 
-                      <FileText className="h-5 w-5 text-gray-400" />
-                    }
-                    <Input
-                      value={newItemName}
-                      onChange={e => setNewItemName(e.target.value)}
-                      onKeyDown={e => {
-                        if (e.key === 'Enter') handleCreateItem();
-                        if (e.key === 'Escape') setIsCreating(null);
-                      }}
-                      onBlur={handleCreateItem}
-                      className="h-8 text-sm bg-background/60 backdrop-blur-sm border-purple-500/30 focus:border-purple-500/60 transition-all duration-300 rounded-lg"
-                      placeholder={isCreating.type === 'folder' ? 'Nova pasta' : 'Nova nota'}
-                      autoFocus
-                    />
-                  </div>
-                )}
+            {!isCollapsed && (
+              <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={e => {
+                    e.stopPropagation();
+                    setShowSubItemCreator(showSubItemCreator === item.id ? null : item.id);
+                  }} 
+                  className="h-7 w-7 p-0 hover:bg-purple-500/20 hover:scale-125 transition-all duration-300 rounded-full"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-7 w-7 p-0 hover:bg-gray-500/20 hover:scale-125 transition-all duration-300 rounded-full"
+                >
+                  <MoreHorizontal className="h-3.5 w-3.5" />
+                </Button>
               </div>
             )}
           </div>
-        );
-      });
+
+          {/* Sub-item creator */}
+          {!isCollapsed && showSubItemCreator === item.id && (
+            <div className="ml-6 mt-2 animate-fade-in">
+              <SubItemCreator
+                parentId={item.id}
+                onCreateSubItem={handleCreateSubItem}
+              />
+            </div>
+          )}
+
+          {item.type === 'folder' && expandedFolders.has(item.id) && item.children && (
+            <div className="ml-2 animate-fade-in transition-all duration-300">
+              {renderFileTree(item.children, level + 1)}
+            </div>
+          )}
+        </div>
+      );
+    });
   };
 
   const getDropTargetClass = () => {
@@ -349,23 +414,50 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </Button>
           </div>
         </div>
-        
-        {/* Enhanced Search */}
+
+        {/* View Tabs */}
         {!isCollapsed && (
-          <div className="relative group">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 transition-colors duration-300 group-focus-within:text-purple-400" />
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar notas..."
-              className="pl-10 bg-background/60 backdrop-blur-sm border-border/60 focus:border-purple-500/60 focus:bg-background/80 transition-all duration-300 rounded-xl shadow-sm hover:shadow-md focus:shadow-lg"
-            />
+          <div className="flex bg-gray-800/30 rounded-lg p-1 mb-4">
+            {[
+              { id: 'files', label: 'Arquivos', icon: FileText },
+              { id: 'search', label: 'Buscar', icon: Search },
+              { id: 'recent', label: 'Recentes', icon: Clock },
+              { id: 'favorites', label: 'Favoritos', icon: Star }
+            ].map(({ id, label, icon: Icon }) => (
+              <Button
+                key={id}
+                variant="ghost"
+                size="sm"
+                onClick={() => setActiveView(id as any)}
+                className={cn(
+                  "flex-1 h-8 text-xs",
+                  activeView === id && "bg-purple-500/20 text-purple-400"
+                )}
+              >
+                <Icon className="h-3 w-3 mr-1" />
+                {label}
+              </Button>
+            ))}
           </div>
+        )}
+        
+        {/* Search Panel */}
+        {!isCollapsed && activeView === 'search' && (
+          <AdvancedSearchPanel
+            query={query}
+            setQuery={setQuery}
+            filters={filters}
+            updateFilter={updateFilter}
+            clearFilters={clearFilters}
+            isAdvancedMode={isAdvancedMode}
+            setIsAdvancedMode={setIsAdvancedMode}
+            availableTags={availableTags}
+          />
         )}
       </div>
 
       {/* Enhanced Tags Panel */}
-      {!isCollapsed && showTagsPanel && (
+      {!isCollapsed && showTagsPanel && activeView === 'files' && (
         <div className="border-b border-border/60 p-4 bg-gradient-to-r from-purple-500/5 to-blue-500/5 animate-fade-in backdrop-blur-sm">
           <TagsPanel
             tags={tagTree}
@@ -376,79 +468,89 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       )}
 
-      {/* Enhanced Action Buttons */}
-      <div className={cn("p-4 space-y-3", isCollapsed && "p-2")}>
-        {isCollapsed ? (
-          <>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full h-12 justify-center p-0 text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-purple-500/20 hover:to-blue-500/20 transition-all duration-300 hover:scale-110 rounded-xl group"
-              onClick={() => setIsCreating({ type: 'file' })}
-              title="Nova Nota"
-            >
-              <FilePlus className="h-6 w-6 transition-transform duration-300 group-hover:scale-110" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full h-12 justify-center p-0 text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-blue-500/20 hover:to-purple-500/20 transition-all duration-300 hover:scale-110 rounded-xl group"
-              onClick={() => setIsCreating({ type: 'folder' })}
-              title="Nova Pasta"
-            >
-              <FolderPlus className="h-6 w-6 transition-transform duration-300 group-hover:scale-110" />
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button
-              variant="outline"
-              className="w-full justify-start gap-3 text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 border-purple-500/50 hover:border-purple-400/70 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-500/25 rounded-xl group"
-              onClick={() => setIsCreating({ type: 'file' })}
-            >
-              <FilePlus className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
-              <span className="font-medium">Nova Nota</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full justify-start gap-3 text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 border-blue-500/50 hover:border-blue-400/70 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-blue-500/25 rounded-xl group"
-              onClick={() => setIsCreating({ type: 'folder' })}
-            >
-              <FolderPlus className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
-              <span className="font-medium">Nova Pasta</span>
-            </Button>
-          </>
-        )}
-      </div>
+      {/* Quick Actions */}
+      {!isCollapsed && activeView === 'files' && (
+        <div className="p-4">
+          <QuickActions
+            onCreateFile={() => setIsCreating({ type: 'file' })}
+            onCreateFolder={() => setIsCreating({ type: 'folder' })}
+            onToggleSearch={() => setActiveView('search')}
+            onOpenSettings={() => {}}
+            onToggleFavorites={() => setActiveView('favorites')}
+            onShowRecent={() => setActiveView('recent')}
+            hasSelection={!!currentFileId}
+            onDeleteSelected={currentFileId ? () => onDeleteFile(currentFileId) : undefined}
+          />
+        </div>
+      )}
+
+      {/* Enhanced Action Buttons for collapsed mode */}
+      {isCollapsed && (
+        <div className="p-2 space-y-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full h-12 justify-center p-0 text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-purple-500/20 hover:to-blue-500/20 transition-all duration-300 hover:scale-110 rounded-xl group"
+            onClick={() => setIsCreating({ type: 'file' })}
+            title="Nova Nota"
+          >
+            <FilePlus className="h-6 w-6 transition-transform duration-300 group-hover:scale-110" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full h-12 justify-center p-0 text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-blue-500/20 hover:to-purple-500/20 transition-all duration-300 hover:scale-110 rounded-xl group"
+            onClick={() => setIsCreating({ type: 'folder' })}
+            title="Nova Pasta"
+          >
+            <FolderPlus className="h-6 w-6 transition-transform duration-300 group-hover:scale-110" />
+          </Button>
+        </div>
+      )}
 
       <Separator className="mx-4" />
 
-      {/* Enhanced File Tree */}
+      {/* Content Area */}
       <div className="flex-1 overflow-y-auto px-3 pb-4 scrollbar-thin scrollbar-thumb-border/60 scrollbar-track-transparent hover:scrollbar-thumb-border/80">
-        {!isCollapsed && isCreating && !isCreating.parentId && (
-          <div className="flex items-center gap-3 px-3 py-2 mb-3 animate-fade-in">
-            {isCreating.type === 'folder' ? (
-              <Folder className="h-5 w-5 text-blue-400" />
-            ) : (
-              <FileText className="h-5 w-5 text-gray-400" />
+        {activeView === 'recent' ? (
+          <RecentFilesPanel
+            recentFiles={recentFilesWithData}
+            onFileSelect={handleFileSelect}
+            onRemoveFromRecent={removeRecentFile}
+            onClearAll={clearRecentFiles}
+          />
+        ) : (
+          <>
+            {/* Create new item input */}
+            {!isCollapsed && isCreating && !isCreating.parentId && (
+              // ... keep existing code (create item input)
+              <div className="flex items-center gap-3 px-3 py-2 mb-3 animate-fade-in">
+                {isCreating.type === 'folder' ? (
+                  <Folder className="h-5 w-5 text-blue-400" />
+                ) : (
+                  <FileText className="h-5 w-5 text-gray-400" />
+                )}
+                <input
+                  value={newItemName}
+                  onChange={(e) => setNewItemName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleCreateItem();
+                    if (e.key === 'Escape') setIsCreating(null);
+                  }}
+                  onBlur={handleCreateItem}
+                  className="h-8 text-sm bg-background/60 backdrop-blur-sm border border-purple-500/30 focus:border-purple-500/60 transition-all duration-300 rounded-lg px-2 flex-1"
+                  placeholder={isCreating.type === 'folder' ? 'Nova pasta' : 'Nova nota'}
+                  autoFocus
+                />
+              </div>
             )}
-            <Input
-              value={newItemName}
-              onChange={(e) => setNewItemName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleCreateItem();
-                if (e.key === 'Escape') setIsCreating(null);
-              }}
-              onBlur={handleCreateItem}
-              className="h-8 text-sm bg-background/60 backdrop-blur-sm border-purple-500/30 focus:border-purple-500/60 transition-all duration-300 rounded-lg"
-              placeholder={isCreating.type === 'folder' ? 'Nova pasta' : 'Nova nota'}
-              autoFocus
-            />
-          </div>
+            
+            {/* File Tree */}
+            <div className="space-y-1">
+              {renderFileTree(displayFiles)}
+            </div>
+          </>
         )}
-        <div className="space-y-1">
-          {renderFileTree(filteredFiles)}
-        </div>
       </div>
 
       {/* Enhanced Footer */}
