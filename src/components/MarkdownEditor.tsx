@@ -7,7 +7,7 @@ import rehypeKatex from 'rehype-katex';
 import rehypeHighlight from 'rehype-highlight';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { MediaManager } from '@/components/MediaManager';
+import { MediaManagerEnhanced } from '@/components/MediaManagerEnhanced';
 import { MediaViewer } from '@/components/MediaViewer';
 import { LinkAutocomplete } from '@/components/LinkAutocomplete';
 import { LinkRenderer } from '@/components/LinkRenderer';
@@ -27,9 +27,11 @@ import {
   Type,
   Calculator,
   Maximize2,
-  LineChart
+  LineChart,
+  Upload
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 import 'katex/dist/katex.min.css';
 import 'highlight.js/styles/github-dark.css';
 
@@ -56,6 +58,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
   const [splitView, setSplitView] = useState(false);
   const [zenMode, setZenMode] = useState(false);
   const [showLineNumbers, setShowLineNumbers] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const {
@@ -125,6 +128,59 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
       adjustHeight();
     }, 0);
   }, [content, onChange, adjustHeight]);
+
+  const handleFileUpload = useCallback(async (files: FileList) => {
+    for (const file of Array.from(files)) {
+      if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+        toast.error(`Tipo de arquivo não suportado: ${file.type}`);
+        continue;
+      }
+
+      try {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const result = e.target?.result as string;
+          let markdown = '';
+          
+          if (file.type.startsWith('image/')) {
+            markdown = `![${file.name}](${result})`;
+          } else if (file.type.startsWith('video/')) {
+            markdown = `<video controls width="100%">\n  <source src="${result}" type="${file.type}">\n  Seu navegador não suporta vídeo.\n</video>`;
+          }
+          
+          insertMedia(markdown);
+          toast.success(`${file.type.startsWith('image/') ? 'Imagem' : 'Vídeo'} adicionado com sucesso!`);
+        };
+        reader.readAsDataURL(file);
+      } catch (error) {
+        toast.error('Erro ao processar arquivo');
+      }
+    }
+  }, [insertMedia]);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    if (e.dataTransfer.files) {
+      handleFileUpload(e.dataTransfer.files);
+    }
+  }, [handleFileUpload]);
+
+  const handlePaste = useCallback((e: React.ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (const item of Array.from(items)) {
+      if (item.type.startsWith('image/') || item.type.startsWith('video/')) {
+        e.preventDefault();
+        const file = item.getAsFile();
+        if (file) {
+          handleFileUpload(new FileList([file] as any));
+        }
+      }
+    }
+  }, [handleFileUpload]);
 
   const handleTextChangeWithAutocomplete = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newContent = e.target.value;
@@ -281,8 +337,26 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
                 value={content}
                 onChange={handleTextChangeWithAutocomplete}
                 onKeyDown={handleKeyDown}
-                placeholder="# Comece a escrever em Markdown..."
-                className="h-full border-none resize-none bg-transparent text-workspace-text leading-relaxed font-mono text-lg focus:ring-0 focus:outline-none p-8 max-w-4xl mx-auto input-magic"
+                onPaste={handlePaste}
+                onDrop={handleDrop}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setIsDragging(true);
+                }}
+                onDragLeave={(e) => {
+                  e.preventDefault();
+                  setIsDragging(false);
+                }}
+                placeholder="# Comece a escrever em Markdown...
+
+💡 Dicas:
+• Ctrl+V para colar imagens/vídeos
+• Arraste e solte arquivos aqui
+• Use [[ para autocompletar links"
+                className={cn(
+                  "h-full border-none resize-none bg-transparent text-workspace-text leading-relaxed font-mono text-lg focus:ring-0 focus:outline-none p-8 max-w-4xl mx-auto input-magic",
+                  isDragging && "ring-2 ring-blue-400 bg-blue-50/5"
+                )}
                 style={{ height: 'auto' }}
               />
             </div>
@@ -370,10 +444,21 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
       {/* Enhanced Editor Area */}
       <div
         className={cn(
-          "flex-1 overflow-auto w-full scrollbar-magic",
+          "flex-1 overflow-auto w-full scrollbar-magic relative",
           isMobile ? "pt-24 pb-24 px-3" : "pt-2 pb-2 px-0"
         )}
       >
+        {/* Drop Zone Overlay */}
+        {isDragging && (
+          <div className="absolute inset-0 z-50 bg-blue-500/10 border-2 border-dashed border-blue-400 rounded-lg flex items-center justify-center backdrop-blur-sm">
+            <div className="text-center text-blue-400">
+              <Upload className="h-12 w-12 mx-auto mb-4 animate-bounce" />
+              <p className="text-lg font-semibold">Solte suas imagens/vídeos aqui</p>
+              <p className="text-sm opacity-70">Formatos suportados: JPG, PNG, GIF, MP4, WebM</p>
+            </div>
+          </div>
+        )}
+
         {/* Editor */}
         {(!showPreview || splitView) && (
           <div className={cn("flex-1 flex flex-col relative card-magic m-2", splitView && "border-r border-workspace-border")}>
@@ -383,6 +468,16 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
               value={content}
               onChange={handleTextChangeWithAutocomplete}
               onKeyDown={handleKeyDown}
+              onPaste={handlePaste}
+              onDrop={handleDrop}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setIsDragging(true);
+              }}
+              onDragLeave={(e) => {
+                e.preventDefault();
+                setIsDragging(false);
+              }}
               placeholder="# Comece a escrever em Markdown...
 
 **Negrito** e *itálico*
@@ -393,7 +488,10 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
 [Link](https://example.com)
 [[Link interno]] - Use [[ para autocompletar
 
-Use o botão 'Mídia' para inserir imagens e vídeos!
+💡 **Dicas de Mídia:**
+• Ctrl+V para colar imagens/vídeos
+• Arraste e solte arquivos aqui
+• Use o botão 'Mídia' para mais opções
 
 ```javascript
 const codigo = 'syntax highlighting';
@@ -410,7 +508,8 @@ $$E = mc^2$$
               className={cn(
                 "flex-1 border-none resize-none bg-transparent text-workspace-text leading-relaxed font-mono text-base focus:ring-0 focus:outline-none p-4 overflow-y-auto input-magic transition-all duration-300",
                 showLineNumbers && "pl-16",
-                isMobile ? "min-h-[500px] max-h-[75vh] text-lg" : "min-h-[400px] max-h-[60vh]"
+                isMobile ? "min-h-[500px] max-h-[75vh] text-lg" : "min-h-[400px] max-h-[60vh]",
+                isDragging && "ring-2 ring-blue-400 bg-blue-50/5"
               )}
               style={{ height: 'auto' }}
             />
@@ -478,7 +577,7 @@ $$E = mc^2$$
 
       {/* Media Manager - Enhanced for Mobile */}
       <div className={cn("absolute z-10", isMobile ? "top-24 right-4" : "top-4 right-4")}>
-        <MediaManager onInsertMedia={insertMedia} />
+        <MediaManagerEnhanced onInsertMedia={insertMedia} />
       </div>
     </div>
   );
