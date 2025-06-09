@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/command';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import { useFileSystemContext } from '@/contexts/FileSystemContext';
+import { FileItem } from '@/types';
 
 interface Command {
   id: string;
@@ -41,21 +41,22 @@ interface CommandPaletteProps {
   onClose: () => void;
   onOpenWorkspaceSettings?: () => void;
   onToggleTheme?: () => void;
+  files: FileItem[];
+  onNavigateToFile: (fileId: string) => void;
+  onCreateFile: (name: string, parentId?: string, type?: 'file' | 'folder') => Promise<string | null>;
+  favorites: string[];
 }
 
 export const CommandPalette: React.FC<CommandPaletteProps> = ({
   isOpen,
   onClose,
   onOpenWorkspaceSettings,
-  onToggleTheme
+  onToggleTheme,
+  files,
+  onNavigateToFile,
+  onCreateFile,
+  favorites,
 }) => {
-  const {
-    files,
-    navigateTo: onFileSelect,
-    createFile: onCreateFile,
-    favorites,
-  } = useFileSystemContext();
-
   const recentFiles = files
     .filter(f => f.type === 'file')
     .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
@@ -111,7 +112,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       subtitle: `Atualizado ${format(file.updatedAt, 'dd/MM/yyyy')}`,
       icon: file.emoji ? <span>{file.emoji}</span> : <FileText className="h-4 w-4" />,
       action: () => {
-        onFileSelect(file.id);
+        onNavigateToFile(file.id);
         onClose();
       },
       group: 'recent',
@@ -125,7 +126,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       subtitle: 'Favorito',
       icon: <Star className="h-4 w-4 text-yellow-500" />,
       action: () => {
-        onFileSelect(file.id);
+        onNavigateToFile(file.id);
         onClose();
       },
       group: 'favorites',
@@ -141,7 +142,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         subtitle: file.tags?.slice(0, 2).join(', ') || 'Sem tags',
         icon: file.emoji ? <span>{file.emoji}</span> : <FileText className="h-4 w-4" />,
         action: () => {
-          onFileSelect(file.id);
+          onNavigateToFile(file.id);
           onClose();
         },
         group: 'files',

@@ -21,6 +21,7 @@ interface WorkspaceLayoutProps {
   sidebarOpen?: boolean;
   onSidebarOpenChange?: (open: boolean) => void;
   isMobile?: boolean;
+  onNavigateToFile: (fileId: string) => void;
 }
 
 export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
@@ -28,7 +29,8 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
   onViewChange,
   sidebarOpen = false,
   onSidebarOpenChange,
-  isMobile = false
+  isMobile = false,
+  onNavigateToFile,
 }) => {
   const { currentWorkspace } = useWorkspaceContext();
   const { isCollapsed } = usePanelCollapse({
@@ -236,6 +238,7 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
                     isMobile={isMobile}
               open={sidebarOpen}
               onOpenChange={onSidebarOpenChange}
+              onNavigateToFile={onNavigateToFile}
                   />
                 </div>
         </ResizablePanel>

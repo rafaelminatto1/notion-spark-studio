@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Plus, FileText, Folder } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -82,7 +81,7 @@ export const SubItemCreator: React.FC<SubItemCreatorProps> = ({
         onChange={(e) => setNewItemName(e.target.value)}
         onKeyDown={handleKeyDown}
         onBlur={handleCreate}
-        className="h-7 text-sm bg-background/60 backdrop-blur-sm border-purple-500/30 focus:border-purple-500/60 transition-all duration-300 rounded-lg"
+        className="h-7 text-sm bg-background border-purple-500/30 focus:border-purple-500/60 transition-all duration-300 rounded-lg z-20"
         placeholder={itemType === 'folder' ? 'Nova subpasta' : 'Nova subitem'}
         autoFocus
       />

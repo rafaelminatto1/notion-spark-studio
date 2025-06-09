@@ -26,12 +26,14 @@ interface SidebarProps {
   isMobile?: boolean;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  onNavigateToFile: (fileId: string) => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   isMobile = false,
   open = false,
   onOpenChange,
+  onNavigateToFile,
 }) => {
   const [showSubItemCreator, setShowSubItemCreator] = useState<string | null>(null);
 
@@ -91,7 +93,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const handleFileSelect = (fileId: string) => {
-    onFileSelect(fileId);
+    onNavigateToFile(fileId);
   };
 
   const displayFiles = useMemo(() => {
@@ -231,6 +233,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
         >
           <Sparkles className="h-6 w-6 mr-2" />
           Criar Nova Nota
+        </Button>
+        <Button
+          className="w-full text-lg py-3 h-auto justify-center rounded-xl font-semibold bg-green-600 hover:bg-green-700 text-white shadow-lg transition-all duration-300 hover:scale-[1.01] hover:shadow-green-500/30"
+          onClick={() => onCreateFile('Nova Pasta', undefined, 'folder')}
+        >
+          <Folder className="h-6 w-6 mr-2" />
+          Criar Nova Pasta
         </Button>
       </div>
 

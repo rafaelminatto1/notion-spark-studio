@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { useAutoCloseToast } from '@/hooks/useAutoCloseToast';
 import { useFileSystemContext } from '@/contexts/FileSystemContext';
 import { QuickSwitcherCommand } from '@/hooks/useQuickSwitcher';
+import { FileItem } from '@/types';
 
 interface IndexMainContentProps {
   activeView: ViewMode;
@@ -28,6 +29,7 @@ interface IndexMainContentProps {
   setQuickSwitcherQuery: (query: string) => void;
   isCommandPaletteOpen: boolean;
   setIsCommandPaletteOpen: (open: boolean) => void;
+  onNavigateToFile: (fileId: string) => void;
 }
 
 export const IndexMainContent: React.FC<IndexMainContentProps> = ({
@@ -43,7 +45,8 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
   quickSwitcherQuery,
   setQuickSwitcherQuery,
   isCommandPaletteOpen,
-  setIsCommandPaletteOpen
+  setIsCommandPaletteOpen,
+  onNavigateToFile,
 }) => {
   const [loginSuccessToast, setLoginSuccessToast] = useState(false);
 
@@ -135,6 +138,7 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
                 sidebarOpen={isMobileSidebarOpen}
                 onSidebarOpenChange={onToggleMobileSidebar}
                 isMobile={isMobile}
+                onNavigateToFile={onNavigateToFile}
               />
             </div>
           </div>

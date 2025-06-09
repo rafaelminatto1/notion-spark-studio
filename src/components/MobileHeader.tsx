@@ -3,25 +3,25 @@ import { Button } from '@/components/ui/button';
 import { GlobalSearch } from '@/components/GlobalSearch';
 import { Plus, Menu, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useFileSystemContext } from '@/contexts/FileSystemContext';
+import { FileItem } from '@/types';
 
 interface MobileHeaderProps {
   onToggleSidebar: () => void;
   onShowSettings: () => void;
   onOpenSearch: () => void;
+  files: FileItem[];
+  onNavigateToFile: (fileId: string) => void;
+  onCreateFile: (name: string, parentId?: string, type?: 'file' | 'folder') => Promise<string | null>;
 }
 
 export const MobileHeader: React.FC<MobileHeaderProps> = ({
   onToggleSidebar,
   onShowSettings,
-  onOpenSearch
+  onOpenSearch,
+  files,
+  onNavigateToFile,
+  onCreateFile,
 }) => {
-  const {
-    files,
-    navigateTo: onFileSelect,
-    createFile: onCreateFile,
-  } = useFileSystemContext();
-
   return (
     <header className="fixed top-0 left-0 right-0 z-50 glass-effect border-b border-white/10 safe-area-pt animate-slide-up">
       <div className="flex items-center justify-between h-16 px-4">

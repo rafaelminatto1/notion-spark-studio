@@ -32,6 +32,7 @@ export interface FileSystemContextType {
   goForward: () => void;
   canGoBack: boolean;
   canGoForward: boolean;
+  setActiveView: (view: ViewMode) => void;
 }
 
 const FileSystemContext = createContext<FileSystemContextType | undefined>(undefined);
@@ -45,6 +46,10 @@ export const FileSystemProvider: React.FC<{ children: ReactNode }> = ({ children
     ...fileSystem,
     ...favorites,
     ...navigation,
+    navigateTo: (fileId: string) => {
+      fileSystem.setCurrentFileId(fileId);
+      navigation.navigateTo(fileId);
+    },
   };
 
   return (

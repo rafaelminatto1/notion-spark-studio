@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { IndexWorkspaceSettings } from '@/components/IndexWorkspaceSettings';
 import { IndexLoadingScreen } from '@/components/IndexLoadingScreen';
@@ -108,6 +107,7 @@ const Index = () => {
         setQuickSwitcherQuery={setQuickSwitcherQuery}
         isCommandPaletteOpen={isCommandPaletteOpen}
         setIsCommandPaletteOpen={setIsCommandPaletteOpen}
+        onNavigateToFile={handleNavigateToFile}
       />
     );
   } catch (error) {
