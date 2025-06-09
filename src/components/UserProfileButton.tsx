@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,13 +13,16 @@ import { Badge } from '@/components/ui/badge';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useSupabaseProfile } from '@/hooks/useSupabaseProfile';
 import { User, Settings, LogOut, Shield } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface UserProfileButtonProps {
   onShowSettings?: () => void;
+  className?: string;
 }
 
 export const UserProfileButton: React.FC<UserProfileButtonProps> = ({
-  onShowSettings
+  onShowSettings,
+  className
 }) => {
   const { user, signOut } = useSupabaseAuth();
   const { profile, role } = useSupabaseProfile();
@@ -48,7 +50,7 @@ export const UserProfileButton: React.FC<UserProfileButtonProps> = ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+        <Button variant="ghost" className={cn("relative h-10 w-10 rounded-full", className)}>
           <Avatar className="h-9 w-9">
             <AvatarImage 
               src={profile?.avatar || user?.user_metadata?.avatar_url} 

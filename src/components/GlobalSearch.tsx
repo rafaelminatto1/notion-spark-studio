@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, X, FileText, Hash, Calendar, SortAsc, SortDesc, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,12 +14,14 @@ import { format } from 'date-fns';
 interface GlobalSearchProps {
   files: FileItem[];
   onFileSelect: (fileId: string) => void;
+  placeholder?: string;
   className?: string;
 }
 
 export const GlobalSearch: React.FC<GlobalSearchProps> = ({
   files,
   onFileSelect,
+  placeholder = "Buscar páginas, conteúdo, tags...",
   className
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -79,7 +80,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setIsOpen(true)}
-          placeholder="Buscar páginas, conteúdo, tags..."
+          placeholder={placeholder}
           className="pl-10 pr-24 bg-notion-dark-hover border-notion-dark-border"
         />
         <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
