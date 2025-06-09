@@ -132,18 +132,18 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
           />
         );
       default:
-        return (
-          <div className="flex-1 p-4 md:p-8 text-center text-gray-400 bg-gradient-to-br from-background to-background/80">
-            <div className="max-w-md mx-auto space-y-4">
-              <div className="w-12 h-12 md:w-16 md:h-16 mx-auto bg-muted rounded-full flex items-center justify-center">
-                <span className="text-xl md:text-2xl">📋</span>
-              </div>
+    return (
+      <div className="flex-1 p-4 md:p-8 text-center text-gray-400 bg-gradient-to-br from-background to-background/80">
+        <div className="max-w-md mx-auto space-y-4">
+          <div className="w-12 h-12 md:w-16 md:h-16 mx-auto bg-muted rounded-full flex items-center justify-center">
+            <span className="text-xl md:text-2xl">📋</span>
+          </div>
               <h3 className="text-base md:text-lg font-medium">Nenhuma visualização selecionada</h3>
               <p className="text-xs md:text-sm text-muted-foreground">Selecione uma visualização no cabeçalho.</p>
-            </div>
-          </div>
-        );
-    }
+        </div>
+      </div>
+    );
+  }
   };
 
   // Mobile layout - stack panels vertically with improved spacing
@@ -226,25 +226,25 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
           collapsedSize={0}
           onCollapse={() => onSidebarOpenChange?.(false)}
           onExpand={() => onSidebarOpenChange?.(true)}
-          className={cn(
+              className={cn(
             "transition-all duration-300 ease-in-out",
             !sidebarOpen && isMobile ? "w-0 overflow-hidden" : ""
-          )}
-        >
-          <div className="h-full flex flex-col bg-background">
+              )}
+            >
+              <div className="h-full flex flex-col bg-background">
             <Sidebar
-              isMobile={isMobile}
+                    isMobile={isMobile}
               open={sidebarOpen}
               onOpenChange={onSidebarOpenChange}
-            />
-          </div>
+                  />
+                </div>
         </ResizablePanel>
 
         <ResizableHandle withHandle />
 
         <ResizablePanel defaultSize={75}>
-          <div className="h-full flex flex-col bg-background">
-            <div className="flex-1 min-h-0">
+            <div className="h-full flex flex-col bg-background">
+              <div className="flex-1 min-h-0">
               {renderContent()}
             </div>
           </div>
