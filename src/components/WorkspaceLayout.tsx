@@ -60,7 +60,7 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
     );
   }
 
-  // Mobile layout - stack panels vertically
+  // Mobile layout - stack panels vertically with improved spacing
   if (isMobile) {
     return (
       <div className="flex-1 min-h-0 bg-gradient-to-br from-background via-background to-background/95">
@@ -126,119 +126,150 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
     );
   }
 
-  // Desktop layout - resizable panels
-  const renderPanel = (panel: any, index: number, panels: any[], position: 'left' | 'right' | 'center') => {
-    const panelIsCollapsed = panel.isCollapsible && isCollapsed(panel.id);
-    const effectiveSize = panelIsCollapsed ? 0 : panel.size;
-    
-    return (
-      <React.Fragment key={panel.id}>
-        <ResizablePanel
-          defaultSize={effectiveSize}
-          minSize={panelIsCollapsed ? 0 : (panel.minSize || 10)}
-          maxSize={panelIsCollapsed ? 0 : (panel.maxSize || 50)}
-          onResize={(size) => !panelIsCollapsed && resizePanel(panel.id, size)}
-          className={cn(
-            "min-w-0 transition-all duration-300 ease-in-out",
-            panelIsCollapsed && "overflow-hidden",
-            position === 'center' && "flex-1"
-          )}
-          collapsible={panel.isCollapsible}
-          collapsedSize={0}
-        >
-          <div className={cn(
-            "h-full flex flex-col bg-background border-r border-border/60 transition-all duration-300",
-            panelIsCollapsed ? "w-0 opacity-0" : "opacity-100",
-            position === 'left' && "shadow-lg shadow-black/5",
-            position === 'right' && "shadow-lg shadow-black/5 border-l border-r-0"
-          )}>
-            {panel.title && !panelIsCollapsed && (
-              <div className="px-4 py-3 border-b border-border/60 bg-muted/30">
-                <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
-                  {panel.type === 'sidebar' && '📁'}
-                  {panel.type === 'editor' && '✏️'}
-                  {panel.type === 'properties' && '⚙️'}
-                  {panel.title}
-                </h3>
-              </div>
-            )}
-            
-            <div className={cn(
-              "flex-1 min-h-0 transition-all duration-300",
-              panelIsCollapsed ? "scale-95 opacity-0" : "scale-100 opacity-100"
-            )}>
-              <WorkspaceLayoutPanels
-                panel={panel}
-                files={files}
-                currentFileId={currentFileId}
-                expandedFolders={expandedFolders}
-                favorites={favorites}
-                onFileSelect={setCurrentFileId}
-                onToggleFolder={toggleFolder}
-                onCreateFile={onCreateFile}
-                onUpdateFile={updateFile}
-                onDeleteFile={deleteFile}
-                onNavigateToFile={onNavigateToFile}
-                onToggleFavorite={toggleFavorite}
-                onGoBack={goBack}
-                onGoForward={goForward}
-                canGoBack={canGoBack}
-                canGoForward={canGoForward}
-                getFileTree={getFileTree}
-                getCurrentFile={getCurrentFile}
-                setCurrentFileId={setCurrentFileId}
-                isMobile={isMobile}
-                sidebarOpen={sidebarOpen}
-                onSidebarOpenChange={onSidebarOpenChange}
-              />
-            </div>
-          </div>
-        </ResizablePanel>
-        
-        {index < panels.length - 1 && (
-          <ResizableHandle 
-            withHandle 
-            withCollapseButton={panel.isCollapsible}
-            onCollapse={() => toggleCollapse(panel.id)}
-            isCollapsed={panelIsCollapsed}
-          />
-        )}
-      </React.Fragment>
-    );
-  };
-
+  // Desktop layout - simplified without unnecessary handles
   return (
     <div className="flex-1 min-h-0 bg-gradient-to-br from-background via-background to-background/95">
-      <ResizablePanelGroup direction="horizontal" className="h-full">
-        {/* Left Panels */}
-        {leftPanels.map((panel, index) => renderPanel(panel, index, leftPanels, 'left'))}
+      <div className="flex h-full">
+        {/* Left Panels - Direct rendering without ResizablePanelGroup for simplicity */}
+        {leftPanels.map((panel) => {
+          const panelIsCollapsed = panel.isCollapsible && isCollapsed(panel.id);
+          
+          return (
+            <div 
+              key={panel.id}
+              className={cn(
+                "transition-all duration-300 ease-in-out border-r border-border/60",
+                panelIsCollapsed ? "w-0 overflow-hidden opacity-0" : "w-72 opacity-100"
+              )}
+            >
+              <div className="h-full flex flex-col bg-background">
+                {panel.title && !panelIsCollapsed && (
+                  <div className="px-4 py-3 border-b border-border/60 bg-muted/30">
+                    <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
+                      {panel.type === 'sidebar' && '📁'}
+                      {panel.title}
+                    </h3>
+                  </div>
+                )}
+                
+                <div className="flex-1 min-h-0">
+                  <WorkspaceLayoutPanels
+                    panel={panel}
+                    files={files}
+                    currentFileId={currentFileId}
+                    expandedFolders={expandedFolders}
+                    favorites={favorites}
+                    onFileSelect={setCurrentFileId}
+                    onToggleFolder={toggleFolder}
+                    onCreateFile={onCreateFile}
+                    onUpdateFile={updateFile}
+                    onDeleteFile={deleteFile}
+                    onNavigateToFile={onNavigateToFile}
+                    onToggleFavorite={toggleFavorite}
+                    onGoBack={goBack}
+                    onGoForward={goForward}
+                    canGoBack={canGoBack}
+                    canGoForward={canGoForward}
+                    getFileTree={getFileTree}
+                    getCurrentFile={getCurrentFile}
+                    setCurrentFileId={setCurrentFileId}
+                    isMobile={isMobile}
+                    sidebarOpen={sidebarOpen}
+                    onSidebarOpenChange={onSidebarOpenChange}
+                  />
+                </div>
+              </div>
+            </div>
+          );
+        })}
 
-        {/* Handle between left and center */}
-        {leftPanels.length > 0 && centerPanels.length > 0 && (
-          <ResizableHandle 
-            withHandle 
-            withCollapseButton={leftPanels.some(p => p.isCollapsible)}
-            onCollapse={() => leftPanels.forEach(p => p.isCollapsible && toggleCollapse(p.id))}
-            isCollapsed={leftPanels.some(p => isCollapsed(p.id))}
-          />
-        )}
-
-        {/* Center Panels */}
-        {centerPanels.map((panel, index) => renderPanel(panel, index, centerPanels, 'center'))}
-
-        {/* Handle between center and right */}
-        {centerPanels.length > 0 && rightPanels.length > 0 && (
-          <ResizableHandle 
-            withHandle 
-            withCollapseButton={rightPanels.some(p => p.isCollapsible)}
-            onCollapse={() => rightPanels.forEach(p => p.isCollapsible && toggleCollapse(p.id))}
-            isCollapsed={rightPanels.some(p => isCollapsed(p.id))}
-          />
-        )}
+        {/* Center Panels - Main content area */}
+        {centerPanels.map((panel) => (
+          <div key={panel.id} className="flex-1 min-w-0">
+            <div className="h-full flex flex-col bg-background">
+              <div className="flex-1 min-h-0">
+                <WorkspaceLayoutPanels
+                  panel={panel}
+                  files={files}
+                  currentFileId={currentFileId}
+                  expandedFolders={expandedFolders}
+                  favorites={favorites}
+                  onFileSelect={setCurrentFileId}
+                  onToggleFolder={toggleFolder}
+                  onCreateFile={onCreateFile}
+                  onUpdateFile={updateFile}
+                  onDeleteFile={deleteFile}
+                  onNavigateToFile={onNavigateToFile}
+                  onToggleFavorite={toggleFavorite}
+                  onGoBack={goBack}
+                  onGoForward={goForward}
+                  canGoBack={canGoBack}
+                  canGoForward={canGoForward}
+                  getFileTree={getFileTree}
+                  getCurrentFile={getCurrentFile}
+                  setCurrentFileId={setCurrentFileId}
+                  isMobile={isMobile}
+                  sidebarOpen={sidebarOpen}
+                  onSidebarOpenChange={onSidebarOpenChange}
+                />
+              </div>
+            </div>
+          </div>
+        ))}
 
         {/* Right Panels */}
-        {rightPanels.map((panel, index) => renderPanel(panel, index, rightPanels, 'right'))}
-      </ResizablePanelGroup>
+        {rightPanels.map((panel) => {
+          const panelIsCollapsed = panel.isCollapsible && isCollapsed(panel.id);
+          
+          return (
+            <div 
+              key={panel.id}
+              className={cn(
+                "transition-all duration-300 ease-in-out border-l border-border/60",
+                panelIsCollapsed ? "w-0 overflow-hidden opacity-0" : "w-80 opacity-100"
+              )}
+            >
+              <div className="h-full flex flex-col bg-background">
+                {panel.title && !panelIsCollapsed && (
+                  <div className="px-4 py-3 border-b border-border/60 bg-muted/30">
+                    <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
+                      {panel.type === 'properties' && '⚙️'}
+                      {panel.title}
+                    </h3>
+                  </div>
+                )}
+                
+                <div className="flex-1 min-h-0">
+                  <WorkspaceLayoutPanels
+                    panel={panel}
+                    files={files}
+                    currentFileId={currentFileId}
+                    expandedFolders={expandedFolders}
+                    favorites={favorites}
+                    onFileSelect={setCurrentFileId}
+                    onToggleFolder={toggleFolder}
+                    onCreateFile={onCreateFile}
+                    onUpdateFile={updateFile}
+                    onDeleteFile={deleteFile}
+                    onNavigateToFile={onNavigateToFile}
+                    onToggleFavorite={toggleFavorite}
+                    onGoBack={goBack}
+                    onGoForward={goForward}
+                    canGoBack={canGoBack}
+                    canGoForward={canGoForward}
+                    getFileTree={getFileTree}
+                    getCurrentFile={getCurrentFile}
+                    setCurrentFileId={setCurrentFileId}
+                    isMobile={isMobile}
+                    sidebarOpen={sidebarOpen}
+                    onSidebarOpenChange={onSidebarOpenChange}
+                  />
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };
