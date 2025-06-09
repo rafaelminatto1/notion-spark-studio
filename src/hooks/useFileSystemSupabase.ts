@@ -65,6 +65,35 @@ export const useFileSystemSupabase = () => {
     });
   }, []);
 
+  // Move file functionality for drag and drop
+  const moveFile = useCallback(async (fileId: string, newParentId?: string, newPosition?: number) => {
+    try {
+      const fileToMove = files.find(f => f.id === fileId);
+      if (!fileToMove) return;
+
+      // Update the file's parent
+      const updates: Partial<SupabaseFile> = {
+        parent_id: newParentId || null,
+        updated_at: new Date().toISOString()
+      };
+
+      // If position is specified, we might need to update other files' positions
+      // For now, we'll just update the parent. Position handling can be enhanced later
+      // by adding a position/order field to the database schema
+
+      await supabaseFiles.updateFile(fileId, updates);
+
+      // Expand the target folder if moving into it
+      if (newParentId) {
+        setExpandedFolders(prev => new Set([...prev, newParentId]));
+      }
+
+      console.log(`Moved file ${fileId} to parent ${newParentId || 'root'}`);
+    } catch (error) {
+      console.error('Error moving file:', error);
+    }
+  }, [files, supabaseFiles]);
+
   // Wrapper functions that maintain the same interface
   const createFile = useCallback(async (name: string, parentId?: string, type: 'file' | 'folder' = 'file') => {
     const fileId = await supabaseFiles.createFile(name, parentId, type);
@@ -107,6 +136,7 @@ export const useFileSystemSupabase = () => {
     createFile,
     updateFile,
     deleteFile,
+    moveFile,
     loadFiles: supabaseFiles.loadFiles
   };
 };
