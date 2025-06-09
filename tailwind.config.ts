@@ -14,7 +14,15 @@ export default {
 			center: true,
 			padding: '2rem',
 			screens: {
-				'2xl': '1400px'
+				'2xl': '1400px',
+				'iphone-11': '414px',    // iPhone 11 Pro Max
+				'iphone-12': '390px',    // iPhone 12/13/14
+				'iphone-13': '390px',    // iPhone 13
+				'iphone-14': '390px',    // iPhone 14
+				'iphone-15': '393px',    // iPhone 15
+				'iphone-16': '393px',    // iPhone 16
+				'ipad-10': '820px',      // iPad 10
+				'ipad-pro': '1024px',    // iPad Pro
 			}
 		},
 		extend: {

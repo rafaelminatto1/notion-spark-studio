@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { WorkspaceLayoutPanels } from '@/components/WorkspaceLayoutPanels';
@@ -63,7 +62,9 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
   // Mobile layout - stack panels vertically with improved spacing
   if (isMobile) {
     return (
-      <div className="flex-1 min-h-0 bg-gradient-to-br from-background via-background to-background/95">
+      <div className="flex-1 min-h-0 bg-gradient-to-br from-background via-background to-background/95 pt-4 pb-4 px-2
+                      iphone-11:pt-6 iphone-11:pb-6 iphone-11:px-4
+                      ipad-10:pt-8 ipad-10:pb-8 ipad-10:px-6">
         {/* Mobile - show only center panel (editor) when sidebar is closed */}
         {!sidebarOpen && centerPanels.map(panel => (
           <div key={panel.id} className="h-full">
