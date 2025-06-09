@@ -1,13 +1,11 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { ViewTabs, ViewMode } from '@/components/ViewTabs';
 import { GlobalSearch } from '@/components/GlobalSearch';
 import { UserProfileButton } from '@/components/UserProfileButton';
 import { WorkspaceSelector } from '@/components/WorkspaceSelector';
 import { CreateWorkspaceDialog } from '@/components/CreateWorkspaceDialog';
 import { WorkspaceMembersDialog } from '@/components/WorkspaceMembersDialog';
-import { FileItem } from '@/types';
-import { useState } from 'react';
+import { useFileSystemContext } from '@/contexts/FileSystemContext';
 
 interface AppHeaderProps {
   activeView: ViewMode;
@@ -15,8 +13,6 @@ interface AppHeaderProps {
   isMobile: boolean;
   isMobileSidebarOpen: boolean;
   onToggleMobileSidebar: () => void;
-  files: FileItem[];
-  onFileSelect: (fileId: string) => void;
   onShowSettings: () => void;
 }
 
@@ -26,12 +22,15 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   isMobile,
   isMobileSidebarOpen,
   onToggleMobileSidebar,
-  files,
-  onFileSelect,
   onShowSettings
 }) => {
   const [showCreateWorkspace, setShowCreateWorkspace] = useState(false);
   const [showWorkspaceMembers, setShowWorkspaceMembers] = useState(false);
+
+  const {
+    files,
+    navigateTo: onFileSelect,
+  } = useFileSystemContext();
 
   const handleViewChange = (view: ViewMode) => {
     console.log('[AppHeader] View change requested:', view);
@@ -70,7 +69,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
         {/* Center Section - Search */}
         <div className="flex-1 max-w-xs md:max-w-lg mx-2 md:mx-4">
           <GlobalSearch 
-            files={files} 
+            files={files}
             onFileSelect={onFileSelect}
             placeholder="Buscar notas, templates..."
           />

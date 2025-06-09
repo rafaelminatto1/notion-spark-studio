@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ViewMode } from '@/components/ViewTabs';
 import { QuickSwitcher } from '@/components/QuickSwitcher';
@@ -9,27 +8,22 @@ import { WorkspaceLayout } from '@/components/WorkspaceLayout';
 import { AppHeader } from '@/components/AppHeader';
 import { MobileHeader } from '@/components/MobileHeader';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
-import { FileItem } from '@/types';
 import { Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAutoCloseToast } from '@/hooks/useAutoCloseToast';
+import { useFileSystemContext } from '@/contexts/FileSystemContext';
+import { QuickSwitcherCommand } from '@/hooks/useQuickSwitcher';
 
 interface IndexMainContentProps {
   activeView: ViewMode;
   isMobile: boolean;
   isMobileSidebarOpen: boolean;
   onToggleMobileSidebar: () => void;
-  convertedFiles: FileItem[];
-  favorites: string[];
-  currentFileId: string | null;
-  setCurrentFileId: (id: string | null) => void;
-  navigateTo: (fileId: string) => void;
   setActiveView: (view: ViewMode) => void;
   onShowSettings: () => void;
-  onCreateFile: (name: string, parentId?: string, type?: 'file' | 'folder') => Promise<string>;
   isQuickSwitcherOpen: boolean;
   closeQuickSwitcher: () => void;
-  filteredCommands: any[];
+  filteredCommands: QuickSwitcherCommand[];
   quickSwitcherQuery: string;
   setQuickSwitcherQuery: (query: string) => void;
   isCommandPaletteOpen: boolean;
@@ -41,14 +35,8 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
   isMobile,
   isMobileSidebarOpen,
   onToggleMobileSidebar,
-  convertedFiles,
-  favorites,
-  currentFileId,
-  setCurrentFileId,
-  navigateTo,
   setActiveView,
   onShowSettings,
-  onCreateFile,
   isQuickSwitcherOpen,
   closeQuickSwitcher,
   filteredCommands,
@@ -59,7 +47,15 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
 }) => {
   const [loginSuccessToast, setLoginSuccessToast] = useState(false);
 
-  // Auto-close login success toast
+  const {
+    files: convertedFiles,
+    currentFileId,
+    setCurrentFileId,
+    navigateTo,
+    createFile,
+    favorites,
+  } = useFileSystemContext();
+
   useAutoCloseToast({
     message: "Login realizado com sucesso! Bem-vindo de volta.",
     type: "success",
@@ -83,12 +79,12 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
     navigateTo(fileId);
     setActiveView('editor');
     if (isMobile) {
-      onToggleMobileSidebar(); // Close sidebar on mobile after selection
+      onToggleMobileSidebar();
     }
   };
 
   const handleCreateFile = async (name: string, parentId?: string, type: 'file' | 'folder' = 'file') => {
-    const fileId = await onCreateFile(name, parentId, type);
+    const fileId = await createFile(name, parentId, type);
     if (fileId && type === 'file') {
       handleFileSelect(fileId);
     }
@@ -99,17 +95,14 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
     <ThemeProvider>
       <WorkspaceProvider>
         <div className="min-h-screen bg-gradient-to-br from-background via-background/98 to-background flex w-full relative overflow-hidden">
-          {/* Mobile Sidebar Backdrop */}
           {isMobile && isMobileSidebarOpen && (
-            <div 
+            <div
               className="fixed inset-0 bg-black/70 backdrop-blur-md z-40 animate-fade-in"
               onClick={onToggleMobileSidebar}
             />
           )}
           
-          {/* Main Content Container */}
           <div className="flex-1 flex flex-col min-w-0 relative"> 
-            {/* Header */}
             {isMobile ? (
               <MobileHeader
                 files={convertedFiles}
@@ -132,7 +125,6 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
               />
             )}
             
-            {/* Content Area */}
             <div className={cn(
               "flex-1 min-h-0 relative",
               isMobile ? "pt-16 pb-24" : ""
@@ -140,8 +132,6 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
               <WorkspaceLayout
                 activeView={activeView}
                 onViewChange={handleViewChangeFromWorkspace}
-                onNavigateToFile={handleFileSelect}
-                onCreateFile={onCreateFile}
                 sidebarOpen={isMobileSidebarOpen}
                 onSidebarOpenChange={onToggleMobileSidebar}
                 isMobile={isMobile}
@@ -149,7 +139,6 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
             </div>
           </div>
           
-          {/* Quick Switcher */}
           <QuickSwitcher
             isOpen={isQuickSwitcherOpen}
             onClose={closeQuickSwitcher}
@@ -158,7 +147,6 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
             onQueryChange={setQuickSwitcherQuery}
           />
           
-          {/* Command Palette */}
           <CommandPalette
             files={convertedFiles}
             isOpen={isCommandPaletteOpen}
@@ -168,7 +156,6 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
             favorites={favorites}
           />
           
-          {/* Mobile Bottom Navigation */}
           {isMobile && (
             <MobileBottomNav
               activeView={activeView}
@@ -179,7 +166,6 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
             />
           )}
 
-          {/* Floating Create Button for Mobile */}
           {isMobile && activeView === 'editor' && (
             <button
               className="fixed bottom-32 right-6 z-40 fab h-16 w-16 rounded-2xl flex items-center justify-center animate-float shadow-2xl"

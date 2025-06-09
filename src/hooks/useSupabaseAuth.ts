@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -27,7 +26,8 @@ export const useSupabaseAuth = () => {
         if (event === 'SIGNED_IN' && session?.user) {
           toast({
             title: "Login realizado",
-            description: `Bem-vindo, ${session.user.user_metadata?.name || session.user.email}!`
+            description: `Bem-vindo, ${session.user.user_metadata?.name || session.user.email}!`,
+            duration: 3000
           });
         } else if (event === 'SIGNED_OUT') {
           toast({

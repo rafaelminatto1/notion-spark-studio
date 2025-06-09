@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { 
   Search, 
@@ -23,8 +22,8 @@ import {
   CommandSeparator,
 } from '@/components/ui/command';
 import { Badge } from '@/components/ui/badge';
-import { FileItem } from '@/types';
 import { format } from 'date-fns';
+import { useFileSystemContext } from '@/contexts/FileSystemContext';
 
 interface Command {
   id: string;
@@ -38,26 +37,25 @@ interface Command {
 }
 
 interface CommandPaletteProps {
-  files: FileItem[];
   isOpen: boolean;
   onClose: () => void;
-  onFileSelect: (fileId: string) => void;
-  onCreateFile: (name: string) => void;
-  favorites: string[];
   onOpenWorkspaceSettings?: () => void;
   onToggleTheme?: () => void;
 }
 
 export const CommandPalette: React.FC<CommandPaletteProps> = ({
-  files,
   isOpen,
   onClose,
-  onFileSelect,
-  onCreateFile,
-  favorites,
   onOpenWorkspaceSettings,
   onToggleTheme
 }) => {
+  const {
+    files,
+    navigateTo: onFileSelect,
+    createFile: onCreateFile,
+    favorites,
+  } = useFileSystemContext();
+
   const recentFiles = files
     .filter(f => f.type === 'file')
     .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
@@ -159,7 +157,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       action: () => {
         const name = prompt('Nome da nova página:');
         if (name) {
-          onCreateFile(name);
+          onCreateFile(name, undefined, 'file');
         }
         onClose();
       },
@@ -175,7 +173,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       action: () => {
         const name = prompt('Nome da nova pasta:');
         if (name) {
-          // onCreateFolder(name); // Você pode implementar isso
+          onCreateFile(name, undefined, 'folder');
         }
         onClose();
       },
@@ -200,9 +198,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       subtitle: 'Abrir configurações do workspace',
       icon: <LayoutGrid className="h-4 w-4" />,
       action: () => {
-        if (onOpenWorkspaceSettings) {
-          onOpenWorkspaceSettings();
-        }
+        onOpenWorkspaceSettings?.();
         onClose();
       },
       group: 'actions',
@@ -226,9 +222,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       subtitle: 'Mudar entre claro e escuro',
       icon: <Palette className="h-4 w-4" />,
       action: () => {
-        if (onToggleTheme) {
-          onToggleTheme();
-        }
+        onToggleTheme?.();
         onClose();
       },
       group: 'actions',

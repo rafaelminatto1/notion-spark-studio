@@ -1,26 +1,23 @@
-
 import { useEffect, useMemo } from 'react';
 import { useQuickSwitcher } from '@/hooks/useQuickSwitcher';
-import { FileItem } from '@/types';
+import { useFileSystemContext } from '@/contexts/FileSystemContext';
 
 interface UseIndexQuickSwitcherProps {
-  convertedFiles: FileItem[];
-  setCurrentFileId: (id: string | null) => void;
-  navigateTo: (fileId: string) => void;
   setActiveView: (view: string) => void;
-  createFile: (name: string, parentId?: string, type?: 'file' | 'folder') => Promise<string>;
-  currentFileId: string | null;
 }
 
 export const useIndexQuickSwitcher = ({
-  convertedFiles,
-  setCurrentFileId,
-  navigateTo,
   setActiveView,
-  createFile,
-  currentFileId
 }: UseIndexQuickSwitcherProps) => {
   console.log('[useIndexQuickSwitcher] Hook starting');
+
+  const {
+    files: convertedFiles,
+    setCurrentFileId,
+    navigateTo,
+    createFile,
+    currentFileId,
+  } = useFileSystemContext();
 
   try {
     const handleNavigateToGraphFromQuickSwitcher = () => {

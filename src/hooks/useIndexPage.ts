@@ -1,10 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { ViewMode } from '@/components/ViewTabs';
-import { useSupabaseFiles } from '@/hooks/useSupabaseFiles';
 import { useSupabaseProfile } from '@/hooks/useSupabaseProfile';
-import { useFavorites } from '@/hooks/useFavorites';
-import { useNavigation } from '@/hooks/useNavigation';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useFileSystemContext } from '@/contexts/FileSystemContext';
 
 export const useIndexPage = () => {
   console.log('[useIndexPage] Hook starting');
@@ -13,7 +11,6 @@ export const useIndexPage = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [showWorkspaceSettings, setShowWorkspaceSettings] = useState(false);
-  const [currentFileId, setCurrentFileId] = useState<string | null>(null);
   
   console.log('[useIndexPage] State initialized');
 
@@ -21,37 +18,21 @@ export const useIndexPage = () => {
     const isMobile = useIsMobile();
     console.log('[useIndexPage] Mobile detection completed');
     
-    const { files, loading: filesLoading, createFile, updateFile } = useSupabaseFiles();
-    console.log('[useIndexPage] Supabase files hook completed, files:', files.length);
+    const {
+      files: convertedFiles,
+      loading: filesLoading,
+      currentFileId,
+      setCurrentFileId,
+      navigateTo,
+      createFile,
+      updateFile,
+      favorites,
+    } = useFileSystemContext();
+
+    console.log('[useIndexPage] FileSystemContext hooks completed');
     
     const { profile, preferences } = useSupabaseProfile();
     console.log('[useIndexPage] Supabase profile hook completed');
-    
-    const { favorites } = useFavorites();
-    console.log('[useIndexPage] Favorites hook completed');
-    
-    const { navigateTo } = useNavigation();
-    console.log('[useIndexPage] Navigation hook completed');
-
-    // Convert Supabase files to the format expected by existing components
-    const convertedFiles = useMemo(() => {
-      console.log('[useIndexPage] Converting files, count:', files.length);
-      return files.map(file => ({
-        id: file.id,
-        name: file.name,
-        type: file.type as 'file' | 'folder',
-        parentId: file.parent_id,
-        content: file.content,
-        emoji: file.emoji,
-        description: file.description,
-        tags: file.tags,
-        isProtected: file.is_protected,
-        isPublic: file.is_public,
-        showInSidebar: file.show_in_sidebar,
-        createdAt: new Date(file.created_at),
-        updatedAt: new Date(file.updated_at)
-      }));
-    }, [files]);
 
     console.log('[useIndexPage] Files converted successfully, converted count:', convertedFiles.length);
 
@@ -74,7 +55,7 @@ export const useIndexPage = () => {
       setCurrentFileId(fileId);
       navigateTo(fileId);
       setActiveView('editor');
-    }, [navigateTo]);
+    }, [setCurrentFileId, navigateTo, setActiveView]);
 
     const handleCreateFromTemplate = useCallback(async (template: any) => {
       console.log('[useIndexPage] handleCreateFromTemplate called');

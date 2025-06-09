@@ -1,28 +1,27 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { GlobalSearch } from '@/components/GlobalSearch';
-import { Plus, Menu, Search, Settings } from 'lucide-react';
-import { FileItem } from '@/types';
+import { Plus, Menu, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useFileSystemContext } from '@/contexts/FileSystemContext';
 
 interface MobileHeaderProps {
-  files: FileItem[];
-  onFileSelect: (fileId: string) => void;
-  onCreateFile: (name: string) => void;
   onToggleSidebar: () => void;
   onShowSettings: () => void;
   onOpenSearch: () => void;
 }
 
 export const MobileHeader: React.FC<MobileHeaderProps> = ({
-  files,
-  onFileSelect,
-  onCreateFile,
   onToggleSidebar,
   onShowSettings,
   onOpenSearch
 }) => {
+  const {
+    files,
+    navigateTo: onFileSelect,
+    createFile: onCreateFile,
+  } = useFileSystemContext();
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 glass-effect border-b border-white/10 safe-area-pt animate-slide-up">
       <div className="flex items-center justify-between h-16 px-4">
@@ -60,7 +59,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => onCreateFile('Nova Nota')}
+            onClick={() => onCreateFile('Nova Nota', undefined, 'file')}
             className="p-3 rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-all duration-300 group"
           >
             <Plus className="h-5 w-5 text-white group-hover:rotate-90 transition-transform duration-300" />
