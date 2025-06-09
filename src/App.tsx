@@ -13,6 +13,7 @@ import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import { FileSystemProvider } from "@/contexts/FileSystemContext";
+import { UserPreferencesProvider } from "@/contexts/UserPreferencesContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -59,9 +60,11 @@ const App = () => (
           <Toaster />
           <Sonner />
           <ConnectionStatus />
-          <FileSystemProvider>
-            <AppContent />
-          </FileSystemProvider>
+          <UserPreferencesProvider>
+            <FileSystemProvider>
+              <AppContent />
+            </FileSystemProvider>
+          </UserPreferencesProvider>
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>

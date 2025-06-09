@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useMemo } from 'react';
 import { useSupabaseFiles, SupabaseFile } from './useSupabaseFiles';
 import { FileItem } from '@/types';
@@ -95,8 +94,8 @@ export const useFileSystemSupabase = () => {
   }, [files, supabaseFiles]);
 
   // Wrapper functions that maintain the same interface
-  const createFile = useCallback(async (name: string, parentId?: string, type: 'file' | 'folder' = 'file') => {
-    const fileId = await supabaseFiles.createFile(name, parentId, type);
+  const createFile = useCallback(async (name: string, parentId?: string, type: 'file' | 'folder' = 'file', content?: string, emoji?: string) => {
+    const fileId = await supabaseFiles.createFile(name, parentId, type, content, emoji);
     return fileId || '';
   }, [supabaseFiles.createFile]);
 

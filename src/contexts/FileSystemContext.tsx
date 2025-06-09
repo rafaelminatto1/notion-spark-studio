@@ -5,7 +5,7 @@ import { useNavigation } from '@/hooks/useNavigation';
 import { FileItem } from '@/types'; // Assuming FileItem is defined here or in a common types file
 
 // Define the shape of the context value
-interface FileSystemContextType {
+export interface FileSystemContextType {
   // From useFileSystem
   files: FileItem[];
   loading: boolean;
@@ -15,7 +15,7 @@ interface FileSystemContextType {
   toggleFolder: (folderId: string) => void;
   getFileTree: () => FileItem[];
   getCurrentFile: () => FileItem | undefined;
-  createFile: (name: string, parentId?: string, type?: 'file' | 'folder') => Promise<string>;
+  createFile: (name: string, parentId?: string, type?: 'file' | 'folder', content?: string, emoji?: string) => Promise<string>;
   updateFile: (id: string, updates: Partial<FileItem>) => Promise<void>;
   deleteFile: (id: string) => Promise<void>;
   moveFile: (fileId: string, newParentId?: string, newPosition?: number) => Promise<void>;

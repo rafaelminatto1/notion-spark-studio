@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { ViewMode } from '@/components/ViewTabs';
-import { useSupabaseProfile } from '@/hooks/useSupabaseProfile';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useFileSystemContext } from '@/contexts/FileSystemContext';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 export const useIndexPage = () => {
   console.log('[useIndexPage] Hook starting');
@@ -31,8 +31,8 @@ export const useIndexPage = () => {
 
     console.log('[useIndexPage] FileSystemContext hooks completed');
     
-    const { profile, preferences } = useSupabaseProfile();
-    console.log('[useIndexPage] Supabase profile hook completed');
+    const { preferences, loadingPreferences } = useUserPreferences();
+    console.log('[useIndexPage] User preferences hook completed');
 
     console.log('[useIndexPage] Files converted successfully, converted count:', convertedFiles.length);
 
@@ -45,10 +45,10 @@ export const useIndexPage = () => {
 
     // Set default view based on user preferences
     useEffect(() => {
-      if (preferences?.default_view) {
+      if (!loadingPreferences && preferences?.default_view) {
         setActiveView(preferences.default_view);
       }
-    }, [preferences]);
+    }, [preferences, loadingPreferences]);
 
     const handleNavigateToFile = useCallback((fileId: string) => {
       console.log('[useIndexPage] handleNavigateToFile called with:', fileId);

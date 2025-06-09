@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,24 +15,18 @@ import {
   Clock, 
   RotateCcw
 } from 'lucide-react';
-import { useSupabaseProfile } from '@/hooks/useSupabaseProfile';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useActivityHistory } from '@/hooks/useActivityHistory';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 export const UserSettings: React.FC = () => {
   const { user } = useSupabaseAuth();
-  const { 
-    profile, 
-    preferences, 
-    loading, 
-    updateProfile, 
-    updatePreferences,
-    loadProfile 
-  } = useSupabaseProfile();
+  const { preferences, loadingPreferences, updateUserPreferences } = useUserPreferences();
+  const { profile, loading: loadingProfile, updateProfile, loadProfile } = useSupabaseProfile();
   
   const { getRecentActivities } = useActivityHistory();
 
-  if (loading || !user || !profile) {
+  if (loadingProfile || !user || !profile) {
     return <div className="p-6">Carregando configurações...</div>;
   }
 
@@ -111,7 +104,7 @@ export const UserSettings: React.FC = () => {
               <Label htmlFor="theme">Tema</Label>
               <Select
                 value={preferences?.theme || 'system'}
-                onValueChange={(value: any) => updatePreferences({ theme: value })}
+                onValueChange={(value: any) => updateUserPreferences({ theme: value })}
               >
                 <SelectTrigger className="w-32">
                   <SelectValue />
@@ -128,7 +121,7 @@ export const UserSettings: React.FC = () => {
               <Label htmlFor="defaultView">Vista padrão</Label>
               <Select
                 value={preferences?.default_view || 'editor'}
-                onValueChange={(value: any) => updatePreferences({ default_view: value })}
+                onValueChange={(value: any) => updateUserPreferences({ default_view: value })}
               >
                 <SelectTrigger className="w-32">
                   <SelectValue />
@@ -145,7 +138,7 @@ export const UserSettings: React.FC = () => {
               <Label>Modo compacto</Label>
               <Switch
                 checked={preferences?.compact_mode || false}
-                onCheckedChange={(checked) => updatePreferences({ compact_mode: checked })}
+                onCheckedChange={(checked) => updateUserPreferences({ compact_mode: checked })}
               />
             </div>
 
@@ -153,7 +146,7 @@ export const UserSettings: React.FC = () => {
               <Label>Mostrar números de linha</Label>
               <Switch
                 checked={preferences?.show_line_numbers !== false}
-                onCheckedChange={(checked) => updatePreferences({ show_line_numbers: checked })}
+                onCheckedChange={(checked) => updateUserPreferences({ show_line_numbers: checked })}
               />
             </div>
 
@@ -161,7 +154,7 @@ export const UserSettings: React.FC = () => {
               <Label>Animações</Label>
               <Switch
                 checked={preferences?.enable_animations !== false}
-                onCheckedChange={(checked) => updatePreferences({ enable_animations: checked })}
+                onCheckedChange={(checked) => updateUserPreferences({ enable_animations: checked })}
               />
             </div>
           </CardContent>
@@ -181,7 +174,7 @@ export const UserSettings: React.FC = () => {
               <Label>Auto-save</Label>
               <Switch
                 checked={preferences?.auto_save !== false}
-                onCheckedChange={(checked) => updatePreferences({ auto_save: checked })}
+                onCheckedChange={(checked) => updateUserPreferences({ auto_save: checked })}
               />
             </div>
 
@@ -189,7 +182,7 @@ export const UserSettings: React.FC = () => {
               <Label htmlFor="backupFreq">Backup (min)</Label>
               <Select
                 value={(preferences?.backup_frequency || 30).toString()}
-                onValueChange={(value) => updatePreferences({ backup_frequency: parseInt(value) })}
+                onValueChange={(value) => updateUserPreferences({ backup_frequency: parseInt(value) })}
               >
                 <SelectTrigger className="w-20">
                   <SelectValue />
@@ -198,7 +191,6 @@ export const UserSettings: React.FC = () => {
                   <SelectItem value="15">15</SelectItem>
                   <SelectItem value="30">30</SelectItem>
                   <SelectItem value="60">60</SelectItem>
-                  <SelectItem value="120">120</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -207,7 +199,7 @@ export const UserSettings: React.FC = () => {
               <Label htmlFor="language">Idioma</Label>
               <Select
                 value={preferences?.language || 'pt'}
-                onValueChange={(value: any) => updatePreferences({ language: value })}
+                onValueChange={(value: any) => updateUserPreferences({ language: value })}
               >
                 <SelectTrigger className="w-20">
                   <SelectValue />
