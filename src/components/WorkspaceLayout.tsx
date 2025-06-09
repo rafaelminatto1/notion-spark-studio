@@ -233,7 +233,7 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
                 {panel.title && !panelIsCollapsed && (
                   <div className="px-4 py-3 border-b border-border/60 bg-muted/30">
                     <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
-                      {panel.type === 'properties' && '⚙️'}
+                      {panel.type === 'custom' && panel.id === 'properties' && '⚙️'}
                       {panel.title}
                     </h3>
                   </div>
