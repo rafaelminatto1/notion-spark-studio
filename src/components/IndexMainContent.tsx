@@ -12,6 +12,7 @@ import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { FileItem } from '@/types';
 import { Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAutoCloseToast } from '@/hooks/useAutoCloseToast';
 
 interface IndexMainContentProps {
   activeView: ViewMode;
@@ -56,15 +57,28 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
   isCommandPaletteOpen,
   setIsCommandPaletteOpen
 }) => {
-  const handleViewChangeFromHeader = (view: string) => {
-    setActiveView(view as ViewMode);
+  const [loginSuccessToast, setLoginSuccessToast] = useState(false);
+
+  // Auto-close login success toast
+  useAutoCloseToast({
+    message: "Login realizado com sucesso! Bem-vindo de volta.",
+    type: "success",
+    duration: 3000,
+    trigger: loginSuccessToast
+  });
+
+  const handleViewChangeFromHeader = (view: ViewMode) => {
+    console.log('[IndexMainContent] Header view change:', view);
+    setActiveView(view);
   };
 
   const handleViewChangeFromWorkspace = (view: string) => {
+    console.log('[IndexMainContent] Workspace view change:', view);
     setActiveView(view as ViewMode);
   };
 
   const handleFileSelect = (fileId: string) => {
+    console.log('[IndexMainContent] File selected:', fileId);
     setCurrentFileId(fileId);
     navigateTo(fileId);
     setActiveView('editor');
@@ -73,14 +87,22 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
     }
   };
 
+  const handleCreateFile = async (name: string, parentId?: string, type: 'file' | 'folder' = 'file') => {
+    const fileId = await onCreateFile(name, parentId, type);
+    if (fileId && type === 'file') {
+      handleFileSelect(fileId);
+    }
+    return fileId;
+  };
+
   return (
     <ThemeProvider>
       <WorkspaceProvider>
-        <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background flex w-full relative overflow-hidden">
+        <div className="min-h-screen bg-gradient-to-br from-background via-background/98 to-background flex w-full relative overflow-hidden">
           {/* Mobile Sidebar Backdrop */}
           {isMobile && isMobileSidebarOpen && (
             <div 
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 animate-fade-in"
+              className="fixed inset-0 bg-black/70 backdrop-blur-md z-40 animate-fade-in"
               onClick={onToggleMobileSidebar}
             />
           )}
@@ -92,7 +114,7 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
               <MobileHeader
                 files={convertedFiles}
                 onFileSelect={handleFileSelect}
-                onCreateFile={onCreateFile}
+                onCreateFile={handleCreateFile}
                 onToggleSidebar={onToggleMobileSidebar}
                 onShowSettings={onShowSettings}
                 onOpenSearch={() => setIsCommandPaletteOpen(true)}
@@ -112,7 +134,7 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
             
             {/* Content Area */}
             <div className={cn(
-              "flex-1",
+              "flex-1 min-h-0 relative",
               isMobile ? "pt-16 pb-24" : ""
             )}>
               <WorkspaceLayout
@@ -142,7 +164,7 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
             isOpen={isCommandPaletteOpen}
             onClose={() => setIsCommandPaletteOpen(false)}
             onFileSelect={handleFileSelect}
-            onCreateFile={onCreateFile}
+            onCreateFile={handleCreateFile}
             favorites={favorites}
           />
           
@@ -161,7 +183,7 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
           {isMobile && activeView === 'editor' && (
             <button
               className="fixed bottom-32 right-6 z-40 fab h-16 w-16 rounded-2xl flex items-center justify-center animate-float shadow-2xl"
-              onClick={() => onCreateFile('Nova Nota')}
+              onClick={() => handleCreateFile('Nova Nota')}
               aria-label="Criar Nova Nota"
             >
               <Sparkles className="h-7 w-7 text-white" />

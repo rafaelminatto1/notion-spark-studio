@@ -23,41 +23,44 @@ export const ViewTabs: React.FC<ViewTabsProps> = ({
     {
       id: 'dashboard' as ViewMode,
       label: 'Dashboard',
-      icon: LayoutDashboard
+      icon: LayoutDashboard,
+      description: 'Visão geral dos arquivos'
     },
     {
       id: 'editor' as ViewMode,
       label: 'Editor',
-      icon: FileText
+      icon: FileText,
+      description: 'Editor de notas'
     },
     {
       id: 'templates' as ViewMode,
       label: 'Templates',
-      icon: File
+      icon: File,
+      description: 'Modelos de notas'
     },
     {
       id: 'graph' as ViewMode,
-      label: 'Graph View',
-      icon: GitBranch
+      label: 'Graph',
+      icon: GitBranch,
+      description: 'Visualização em grafo'
     }
   ];
 
   const handleTabClick = (tabId: ViewMode) => {
-    console.log('[ViewTabs] Button clicked:', tabId);
-    console.log('[ViewTabs] onViewChange function:', typeof onViewChange);
-    
-    if (typeof onViewChange === 'function') {
-      onViewChange(tabId);
-      console.log('[ViewTabs] onViewChange called successfully');
-    } else {
-      console.error('[ViewTabs] onViewChange is not a function:', onViewChange);
-    }
+    console.log('[ViewTabs] Changing view to:', tabId);
+    onViewChange(tabId);
   };
 
   return (
-    <div className={cn("flex gap-0.5 md:gap-1 p-0.5 md:p-1 bg-notion-dark-hover rounded-lg", className)}>
+    <div className={cn(
+      "flex gap-1 p-1 bg-background/80 backdrop-blur-sm rounded-xl border border-border/40",
+      isMobile ? "w-full overflow-x-auto" : "",
+      className
+    )}>
       {tabs.map(tab => {
         const Icon = tab.icon;
+        const isActive = activeView === tab.id;
+        
         return (
           <Button
             key={tab.id}
@@ -65,14 +68,32 @@ export const ViewTabs: React.FC<ViewTabsProps> = ({
             size={isMobile ? "sm" : "sm"}
             onClick={() => handleTabClick(tab.id)}
             className={cn(
-              "gap-1 md:gap-2 transition-all text-xs md:text-sm px-2 md:px-3 py-1.5 md:py-2",
-              activeView === tab.id
-                ? "bg-notion-purple text-white"
-                : "text-gray-400 hover:text-white hover:bg-notion-dark-hover"
+              "relative gap-2 transition-all duration-300 text-xs md:text-sm px-3 md:px-4 py-2 md:py-2.5 rounded-lg",
+              "hover:bg-accent/80 hover:text-accent-foreground",
+              "focus-visible:ring-2 focus-visible:ring-primary/50",
+              isActive
+                ? "bg-primary text-primary-foreground shadow-sm scale-105"
+                : "text-muted-foreground hover:text-foreground"
             )}
+            title={tab.description}
           >
-            <Icon className="h-3 w-3 md:h-4 md:w-4" />
-            <span className={cn("hidden", !isMobile && "sm:inline")}>{tab.label}</span>
+            <Icon className={cn(
+              "transition-all duration-300",
+              isMobile ? "h-4 w-4" : "h-4 w-4",
+              isActive ? "scale-110" : ""
+            )} />
+            <span className={cn(
+              "font-medium transition-all duration-300",
+              isMobile ? "hidden xs:inline" : "inline",
+              isActive ? "font-semibold" : ""
+            )}>
+              {tab.label}
+            </span>
+            
+            {/* Active indicator */}
+            {isActive && (
+              <div className="absolute inset-0 bg-primary/10 rounded-lg animate-pulse-glow" />
+            )}
           </Button>
         );
       })}
