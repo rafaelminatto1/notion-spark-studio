@@ -101,7 +101,9 @@ export const TextBlock: React.FC<TextBlockProps> = ({
         e.preventDefault();
         const file = item.getAsFile();
         if (file) {
-          handleFileUpload(new FileList([file] as any));
+          const fileList = new DataTransfer();
+          fileList.items.add(file);
+          handleFileUpload(fileList.files);
         }
       }
     }

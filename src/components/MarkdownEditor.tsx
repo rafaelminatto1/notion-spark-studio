@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -176,7 +175,9 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
         e.preventDefault();
         const file = item.getAsFile();
         if (file) {
-          handleFileUpload(new FileList([file] as any));
+          const fileList = new DataTransfer();
+          fileList.items.add(file);
+          handleFileUpload(fileList.files);
         }
       }
     }
