@@ -1,0 +1,132 @@
+/* Editor Limpo - Estilo Notion/Evernote */
+
+/* Remove hover effects dos cards do editor */
+.card-magic {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  transition: none !important;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Remove hover effects completamente */
+.card-magic:hover {
+  transform: none !important;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Textarea limpo sem efeitos */
+.textarea-clean {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  transition: none !important;
+}
+
+.textarea-clean:focus {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  ring: none !important;
+  transform: none !important;
+}
+
+.textarea-clean:hover {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* Remove ring effects dos componentes UI */
+.focus\\:ring-0:focus {
+  box-shadow: none !important;
+  ring: none !important;
+}
+
+.focus\\:outline-none:focus {
+  outline: none !important;
+}
+
+/* Input magic sem efeitos de focus exagerados */
+.input-magic:focus {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* Remove efeitos de focus dos textareas mobile */
+@media (max-width: 767px) {
+  textarea:focus {
+    transform: none !important;
+    transition: none !important;
+  }
+  
+  input:focus {
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* Floating elements sem hover */
+.floating-element:hover::after {
+  opacity: 0 !important;
+}
+
+/* Remove glow dos textareas com resize */
+.textarea-resizing {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Botões de ação sem hover exagerado */
+.btn-magic:hover {
+  transform: none !important;
+  box-shadow: 
+    0 4px 16px rgba(102, 126, 234, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Remove todos os rings de seleção desnecessários */
+*:focus {
+  outline: none !important;
+}
+
+*:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Apple editor limpo */
+.apple-editor textarea:focus {
+  box-shadow: none !important;
+  outline: none !important;
+  border: none !important;
+}
+
+/* Blocos sem rings roxos */
+.ring-notion-purple {
+  box-shadow: none !important;
+  ring: none !important;
+}
+
+/* Override para qualquer ring */
+[class*="ring-"] {
+  box-shadow: none !important;
+  ring: none !important;
+}
+
+/* Focus states apenas para acessibilidade com tab */
+*:focus-visible {
+  outline: 2px solid rgba(102, 126, 234, 0.5) !important;
+  outline-offset: 2px !important;
+  box-shadow: none !important;
+} 

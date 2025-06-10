@@ -6,6 +6,7 @@ import { useFileSystemContext } from '@/contexts/FileSystemContext';
 import { usePanelCollapse } from '@/hooks/usePanelCollapse';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import './workspace-layout-improvements.css';
 
 // Import components for different views
 import { Dashboard } from '@/components/Dashboard';
@@ -233,7 +234,7 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
             !sidebarOpen && isMobile ? "w-0 overflow-hidden" : ""
               )}
             >
-              <div className="h-full flex flex-col bg-background">
+              <div className="h-full flex flex-col bg-background sidebar-attached">
             <Sidebar
                     isMobile={isMobile}
               open={sidebarOpen}
@@ -243,10 +244,10 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
                 </div>
         </ResizablePanel>
 
-        <ResizableHandle withHandle />
+        <ResizableHandle withHandle className="bg-transparent w-1 hover:bg-purple-500/30 transition-colors" />
 
         <ResizablePanel defaultSize={75}>
-            <div className="h-full flex flex-col bg-background">
+            <div className="h-full flex flex-col bg-background workspace-layout-no-gap">
               <div className="flex-1 min-h-0">
               {renderContent()}
             </div>

@@ -1,9 +1,9 @@
-
 import React from 'react';
-import { FileText, Tag, Clock, Star, TrendingUp, Calendar } from 'lucide-react';
+import { FileText, Tag, Clock, Star, TrendingUp, Calendar, Sparkles, Activity, Zap, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileItem } from '@/types';
+import './dashboard-modern.css';
 
 interface DashboardProps {
   files: FileItem[];
@@ -46,117 +46,151 @@ export const Dashboard: React.FC<DashboardProps> = ({
   };
 
   return (
-    <div className={`p-6 space-y-6 ${className}`}>
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
-        <p className="text-gray-400">Bem-vindo de volta! Aqui está um resumo do seu workspace.</p>
+    <div className={`dashboard-container ${className}`}>
+      {/* Header Moderno */}
+      <div className="dashboard-header">
+        <div className="flex items-center gap-4">
+          <div className="dashboard-title-icon">
+            <Sparkles className="h-8 w-8 text-violet-400" />
+          </div>
+          <div>
+            <h1 className="dashboard-title">Dashboard</h1>
+            <p className="dashboard-subtitle">Bem-vindo de volta! Aqui está um resumo do seu workspace.</p>
+          </div>
+        </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-notion-dark-hover border-notion-dark-border">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <FileText className="h-8 w-8 text-blue-400" />
-              <div>
-                <p className="text-2xl font-bold text-white">{stats.totalFiles}</p>
-                <p className="text-sm text-gray-400">Arquivos</p>
-              </div>
+      {/* Stats Cards Redesenhados */}
+      <div className="stats-grid">
+        {/* Arquivos Card */}
+        <div className="stat-card stat-card-blue group">
+          <div className="stat-card-content">
+            <div className="stat-icon-wrapper">
+              <FileText className="stat-icon" />
+              <div className="stat-icon-glow"></div>
             </div>
-          </CardContent>
-        </Card>
+            <div className="stat-details">
+              <div className="stat-number">{stats.totalFiles}</div>
+              <div className="stat-label">Arquivos</div>
+            </div>
+          </div>
+          <div className="stat-card-decoration"></div>
+        </div>
 
-        <Card className="bg-notion-dark-hover border-notion-dark-border">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Tag className="h-8 w-8 text-green-400" />
-              <div>
-                <p className="text-2xl font-bold text-white">{stats.totalTags}</p>
-                <p className="text-sm text-gray-400">Tags</p>
-              </div>
+        {/* Tags Card */}
+        <div className="stat-card stat-card-green group">
+          <div className="stat-card-content">
+            <div className="stat-icon-wrapper">
+              <Tag className="stat-icon" />
+              <div className="stat-icon-glow"></div>
             </div>
-          </CardContent>
-        </Card>
+            <div className="stat-details">
+              <div className="stat-number">{stats.totalTags}</div>
+              <div className="stat-label">Tags</div>
+            </div>
+          </div>
+          <div className="stat-card-decoration"></div>
+        </div>
 
-        <Card className="bg-notion-dark-hover border-notion-dark-border">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Star className="h-8 w-8 text-yellow-400" />
-              <div>
-                <p className="text-2xl font-bold text-white">{stats.favorites}</p>
-                <p className="text-sm text-gray-400">Favoritos</p>
-              </div>
+        {/* Favoritos Card */}
+        <div className="stat-card stat-card-yellow group">
+          <div className="stat-card-content">
+            <div className="stat-icon-wrapper">
+              <Star className="stat-icon" />
+              <div className="stat-icon-glow"></div>
             </div>
-          </CardContent>
-        </Card>
+            <div className="stat-details">
+              <div className="stat-number">{stats.favorites}</div>
+              <div className="stat-label">Favoritos</div>
+            </div>
+          </div>
+          <div className="stat-card-decoration"></div>
+        </div>
 
-        <Card className="bg-notion-dark-hover border-notion-dark-border">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <TrendingUp className="h-8 w-8 text-purple-400" />
-              <div>
-                <p className="text-2xl font-bold text-white">{recentFiles.length}</p>
-                <p className="text-sm text-gray-400">Recentes</p>
-              </div>
+        {/* Recentes Card */}
+        <div className="stat-card stat-card-purple group">
+          <div className="stat-card-content">
+            <div className="stat-icon-wrapper">
+              <TrendingUp className="stat-icon" />
+              <div className="stat-icon-glow"></div>
             </div>
-          </CardContent>
-        </Card>
+            <div className="stat-details">
+              <div className="stat-number">{recentFiles.length}</div>
+              <div className="stat-label">Recentes</div>
+            </div>
+          </div>
+          <div className="stat-card-decoration"></div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="content-grid">
         {/* Recent Files */}
-        <Card className="bg-notion-dark-hover border-notion-dark-border">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
-              <Clock className="h-5 w-5" />
-              Arquivos Recentes
+        <Card className="content-card">
+          <CardHeader className="content-card-header">
+            <CardTitle className="content-card-title">
+              <div className="flex items-center gap-3">
+                <div className="content-icon-wrapper">
+                  <Clock className="h-5 w-5" />
+                </div>
+                Arquivos Recentes
+              </div>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
-            {recentFiles.length > 0 ? (
-              recentFiles.map(file => (
-                <Button
-                  key={file.id}
-                  variant="ghost"
-                  onClick={() => onNavigateToFile(file.id)}
-                  className="w-full justify-start gap-3 p-3 h-auto"
-                >
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    {file.emoji && <span>{file.emoji}</span>}
-                    <FileText className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                    <div className="min-w-0 flex-1 text-left">
-                      <p className="text-sm font-medium text-white truncate">{file.name}</p>
-                      <p className="text-xs text-gray-400">
-                        {file.updatedAt.toLocaleDateString()}
-                      </p>
+          <CardContent className="content-card-body">
+            <div className="recent-files-list">
+              {recentFiles.length > 0 ? (
+                recentFiles.map(file => (
+                  <div
+                    key={file.id}
+                    onClick={() => onNavigateToFile(file.id)}
+                    className="recent-file-item group"
+                  >
+                    <div className="recent-file-content">
+                      {file.emoji && <span className="recent-file-emoji">{file.emoji}</span>}
+                      <FileText className="recent-file-icon" />
+                      <div className="recent-file-details">
+                        <p className="recent-file-name">{file.name}</p>
+                        <p className="recent-file-date">
+                          {file.updatedAt.toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="recent-file-arrow">
+                      <Activity className="h-4 w-4" />
                     </div>
                   </div>
-                </Button>
-              ))
-            ) : (
-              <p className="text-gray-400 text-sm">Nenhum arquivo encontrado</p>
-            )}
+                ))
+              ) : (
+                <div className="empty-state">
+                  <Target className="empty-state-icon" />
+                  <p className="empty-state-text">Nenhum arquivo encontrado</p>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
 
         {/* Top Tags */}
-        <Card className="bg-notion-dark-hover border-notion-dark-border">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
-              <Tag className="h-5 w-5" />
-              Tags Populares
+        <Card className="content-card">
+          <CardHeader className="content-card-header">
+            <CardTitle className="content-card-title">
+              <div className="flex items-center gap-3">
+                <div className="content-icon-wrapper">
+                  <Tag className="h-5 w-5" />
+                </div>
+                Tags Populares
+              </div>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
+          <CardContent className="content-card-body">
+            <div className="tags-grid">
               {topTags.map(([tag, count]) => (
                 <div
                   key={tag}
-                  className="bg-notion-purple/20 border border-notion-purple/30 rounded-full px-3 py-1"
+                  className="tag-pill group"
                 >
-                  <span className="text-sm text-notion-purple">{tag}</span>
-                  <span className="text-xs text-gray-400 ml-1">({count})</span>
+                  <span className="tag-name">{tag}</span>
+                  <span className="tag-count">({count})</span>
                 </div>
               ))}
             </div>
@@ -165,23 +199,29 @@ export const Dashboard: React.FC<DashboardProps> = ({
       </div>
 
       {/* Quick Actions */}
-      <Card className="bg-notion-dark-hover border-notion-dark-border">
-        <CardHeader>
-          <CardTitle className="text-white">Ações Rápidas</CardTitle>
+      <Card className="content-card">
+        <CardHeader className="content-card-header">
+          <CardTitle className="content-card-title">
+            <div className="flex items-center gap-3">
+              <div className="content-icon-wrapper">
+                <Zap className="h-5 w-5" />
+              </div>
+              Ações Rápidas
+            </div>
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-3">
+        <CardContent className="content-card-body">
+          <div className="quick-actions">
             <Button
               onClick={() => onCreateFile('Nova Página')}
-              className="gap-2"
+              className="quick-action-btn quick-action-primary"
             >
               <FileText className="h-4 w-4" />
               Nova Página
             </Button>
             <Button
-              variant="outline"
               onClick={() => onCreateFile('Diário - ' + new Date().toLocaleDateString())}
-              className="gap-2"
+              className="quick-action-btn quick-action-secondary"
             >
               <Calendar className="h-4 w-4" />
               Entrada de Diário
