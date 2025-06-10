@@ -148,15 +148,23 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
             <div className="space-y-2">
               <label className="text-sm text-gray-400">Modo de Visualização</label>
               <div className="grid grid-cols-2 gap-2">
-                {['force', 'hierarchical', 'circular', 'timeline'].map((mode) => (
+                {[
+                  { mode: 'force', label: '⚡ Force', description: 'Dinâmico baseado em física' },
+                  { mode: 'hierarchical', label: '🌳 Hierárquico', description: 'Estrutura de árvore' },
+                  { mode: 'circular', label: '🔄 Circular', description: 'Disposição em círculo' },
+                  { mode: 'timeline', label: '📅 Timeline', description: 'Por data de modificação' },
+                  { mode: 'cluster', label: '🎯 Clusters', description: 'Agrupamentos inteligentes' }
+                ].map(({ mode, label, description }) => (
                   <Button
                     key={mode}
                     variant={viewMode === mode ? "default" : "outline"}
                     size="sm"
                     onClick={() => onViewModeChange(mode)}
-                    className="text-xs"
+                    className="text-xs h-auto py-2 px-3 flex flex-col gap-1"
+                    title={description}
                   >
-                    {mode}
+                    <span className="font-medium">{label}</span>
+                    <span className="text-[10px] opacity-70 leading-none">{description}</span>
                   </Button>
                 ))}
               </div>

@@ -5,6 +5,7 @@ import { GraphSidebar } from './GraphSidebar';
 import { GraphMinimap } from './GraphMinimap';
 import { GraphAnalytics } from './GraphAnalytics';
 import { useGraphData } from '@/hooks/useGraphData';
+import { useNetworkAnalysis } from '@/hooks/useNetworkAnalysis';
 import { GraphFilters, GraphNode } from './types';
 import { FileItem } from '@/types';
 import { findShortestPath } from '@/utils/graphAlgorithms';
@@ -30,6 +31,7 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
   const [viewMode, setViewMode] = useState('force');
   const [showAnalytics, setShowAnalytics] = useState(true);
   const [showMinimap, setShowMinimap] = useState(true);
+  const graphRef = React.useRef<any>();
 
   const [filters, setFilters] = useState<GraphFilters>({
     searchQuery: '',
@@ -50,6 +52,7 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
   });
 
   const { nodes, links, isLoading, isProcessing, error, refreshData } = useGraphData(files, filters);
+  const { networkMetrics, findOptimalPath, analyzeNeighborhood } = useNetworkAnalysis(nodes, links);
 
   const selectedNodeData = selectedNode ? nodes.find(n => n.id === selectedNode) : undefined;
 
@@ -63,15 +66,18 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
         });
       } else {
         if (pathFindingStart !== nodeId) {
-          const path = findShortestPath(pathFindingStart, nodeId, links);
-          if (path.path.length > 0) {
+          const pathResult = findOptimalPath(pathFindingStart, nodeId);
+          if (pathResult.found) {
             toast({
-              title: "Caminho encontrado!",
-              description: `Caminho com ${path.path.length} nós encontrado`,
+              title: "🎯 Caminho otimizado encontrado!",
+              description: `Distância: ${pathResult.distance} | Nós intermediários: ${pathResult.intermediateNodes.length}`,
             });
+            
+            // Destacar caminho no grafo (implementar highlight)
+            console.log('Caminho:', pathResult.path);
           } else {
             toast({
-              title: "Nenhum caminho encontrado",
+              title: "❌ Nenhum caminho encontrado",
               description: "Não há conexão entre os nós selecionados",
               variant: "destructive",
             });
@@ -149,6 +155,8 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
         onFileSelect={onFileSelect}
         className="w-full h-full"
         filters={filters}
+        viewMode={viewMode}
+        layoutSettings={layoutSettings}
       />
 
       {isProcessing && (
@@ -185,6 +193,7 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
 
       {showMinimap && (
         <GraphMinimap
+          graphRef={graphRef}
           nodes={nodes}
           className="absolute bottom-4 left-4"
         />

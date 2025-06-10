@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
 import { GraphNode, GraphLink } from './types';
+import { LayoutEngine, LayoutConfig } from './layouts/LayoutEngine';
 
 interface GraphEngineProps {
   files: any[];
@@ -8,6 +9,8 @@ interface GraphEngineProps {
   onFileSelect: (fileId: string) => void;
   className?: string;
   filters: any;
+  viewMode?: string;
+  layoutSettings?: any;
 }
 
 export const GraphEngine: React.FC<GraphEngineProps> = ({
@@ -15,7 +18,9 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
   currentFileId,
   onFileSelect,
   className,
-  filters
+  filters,
+  viewMode = 'force',
+  layoutSettings = {}
 }) => {
   const fgRef = useRef<any>();
   
@@ -184,7 +189,33 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
     return { nodes: filteredNodes, links: filteredLinks };
   }, [hookNodes, hookLinks, filters]);
 
-  const graphData = filteredGraphData;
+  // Aplicar layout específico aos dados
+  const layoutedGraphData = React.useMemo(() => {
+    if (viewMode === 'force') {
+      return filteredGraphData; // Force layout será gerenciado pelo ForceGraph2D
+    }
+
+    const layoutConfig: LayoutConfig = {
+      type: viewMode as any,
+      width: 800, // Será atualizado dinamicamente
+      height: 600, // Será atualizado dinamicamente
+      animate: true,
+      duration: 1000
+    };
+
+    const layoutedNodes = LayoutEngine.applyLayout(
+      filteredGraphData.nodes,
+      filteredGraphData.links,
+      layoutConfig
+    );
+
+    return {
+      nodes: layoutedNodes,
+      links: filteredGraphData.links
+    };
+  }, [filteredGraphData, viewMode]);
+
+  const graphData = layoutedGraphData;
 
   const handleNodeClick = (node: any) => {
     setSelectedNode(node.id);
@@ -195,12 +226,37 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
     setHoveredNode(node?.id || null);
   };
 
+  // Configurar forças do grafo baseado no layout
   useEffect(() => {
     if (fgRef.current) {
-      fgRef.current.d3Force('charge').strength(-300);
-      fgRef.current.d3Force('link').distance(80);
+      // Configurar forças base
+      fgRef.current.d3Force('charge').strength(layoutSettings.chargeStrength || -300);
+      fgRef.current.d3Force('link').distance(layoutSettings.linkDistance || 80);
+      
+      // Para layouts fixos, desabilitar física
+      if (viewMode !== 'force') {
+        fgRef.current.d3Force('charge').strength(0);
+        fgRef.current.d3Force('link').strength(0);
+        fgRef.current.d3Force('center').strength(0);
+      } else {
+        // Reabilitar física para force layout
+        fgRef.current.d3Force('charge').strength(layoutSettings.chargeStrength || -300);
+        fgRef.current.d3Force('link').strength(1);
+        fgRef.current.d3Force('center').strength(layoutSettings.centerStrength || 0.3);
+      }
     }
-  }, []);
+  }, [viewMode, layoutSettings]);
+
+  // Animar transições entre layouts
+  useEffect(() => {
+    if (fgRef.current && viewMode !== 'force') {
+      // Animar nós para novas posições
+      const simulation = fgRef.current.d3Force('simulation');
+      if (simulation) {
+        simulation.alpha(0.3).restart();
+      }
+    }
+  }, [graphData, viewMode]);
 
   if (!files.length) {
     return (
@@ -212,6 +268,17 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
 
   return (
     <div className={`relative w-full h-full bg-background ${className || ''}`}>
+      {/* Indicador de layout atual */}
+      <div className="absolute top-4 right-4 z-10 bg-black/80 backdrop-blur-sm border border-white/20 rounded-lg px-3 py-2">
+        <div className="text-white text-sm font-medium">
+          {viewMode === 'force' && '⚡ Force Layout'}
+          {viewMode === 'hierarchical' && '🌳 Hierárquico'}
+          {viewMode === 'circular' && '🔄 Circular'}
+          {viewMode === 'timeline' && '📅 Timeline'}
+          {viewMode === 'cluster' && '🎯 Clusters'}
+        </div>
+      </div>
+
       <ForceGraph2D
         ref={fgRef}
         graphData={graphData}
