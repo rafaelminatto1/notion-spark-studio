@@ -7,6 +7,7 @@ interface KeyboardShortcuts {
   onToggleMinimap?: () => void;
   onToggleAnalytics?: () => void;
   onToggleHelp?: () => void;
+  onTogglePerformance?: () => void;
   onChangeLayout?: (layout: string) => void;
   onZoomIn?: () => void;
   onZoomOut?: () => void;
@@ -20,6 +21,7 @@ export function useKeyboardShortcuts({
   onToggleMinimap,
   onToggleAnalytics,
   onToggleHelp,
+  onTogglePerformance,
   onChangeLayout,
   onZoomIn,
   onZoomOut,
@@ -73,6 +75,14 @@ export function useKeyboardShortcuts({
         if (!isModKey) {
           event.preventDefault();
           onToggleAnalytics?.();
+        }
+        break;
+
+      // Performance Dashboard - D
+      case 'd':
+        if (!isModKey) {
+          event.preventDefault();
+          onTogglePerformance?.();
         }
         break;
 
@@ -153,6 +163,7 @@ export function useKeyboardShortcuts({
     onToggleMinimap,
     onToggleAnalytics,
     onToggleHelp,
+    onTogglePerformance,
     onChangeLayout,
     onZoomIn,
     onZoomOut,
@@ -171,6 +182,7 @@ export function useKeyboardShortcuts({
       { key: 'S', description: 'Configurações' },
       { key: 'M', description: 'Toggle minimap' },
       { key: 'A', description: 'Toggle analytics' },
+      { key: 'D', description: 'Performance dashboard' },
       { key: '?', description: 'Mostrar ajuda' },
       { key: '1-5', description: 'Mudar layout' },
       { key: '+/-', description: 'Zoom in/out' },

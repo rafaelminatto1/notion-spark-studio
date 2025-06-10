@@ -5,6 +5,7 @@ import { GraphSidebar } from './GraphSidebar';
 import { GraphMinimap } from './GraphMinimap';
 import { GraphAnalytics } from './GraphAnalytics';
 import { GraphHelpOverlay } from './GraphHelpOverlay';
+import { PerformanceDashboard } from './PerformanceDashboard';
 import { useGraphData } from '@/hooks/useGraphData';
 import { useNetworkAnalysis } from '@/hooks/useNetworkAnalysis';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
@@ -36,6 +37,7 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
   const [showMinimap, setShowMinimap] = useState(true);
   const [showHelp, setShowHelp] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showPerformance, setShowPerformance] = useState(false);
   const graphRef = React.useRef<any>();
 
   const [filters, setFilters] = useState<GraphFilters>({
@@ -85,6 +87,8 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
     onToggleSettings: () => setShowSettings(!showSettings),
     onToggleMinimap: () => setShowMinimap(!showMinimap),
     onToggleAnalytics: () => setShowAnalytics(!showAnalytics),
+    onToggleHelp: () => setShowHelp(!showHelp),
+    onTogglePerformance: () => setShowPerformance(!showPerformance),
     onChangeLayout: (layout) => setViewMode(layout),
     onZoomIn: () => graphRef.current?.zoom(graphRef.current.zoom() * 1.2),
     onZoomOut: () => graphRef.current?.zoom(graphRef.current.zoom() * 0.8),
@@ -321,6 +325,22 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
         />
       )}
 
+      {/* Performance Dashboard */}
+      {showPerformance && (
+        <PerformanceDashboard
+          nodeCount={nodes.length}
+          linkCount={links.length}
+          visibleNodes={nodes.length} // Para agora, todos são visíveis
+          className="absolute top-4 left-4 z-20"
+        />
+      )}
+
+      {/* Help Overlay */}
+      <GraphHelpOverlay
+        isOpen={showHelp}
+        onClose={() => setShowHelp(false)}
+      />
+
       <div className="absolute bottom-0 left-0 right-0 bg-black/80 backdrop-blur-sm border-t border-white/10 px-4 py-2">
         <div className="flex items-center justify-between text-sm text-gray-400">
           <div className="flex items-center gap-4">
@@ -340,6 +360,18 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
               className="px-2 py-1 rounded hover:bg-white/10"
             >
               Analytics
+            </button>
+            <button
+              onClick={() => setShowPerformance(!showPerformance)}
+              className="px-2 py-1 rounded hover:bg-white/10"
+            >
+              Performance
+            </button>
+            <button
+              onClick={() => setShowHelp(!showHelp)}
+              className="px-2 py-1 rounded hover:bg-white/10"
+            >
+              Ajuda (?)
             </button>
           </div>
         </div>
