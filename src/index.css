@@ -144,8 +144,12 @@ body {
   }
   
   /* Enhanced mobile input focus */
-  input:focus, textarea:focus {
+  input:focus {
     transform: scale(1.02);
+    transition: transform 0.2s ease-out;
+  }
+  
+  textarea:focus {
     transition: transform 0.2s ease-out;
   }
   
