@@ -1,7 +1,7 @@
 import React from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { Editor } from '@/components/Editor';
-import { GraphView } from '@/components/GraphView';
+import { GraphContainer } from '@/components/GraphView/GraphContainer';
 import { Dashboard } from '@/components/Dashboard';
 import { TemplatesManager } from '@/components/TemplatesManager';
 import { PropertiesPanel } from '@/components/PropertiesPanel';
@@ -96,7 +96,7 @@ export const WorkspaceLayoutPanels: React.FC<WorkspaceLayoutPanelsProps> = ({
     
     case 'graph':
       return (
-        <GraphView
+        <GraphContainer
           files={files}
           currentFileId={currentFileId}
           onFileSelect={onNavigateToFile}

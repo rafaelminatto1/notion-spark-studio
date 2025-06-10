@@ -11,7 +11,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Dashboard } from '@/components/Dashboard';
 import { Editor } from '@/components/Editor';
 import { TemplatesManager } from '@/components/TemplatesManager';
-import { GraphView } from '@/components/GraphView';
+import { GraphContainer } from '@/components/GraphView/GraphContainer';
 import { ViewMode } from '@/components/ViewTabs'; // Import ViewMode type
 import { Sidebar } from '@/components/Sidebar'; // Import Sidebar
 
@@ -127,7 +127,7 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
         );
       case 'graph':
         return (
-          <GraphView
+          <GraphContainer
             files={files}
             currentFileId={currentFileId}
             onFileSelect={navigateTo}
