@@ -10,7 +10,11 @@ import { MediaManagerEnhanced } from '@/components/MediaManagerEnhanced';
 import { MediaViewer } from '@/components/MediaViewer';
 import { LinkAutocomplete } from '@/components/LinkAutocomplete';
 import { LinkRenderer } from '@/components/LinkRenderer';
+import { TemplateSelector } from '@/components/TemplateSelector';
+import { TemplateQuickActions } from '@/components/TemplateQuickActions';
+import { ResizeIndicator } from '@/components/ResizeIndicator';
 import { useLinkAutocomplete } from '@/hooks/useLinkAutocomplete';
+import { useAutoResize } from '@/hooks/useAutoResize';
 import { 
   Bold, 
   Italic, 
@@ -27,12 +31,14 @@ import {
   Calculator,
   Maximize2,
   LineChart,
-  Upload
+  Upload,
+  Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import 'katex/dist/katex.min.css';
 import 'highlight.js/styles/github-dark.css';
+import '../styles/editor-animations.css';
 
 interface MarkdownEditorProps {
   content: string;
@@ -75,18 +81,13 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
     onNavigateToFile
   });
 
-  const adjustHeight = useCallback(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = 'auto';
-      const newHeight = Math.max(textarea.scrollHeight, isMobile ? 500 : 400);
-      textarea.style.height = newHeight + 'px';
-    }
-  }, [isMobile]);
-
-  useEffect(() => {
-    adjustHeight();
-  }, [content, adjustHeight]);
+  // Auto-resize hook para textarea inteligente
+  const { adjustHeight, isResizing, currentHeight, minHeight, maxHeight } = useAutoResize(textareaRef, content, {
+    minHeight: isMobile ? 300 : 200,
+    maxHeight: isMobile ? window.innerHeight * 0.6 : window.innerHeight * 0.7,
+    lineHeight: 24,
+    padding: 16
+  });
 
   const insertText = useCallback((beforeText: string, afterText: string = '', selectText: string = '') => {
     if (!textareaRef.current) return;
@@ -266,6 +267,11 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
       icon: Quote,
       label: 'Citação',
       action: () => insertText('> ', '', 'citação')
+    },
+    {
+      icon: Table,
+      label: 'Tabela',
+      action: () => insertText('| Coluna 1 | Coluna 2 |\n|----------|----------|\n| ', ' | Célula 2 |\n| Célula 3 | Célula 4 |', 'Célula 1')
     }
   ];
 
@@ -333,6 +339,14 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
         <div className="flex-1 flex">
           {!showPreview && (
             <div className="flex-1 relative card-magic m-4">
+              {/* Resize Indicator for Zen Mode */}
+              <ResizeIndicator
+                isResizing={isResizing}
+                currentHeight={currentHeight}
+                minHeight={minHeight}
+                maxHeight={maxHeight}
+              />
+              
               <Textarea
                 ref={textareaRef}
                 value={content}
@@ -348,17 +362,24 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
                   e.preventDefault();
                   setIsDragging(false);
                 }}
-                placeholder="# Comece a escrever em Markdown...
+                placeholder="# ✨ Modo Zen - Foque na escrita...
 
-💡 Dicas:
-• Ctrl+V para colar imagens/vídeos
-• Arraste e solte arquivos aqui
-• Use [[ para autocompletar links"
+🧘 **Modo Foco Ativado**
+• Sem distrações - apenas você e suas ideias
+• Ctrl+Enter para sair do modo zen
+• Ctrl+V para colar mídia
+• [[ para links entre páginas
+
+💡 **Use Templates para começar rapidamente**"
                 className={cn(
                   "h-full border-none resize-none bg-transparent text-workspace-text leading-relaxed font-mono text-lg focus:ring-0 focus:outline-none p-8 max-w-4xl mx-auto input-magic",
                   isDragging && "ring-2 ring-blue-400 bg-blue-50/5"
                 )}
-                style={{ height: 'auto' }}
+                style={{ 
+                  height: 'auto',
+                  minHeight: '60vh',
+                  maxHeight: '80vh'
+                }}
               />
             </div>
           )}
@@ -399,7 +420,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
 
   return (
     <div className={cn("relative w-full h-full flex flex-col card-magic", className)}>
-      {/* Enhanced Mobile Toolbar */}
+              {/* Enhanced Mobile Toolbar */}
       <div
         className={cn(
           "flex gap-1 items-center border-b overflow-x-auto scrollbar-magic",
@@ -408,6 +429,30 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
             : "sticky top-0 px-2 py-1 bg-background/80 backdrop-blur-sm"
         )}
       >
+        {/* Template Selector */}
+        <div className="mr-2">
+          <TemplateSelector
+            onSelectTemplate={(templateContent) => {
+              onChange(templateContent);
+              setTimeout(() => adjustHeight(), 100);
+              toast.success('Template aplicado! 🎉');
+            }}
+            className={isMobile ? "text-xs" : ""}
+          />
+        </div>
+
+        {/* Quick Templates - Desktop only */}
+        {!isMobile && (
+          <div className="mr-2 border-r border-white/20 pr-2">
+            <TemplateQuickActions
+              onSelectTemplate={(templateContent) => {
+                onChange(templateContent);
+                setTimeout(() => adjustHeight(), 100);
+                toast.success('Template rápido aplicado! ⚡');
+              }}
+            />
+          </div>
+        )}
         {toolbarActions.map(({ icon: Icon, label, action }, idx) => (
           <Button
             key={label}
@@ -464,6 +509,15 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
         {(!showPreview || splitView) && (
           <div className={cn("flex-1 flex flex-col relative card-magic m-2", splitView && "border-r border-workspace-border")}>
             {renderLineNumbers()}
+            
+            {/* Resize Indicator */}
+            <ResizeIndicator
+              isResizing={isResizing}
+              currentHeight={currentHeight}
+              minHeight={minHeight}
+              maxHeight={maxHeight}
+            />
+            
             <Textarea
               ref={textareaRef}
               value={content}
@@ -479,40 +533,41 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
                 e.preventDefault();
                 setIsDragging(false);
               }}
-              placeholder="# Comece a escrever em Markdown...
+              placeholder="# ✨ Comece a escrever...
 
-**Negrito** e *itálico*
-- Lista
-- [x] Checkbox marcado
-- [ ] Checkbox desmarcado
-
-[Link](https://example.com)
-[[Link interno]] - Use [[ para autocompletar
-
-💡 **Dicas de Mídia:**
+💡 **Dicas Rápidas:**
+• Use Templates para começar rapidamente
 • Ctrl+V para colar imagens/vídeos
 • Arraste e solte arquivos aqui
-• Use o botão 'Mídia' para mais opções
+• [[ para links entre páginas
 
-```javascript
-const codigo = 'syntax highlighting';
-```
+📚 **Markdown Básico:**
+**Negrito** e *itálico*
+- Lista
+- [x] Checkbox ✅
+- [ ] Checkbox ⏳
 
+[Link](https://example.com)
+\`\`\`código\`\`\`
 > Citação
 
-| Coluna 1 | Coluna 2 |
-|----------|----------|
-| Célula 1 | Célula 2 |
+| Tabela | Exemplo |
+|--------|---------|
+| Cell 1 | Cell 2  |
 
-$$E = mc^2$$
+🧮 **Fórmulas:** $$E = mc^2$$
 "
               className={cn(
                 "flex-1 border-none resize-none bg-transparent text-workspace-text leading-relaxed font-mono text-base focus:ring-0 focus:outline-none p-4 overflow-y-auto input-magic transition-all duration-300",
                 showLineNumbers && "pl-16",
-                isMobile ? "min-h-[500px] max-h-[75vh] text-lg" : "min-h-[400px] max-h-[60vh]",
+                isMobile ? "text-lg" : "text-base",
                 isDragging && "ring-2 ring-blue-400 bg-blue-50/5"
               )}
-              style={{ height: 'auto' }}
+              style={{ 
+                height: 'auto',
+                minHeight: isMobile ? '300px' : '200px',
+                maxHeight: isMobile ? '60vh' : '70vh'
+              }}
             />
             
             {/* Link Autocomplete */}

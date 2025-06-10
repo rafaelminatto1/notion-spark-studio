@@ -4,6 +4,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Block } from '@/types';
 import { cn } from '@/lib/utils';
 import { MediaManagerEnhanced } from '@/components/MediaManagerEnhanced';
+import { TemplateSelector } from '@/components/TemplateSelector';
+import { TemplateQuickActions } from '@/components/TemplateQuickActions';
+import { ResizeIndicator } from '@/components/ResizeIndicator';
+import { useAutoResize } from '@/hooks/useAutoResize';
 import { toast } from 'sonner';
 
 interface TextBlockProps {
@@ -22,17 +26,13 @@ export const TextBlock: React.FC<TextBlockProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
-  const adjustHeight = () => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = 'auto';
-      textarea.style.height = Math.max(textarea.scrollHeight, 120) + 'px';
-    }
-  };
-
-  useEffect(() => {
-    adjustHeight();
-  }, [block.content]);
+  // Auto-resize hook
+  const { adjustHeight, isResizing, currentHeight, minHeight, maxHeight } = useAutoResize(textareaRef, block.content, {
+    minHeight: 120,
+    maxHeight: window.innerHeight * 0.6,
+    lineHeight: 24,
+    padding: 8
+  });
 
   const insertMedia = useCallback((markdown: string) => {
     const textarea = textareaRef.current;
@@ -118,9 +118,34 @@ export const TextBlock: React.FC<TextBlockProps> = ({
 
   return (
     <div className="relative">
-      <div className="absolute top-2 right-2 z-10">
+      <div className="absolute top-2 right-2 z-10 flex gap-1">
+        <TemplateQuickActions
+          onSelectTemplate={(templateContent) => {
+            onUpdate({ content: templateContent });
+            setTimeout(() => adjustHeight(), 100);
+            toast.success('Template rápido aplicado! ⚡');
+          }}
+          className="opacity-60 hover:opacity-100 transition-opacity"
+        />
+        <TemplateSelector
+          onSelectTemplate={(templateContent) => {
+            onUpdate({ content: templateContent });
+            setTimeout(() => adjustHeight(), 100);
+            toast.success('Template aplicado! 🎉');
+          }}
+          className="opacity-60 hover:opacity-100 transition-opacity"
+        />
         <MediaManagerEnhanced onInsertMedia={insertMedia} className="opacity-60 hover:opacity-100 transition-opacity" />
       </div>
+
+      {/* Resize Indicator */}
+      <ResizeIndicator
+        isResizing={isResizing}
+        currentHeight={currentHeight}
+        minHeight={minHeight}
+        maxHeight={maxHeight}
+        className="z-5"
+      />
       
       <Textarea
         ref={textareaRef}
@@ -141,19 +166,29 @@ export const TextBlock: React.FC<TextBlockProps> = ({
           e.preventDefault();
           setIsDragging(false);
         }}
-        placeholder="Digite algo... 
-        
-💡 Dicas:
-• Ctrl+V para colar imagens/vídeos
-• Arraste e solte arquivos aqui
-• Use o botão 'Mídia' para mais opções"
+        placeholder="✨ Digite algo...
+
+💡 **Dicas Rápidas:**
+• Use Templates para começar
+• Ctrl+V para colar mídia
+• Arraste e solte arquivos
+• Markdown suportado
+
+📝 **Exemplos:**
+**negrito** *itálico* `código`
+- [ ] Todo item
+> Citação"
         className={cn(
-          "w-full bg-transparent border-none resize-none focus:ring-0 focus:outline-none text-gray-200 min-h-[120px] overflow-hidden pr-16 transition-all duration-200",
+          "w-full bg-transparent border-none resize-none focus:ring-0 focus:outline-none text-gray-200 overflow-hidden pr-20 transition-all duration-200",
           isSelected && "ring-1 ring-notion-purple",
           isDragging && "ring-2 ring-blue-400 bg-blue-50/5"
         )}
         rows={1}
-        style={{ height: 'auto' }}
+        style={{ 
+          height: 'auto',
+          minHeight: '120px',
+          maxHeight: '60vh'
+        }}
       />
     </div>
   );

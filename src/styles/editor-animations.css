@@ -1,0 +1,122 @@
+/* Editor Animations */
+@keyframes resizeGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(147, 51, 234, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px 10px rgba(147, 51, 234, 0.1);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(147, 51, 234, 0);
+  }
+}
+
+@keyframes templateSlide {
+  0% {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes quickPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes heightIndicator {
+  0% {
+    transform: translateX(10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Textarea com resize glow */
+.textarea-resizing {
+  animation: resizeGlow 0.3s ease-out;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Template selector com slide */
+.template-selector-open {
+  animation: templateSlide 0.3s ease-out;
+}
+
+/* Quick actions pulse */
+.quick-action-hover:hover {
+  animation: quickPulse 0.3s ease-in-out;
+}
+
+/* Height indicator slide */
+.height-indicator {
+  animation: heightIndicator 0.2s ease-out;
+}
+
+/* Smooth height transitions */
+.textarea-smooth {
+  transition: height 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Progress bar animation */
+@keyframes progressFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.progress-animated {
+  background: linear-gradient(-45deg, #3b82f6, #8b5cf6, #06b6d4, #8b5cf6);
+  background-size: 400% 400%;
+  animation: progressFlow 2s ease infinite;
+}
+
+/* Template card hover effects */
+.template-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.template-card:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Staggered animation for template list */
+.template-grid > * {
+  animation: templateSlide 0.4s ease-out;
+}
+
+.template-grid > *:nth-child(1) { animation-delay: 0.05s; }
+.template-grid > *:nth-child(2) { animation-delay: 0.1s; }
+.template-grid > *:nth-child(3) { animation-delay: 0.15s; }
+.template-grid > *:nth-child(4) { animation-delay: 0.2s; }
+.template-grid > *:nth-child(5) { animation-delay: 0.25s; }
+.template-grid > *:nth-child(6) { animation-delay: 0.3s; }
+
+/* Responsive considerations */
+@media (prefers-reduced-motion: reduce) {
+  .textarea-resizing,
+  .template-selector-open,
+  .quick-action-hover,
+  .height-indicator,
+  .template-card {
+    animation: none;
+    transition: none;
+  }
+} 
