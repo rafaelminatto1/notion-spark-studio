@@ -9,6 +9,7 @@ import {
   BookOpen
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTemplateMetrics } from '@/hooks/useTemplateMetrics';
 
 interface TemplateQuickActionsProps {
   onSelectTemplate: (content: string) => void;
@@ -92,6 +93,7 @@ export const TemplateQuickActions: React.FC<TemplateQuickActionsProps> = ({
   onSelectTemplate,
   className
 }) => {
+  const { trackTemplateUsage } = useTemplateMetrics();
   return (
     <div className={cn("flex gap-1 items-center", className)}>
       <span className="text-xs text-gray-400 mr-2 hidden sm:inline">Quick:</span>
@@ -101,7 +103,15 @@ export const TemplateQuickActions: React.FC<TemplateQuickActionsProps> = ({
         return (
           <Button
             key={template.id}
-            onClick={() => onSelectTemplate(template.content)}
+            onClick={() => {
+              onSelectTemplate(template.content);
+              trackTemplateUsage(
+                template.id,
+                template.name,
+                'Ação Rápida',
+                template.content.length
+              );
+            }}
             variant="ghost"
             size="sm"
             className="gap-1 text-xs btn-magic quick-action-hover"

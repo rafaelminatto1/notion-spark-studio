@@ -13,8 +13,12 @@ import { LinkRenderer } from '@/components/LinkRenderer';
 import { TemplateSelector } from '@/components/TemplateSelector';
 import { TemplateQuickActions } from '@/components/TemplateQuickActions';
 import { ResizeIndicator } from '@/components/ResizeIndicator';
+import { TemplateAnalytics } from '@/components/TemplateAnalytics';
+import { AppleGestures } from '@/components/AppleGestures';
+import { AppleTemplateSelector } from '@/components/AppleTemplateSelector';
 import { useLinkAutocomplete } from '@/hooks/useLinkAutocomplete';
 import { useAutoResize } from '@/hooks/useAutoResize';
+import { useAppleDevice } from '@/hooks/useAppleDevice';
 import { 
   Bold, 
   Italic, 
@@ -39,6 +43,7 @@ import { toast } from 'sonner';
 import 'katex/dist/katex.min.css';
 import 'highlight.js/styles/github-dark.css';
 import '../styles/editor-animations.css';
+import '../styles/apple-optimized.css';
 
 interface MarkdownEditorProps {
   content: string;
@@ -64,7 +69,12 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
   const [zenMode, setZenMode] = useState(false);
   const [showLineNumbers, setShowLineNumbers] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showAppleTemplates, setShowAppleTemplates] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Apple device detection e otimizações
+  const appleDevice = useAppleDevice();
 
   const {
     isOpen: autocompleteOpen,
@@ -81,12 +91,14 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
     onNavigateToFile
   });
 
-  // Auto-resize hook para textarea inteligente
+  // Auto-resize hook para textarea inteligente - otimizado para Apple
   const { adjustHeight, isResizing, currentHeight, minHeight, maxHeight } = useAutoResize(textareaRef, content, {
-    minHeight: isMobile ? 300 : 200,
-    maxHeight: isMobile ? window.innerHeight * 0.6 : window.innerHeight * 0.7,
-    lineHeight: 24,
-    padding: 16
+    minHeight: appleDevice.isTargetDevice ? (appleDevice.isIPad ? 400 : 300) : (isMobile ? 300 : 200),
+    maxHeight: appleDevice.isTargetDevice 
+      ? (appleDevice.isIPad ? window.innerHeight * 0.8 : window.innerHeight * 0.65)
+      : (isMobile ? window.innerHeight * 0.6 : window.innerHeight * 0.7),
+    lineHeight: appleDevice.isTargetDevice ? (appleDevice.isIPad ? 28 : 26) : 24,
+    padding: appleDevice.isTargetDevice ? (appleDevice.isIPad ? 24 : 20) : 16
   });
 
   const insertText = useCallback((beforeText: string, afterText: string = '', selectText: string = '') => {
@@ -272,6 +284,11 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
       icon: Table,
       label: 'Tabela',
       action: () => insertText('| Coluna 1 | Coluna 2 |\n|----------|----------|\n| ', ' | Célula 2 |\n| Célula 3 | Célula 4 |', 'Célula 1')
+    },
+    {
+      icon: LineChart,
+      label: 'Analytics',
+      action: () => setShowAnalytics(true)
     }
   ];
 
@@ -424,10 +441,17 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
       <div
         className={cn(
           "flex gap-1 items-center border-b overflow-x-auto scrollbar-magic",
+          appleDevice.isTargetDevice
+            ? `apple-container ${appleDevice.isIPhone ? 'iphone-toolbar' : 'ipad-toolbar'} ${appleDevice.hasDynamicIsland ? 'has-dynamic-island' : ''}`
+            : "",
           isMobile
             ? "fixed top-0 left-0 right-0 h-20 px-3 py-2 glass-effect z-50 shadow-lg"
             : "sticky top-0 px-2 py-1 bg-background/80 backdrop-blur-sm"
         )}
+        style={appleDevice.isTargetDevice ? {
+          paddingTop: appleDevice.optimizedSpacing.toolbar,
+          fontSize: appleDevice.fontSize.medium
+        } : {}}
       >
         {/* Template Selector */}
         <div className="mr-2">
@@ -490,9 +514,16 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
       {/* Enhanced Editor Area */}
       <div
         className={cn(
-          "flex-1 overflow-auto w-full scrollbar-magic relative",
+          "flex-1 overflow-auto w-full scrollbar-magic relative apple-scroll",
+          appleDevice.isTargetDevice
+            ? `apple-container ${appleDevice.isIPhone ? 'iphone-content' : 'ipad-content'}`
+            : "",
           isMobile ? "pt-24 pb-24 px-3" : "pt-2 pb-2 px-0"
         )}
+        style={appleDevice.isTargetDevice ? {
+          paddingTop: appleDevice.optimizedSpacing.content,
+          paddingBottom: appleDevice.optimizedSpacing.bottom
+        } : {}}
       >
         {/* Drop Zone Overlay */}
         {isDragging && (
@@ -505,9 +536,15 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
           </div>
         )}
 
-        {/* Editor */}
+        {/* Editor with Apple Gestures */}
         {(!showPreview || splitView) && (
-          <div className={cn("flex-1 flex flex-col relative card-magic m-2", splitView && "border-r border-workspace-border")}>
+          <AppleGestures
+            onSwipeLeft={() => appleDevice.isTargetDevice && setShowPreview(true)}
+            onSwipeRight={() => appleDevice.isTargetDevice && setShowPreview(false)}
+            onSwipeUp={() => appleDevice.isTargetDevice && setZenMode(true)}
+            onLongPress={() => appleDevice.isTargetDevice && setShowAnalytics(true)}
+            className={cn("flex-1 flex flex-col relative card-magic m-2", splitView && "border-r border-workspace-border")}
+          >
             {renderLineNumbers()}
             
             {/* Resize Indicator */}
@@ -533,7 +570,30 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
                 e.preventDefault();
                 setIsDragging(false);
               }}
-              placeholder="# ✨ Comece a escrever...
+              placeholder={appleDevice.isTargetDevice ? `# ✨ ${appleDevice.isIPad ? 'iPad' : 'iPhone'} Optimizado!
+
+🍎 **Gestos Apple:**
+• Swipe ← → para alternar preview
+• Swipe ↑ para modo zen
+• Long press para analytics
+• Pinch para zoom
+
+💡 **Dicas Rápidas:**
+• Use Templates para começar rapidamente
+• Ctrl+V para colar imagens/vídeos  
+• [[ para links entre páginas
+
+📚 **Markdown Básico:**
+**Negrito** e *itálico*
+- Lista
+- [x] Checkbox ✅
+
+[Link](https://example.com)
+\`código\`
+> Citação
+
+🧮 **Fórmulas:** $$E = mc^2$$
+` : `# ✨ Comece a escrever...
 
 💡 **Dicas Rápidas:**
 • Use Templates para começar rapidamente
@@ -556,17 +616,20 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
 | Cell 1 | Cell 2  |
 
 🧮 **Fórmulas:** $$E = mc^2$$
-"
+`}
               className={cn(
                 "flex-1 border-none resize-none bg-transparent text-workspace-text leading-relaxed font-mono text-base focus:ring-0 focus:outline-none p-4 overflow-y-auto input-magic transition-all duration-300",
+                appleDevice.isTargetDevice && "apple-editor",
                 showLineNumbers && "pl-16",
-                isMobile ? "text-lg" : "text-base",
+                appleDevice.isTargetDevice ? appleDevice.fontSize.medium : (isMobile ? "text-lg" : "text-base"),
                 isDragging && "ring-2 ring-blue-400 bg-blue-50/5"
               )}
               style={{ 
                 height: 'auto',
-                minHeight: isMobile ? '300px' : '200px',
-                maxHeight: isMobile ? '60vh' : '70vh'
+                minHeight: appleDevice.isTargetDevice ? (appleDevice.isIPad ? '400px' : '300px') : (isMobile ? '300px' : '200px'),
+                maxHeight: appleDevice.isTargetDevice ? '70vh' : (isMobile ? '60vh' : '70vh'),
+                fontSize: appleDevice.isTargetDevice ? appleDevice.fontSize.medium : undefined,
+                lineHeight: appleDevice.isTargetDevice ? '1.5' : undefined
               }}
             />
             
@@ -579,7 +642,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
               onSelect={selectSuggestion}
               onClose={closeSuggestions}
             />
-          </div>
+          </AppleGestures>
         )}
 
         {/* Enhanced Preview */}
@@ -635,6 +698,12 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
       <div className={cn("absolute z-10", isMobile ? "top-24 right-4" : "top-4 right-4")}>
         <MediaManagerEnhanced onInsertMedia={insertMedia} />
       </div>
+
+      {/* Template Analytics Modal */}
+      <TemplateAnalytics
+        isOpen={showAnalytics}
+        onClose={() => setShowAnalytics(false)}
+      />
     </div>
   );
 };

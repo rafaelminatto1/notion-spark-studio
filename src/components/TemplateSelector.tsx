@@ -16,6 +16,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTemplateMetrics } from '@/hooks/useTemplateMetrics';
 
 interface Template {
   id: string;
@@ -496,6 +497,8 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('Todos');
   const [searchTerm, setSearchTerm] = useState('');
+  
+  const { trackTemplateUsage } = useTemplateMetrics();
 
   const filteredTemplates = templates.filter(template => {
     const matchesCategory = selectedCategory === 'Todos' || template.category === selectedCategory;
@@ -506,6 +509,15 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
 
   const handleSelectTemplate = (template: Template) => {
     onSelectTemplate(template.content);
+    
+    // Track usage metrics
+    trackTemplateUsage(
+      template.id,
+      template.name,
+      template.category,
+      template.content.length
+    );
+    
     setIsOpen(false);
     setSearchTerm('');
   };
