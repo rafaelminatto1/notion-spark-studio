@@ -52,10 +52,13 @@ export const useGraphData = (files: FileItem[], filters: GraphFilters): UseGraph
     for (const file of fileItems) {
       const content = file.content || '';
       
+      // 1. Wiki Links [[arquivo]]
       const wikiLinks = extractWikiLinks(content);
       for (const linkName of wikiLinks) {
         const targetFile = fileItems.find(f => 
-          f.name.toLowerCase() === linkName.toLowerCase() || f.id === linkName
+          f.name.toLowerCase() === linkName.toLowerCase() || 
+          f.name.toLowerCase().includes(linkName.toLowerCase()) ||
+          f.id === linkName
         );
         
         if (targetFile && targetFile.id !== file.id) {
@@ -63,14 +66,44 @@ export const useGraphData = (files: FileItem[], filters: GraphFilters): UseGraph
             source: file.id,
             target: targetFile.id,
             type: 'link',
-            strength: 0.8,
+            strength: 0.9,
             color: '#3b82f6',
-            width: 2,
+            width: 3,
             bidirectional: false,
           });
         }
       }
       
+      // 2. Tags compartilhadas
+      const fileTags = extractTags(file);
+      for (const otherFile of fileItems) {
+        if (otherFile.id === file.id) continue;
+        
+        const otherTags = extractTags(otherFile);
+        const sharedTags = fileTags.filter(tag => otherTags.includes(tag));
+        
+        if (sharedTags.length > 0) {
+          // Evitar links duplicados
+          const existingLink = links.find(l => 
+            (l.source === file.id && l.target === otherFile.id) ||
+            (l.source === otherFile.id && l.target === file.id)
+          );
+          
+          if (!existingLink) {
+            links.push({
+              source: file.id,
+              target: otherFile.id,
+              type: 'tag',
+              strength: Math.min(0.7, sharedTags.length * 0.2),
+              color: '#8b5cf6',
+              width: Math.min(3, sharedTags.length),
+              bidirectional: true,
+            });
+          }
+        }
+      }
+      
+      // 3. Hierarquia de pastas
       if (file.parentId) {
         const parentExists = fileItems.some(f => f.id === file.parentId);
         if (parentExists) {
@@ -80,9 +113,36 @@ export const useGraphData = (files: FileItem[], filters: GraphFilters): UseGraph
             type: 'parent',
             strength: 1.0,
             color: '#10b981',
-            width: 3,
+            width: 2,
             bidirectional: false,
           });
+        }
+      }
+      
+      // 4. Menções @arquivo
+      const mentions = extractMentions(content);
+      for (const mention of mentions) {
+        const targetFile = fileItems.find(f => 
+          f.name.toLowerCase().includes(mention.toLowerCase())
+        );
+        
+        if (targetFile && targetFile.id !== file.id) {
+          // Evitar links duplicados
+          const existingLink = links.find(l => 
+            l.source === file.id && l.target === targetFile.id
+          );
+          
+          if (!existingLink) {
+            links.push({
+              source: file.id,
+              target: targetFile.id,
+              type: 'reference',
+              strength: 0.6,
+              color: '#f59e0b',
+              width: 2,
+              bidirectional: false,
+            });
+          }
         }
       }
     }
@@ -214,12 +274,23 @@ function extractCollaborators(file: FileItem): string[] {
 function extractTags(file: FileItem): string[] {
   const content = file.content || '';
   const tagMatches = content.match(/#\w+/g) || [];
-  return tagMatches.map(tag => tag.substring(1));
+  const contentTags = tagMatches.map(tag => tag.substring(1));
+  
+  // Adicionar tags de metadata se existirem
+  const metadataTags = file.tags || [];
+  
+  // Combinar e remover duplicatas
+  return [...new Set([...contentTags, ...metadataTags])];
 }
 
 function extractWikiLinks(content: string): string[] {
   const matches = content.match(/\[\[([^\]]+)\]\]/g) || [];
   return matches.map(match => match.slice(2, -2));
+}
+
+function extractMentions(content: string): string[] {
+  const matches = content.match(/@([a-zA-Z0-9_-]+)/g) || [];
+  return matches.map(match => match.slice(1));
 }
 
 function detectLanguage(content: string): string {

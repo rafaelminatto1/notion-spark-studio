@@ -148,6 +148,7 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
         currentFileId={currentFileId}
         onFileSelect={onFileSelect}
         className="w-full h-full"
+        filters={filters}
       />
 
       {isProcessing && (
