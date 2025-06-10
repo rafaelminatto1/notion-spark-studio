@@ -67,17 +67,14 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
   });
 
   const handleViewChangeFromHeader = (view: ViewMode) => {
-    console.log('[IndexMainContent] Header view change:', view);
     setActiveView(view);
   };
 
   const handleViewChangeFromWorkspace = (view: string) => {
-    console.log('[IndexMainContent] Workspace view change:', view);
     setActiveView(view as ViewMode);
   };
 
   const handleFileSelect = (fileId: string) => {
-    console.log('[IndexMainContent] File selected:', fileId);
     setCurrentFileId(fileId);
     navigateTo(fileId);
     setActiveView('editor');
@@ -109,7 +106,7 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
             {isMobile ? (
               <MobileHeader
                 files={convertedFiles}
-                onFileSelect={handleFileSelect}
+                onNavigateToFile={handleFileSelect}
                 onCreateFile={handleCreateFile}
                 onToggleSidebar={onToggleMobileSidebar}
                 onShowSettings={onShowSettings}
@@ -123,7 +120,7 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
                 isMobileSidebarOpen={isMobileSidebarOpen}
                 onToggleMobileSidebar={onToggleMobileSidebar}
                 files={convertedFiles}
-                onFileSelect={handleFileSelect}
+                onNavigateToFile={handleFileSelect}
                 onShowSettings={onShowSettings}
               />
             )}
@@ -152,12 +149,10 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
           />
           
           <CommandPalette
-            files={convertedFiles}
-            isOpen={isCommandPaletteOpen}
-            onClose={() => setIsCommandPaletteOpen(false)}
-            onFileSelect={handleFileSelect}
-            onCreateFile={handleCreateFile}
-            favorites={favorites}
+            open={isCommandPaletteOpen}
+            onOpenChange={setIsCommandPaletteOpen}
+            onNavigateToFile={handleFileSelect}
+            onCreateFile={(name, type) => handleCreateFile(name, undefined, type)}
           />
           
           {isMobile && (

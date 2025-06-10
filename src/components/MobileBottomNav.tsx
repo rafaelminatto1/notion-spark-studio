@@ -28,7 +28,6 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   ];
 
   const handleViewChange = (view: ViewMode) => {
-    console.log('[MobileBottomNav] View change:', view);
     onViewChange(view);
   };
 

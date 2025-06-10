@@ -3,7 +3,7 @@ import { FileText, Tag, Clock, Star, TrendingUp, Calendar, Sparkles, Activity, Z
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileItem } from '@/types';
-import './dashboard-modern.css';
+// import './dashboard-modern.css';
 
 interface DashboardProps {
   files: FileItem[];

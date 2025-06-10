@@ -9,6 +9,10 @@ import {
   MoreHorizontal,
   Sparkles,
   GripVertical,
+  Trash2,
+  Edit,
+  Copy,
+  Star,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FileItem } from '@/types';
@@ -21,6 +25,13 @@ import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
 import { VirtualizedList } from '@/components/VirtualizedList';
 import { useSwipeGesture } from '@/hooks/useSwipeGesture';
 import { useFileSystemContext } from '@/contexts/FileSystemContext';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 
 interface SidebarProps {
   isMobile?: boolean;
@@ -49,6 +60,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     moveFile: onMoveFile,
     getFileTree,
     getFlatFileTree,
+    favorites,
+    toggleFavorite,
   } = useFileSystemContext();
 
   const fileTree = getFileTree();
@@ -96,6 +109,49 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onNavigateToFile(fileId);
   };
 
+  const handleMenuAction = async (e: React.MouseEvent, action: string, itemId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const item = files.find(f => f.id === itemId);
+    if (!item) return;
+
+    try {
+      switch (action) {
+        case 'editar':
+          // Implementar edição de nome
+          const newName = prompt('Digite o novo nome:', item.name);
+          if (newName && newName.trim() !== item.name) {
+            await onUpdateFile(itemId, { name: newName.trim() });
+          }
+          break;
+          
+        case 'copiar':
+          // Implementar duplicação
+          const copyName = `${item.name} (cópia)`;
+          const itemType = item.type === 'database' ? 'file' : item.type;
+          await onCreateFile(copyName, item.parentId, itemType);
+          break;
+          
+        case 'favoritar':
+          toggleFavorite(itemId);
+          break;
+          
+        case 'deletar':
+          if (confirm(`Tem certeza que deseja deletar "${item.name}"?`)) {
+            await onDeleteFile(itemId);
+          }
+          break;
+          
+        default:
+          console.warn('Ação não implementada:', action);
+      }
+    } catch (error) {
+      console.error('Erro ao executar ação:', error);
+      alert('Erro ao executar a ação. Tente novamente.');
+    }
+  };
+
   const displayFiles = useMemo(() => {
     return getFlatFileTree();
   }, [getFlatFileTree]);
@@ -117,6 +173,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           return (
             <div key={item.id} className="select-none">
               <div
+                data-file-item={item.id}
+                data-file-name={item.name}
                 draggable={onMoveFile !== undefined}
                 onDragStart={(e) => handleDragStart(e, item)}
                 onDragOver={(e) => handleDragOver(e, item)}
@@ -133,7 +191,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   "iphone-11:text-xs iphone-11:py-1.5 iphone-11:px-2",
                   "ipad-10:text-sm ipad-10:py-2 ipad-10:px-3"
                 )}
-                onClick={() => handleFileSelect(item.id)}
+                onClick={(e) => {
+                  // Verificar se o clique foi em um botão filho
+                  const targetElement = e.target as Element;
+                  if (targetElement.closest('button[data-sidebar="menu-button"]') || 
+                      targetElement.closest('[role="menuitem"]') ||
+                      targetElement.closest('button:not([data-file-item])')) {
+                    return;
+                  }
+                  
+                  handleFileSelect(item.id);
+                }}
               >
                 {isDropTarget && dragState.dropPosition === 'above' && (
                   <div className="absolute -top-1 left-0 right-0 h-0.5 bg-purple-500 rounded-full z-10" />
@@ -182,7 +250,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   </span>
                 </div>
 
-                <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
+                <div className={cn(
+                  "flex items-center gap-1 transition-all duration-300",
+                  // No mobile, sempre visível; no desktop, só no hover
+                  isMobile 
+                    ? "opacity-100 transform translate-x-0" 
+                    : "opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0"
+                )}>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -190,17 +264,97 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       e.stopPropagation();
                       setShowSubItemCreator(showSubItemCreator === item.id ? null : item.id);
                     }}
-                    className="h-7 w-7 p-0 hover:bg-purple-500/20 hover:scale-125 transition-all duration-300 rounded-full"
+                    className={cn(
+                      "h-7 w-7 p-0 hover:bg-purple-500/20 hover:scale-125 transition-all duration-300 rounded-full",
+                      // Aumentar área de toque no mobile
+                      isMobile && "min-h-[44px] min-w-[44px] h-11 w-11 active:scale-95 active:bg-purple-500/30"
+                    )}
                   >
                     <Plus className="h-3.5 w-3.5" />
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0 hover:bg-gray-500/20 hover:scale-125 transition-all duration-300 rounded-full"
-                  >
-                    <MoreHorizontal className="h-3.5 w-3.5" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                        }}
+                        className={cn(
+                          "h-7 w-7 p-0 hover:bg-gray-500/20 hover:scale-125 transition-all duration-300 rounded-full",
+                          // Aumentar área de toque no mobile
+                          isMobile && "min-h-[44px] min-w-[44px] h-11 w-11 active:scale-95 active:bg-gray-500/30"
+                        )}
+                      >
+                        <MoreHorizontal className="h-3.5 w-3.5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent 
+                      align="end" 
+                      className={cn(
+                        "w-48 bg-background/95 backdrop-blur-lg border border-border/60 shadow-xl",
+                        isMobile && "w-56 text-base" // Maior no mobile
+                      )}
+                    >
+                      <DropdownMenuItem 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMenuAction(e as any, 'editar', item.id);
+                        }}
+                        className={cn(
+                          "cursor-pointer hover:bg-purple-500/10",
+                          isMobile && "py-3 px-4 text-base" // Maior área de toque
+                        )}
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Editar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMenuAction(e as any, 'copiar', item.id);
+                        }}
+                        className={cn(
+                          "cursor-pointer hover:bg-blue-500/10",
+                          isMobile && "py-3 px-4 text-base"
+                        )}
+                      >
+                        <Copy className="h-4 w-4 mr-2" />
+                        Duplicar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMenuAction(e as any, 'favoritar', item.id);
+                        }}
+                        className={cn(
+                          "cursor-pointer hover:bg-yellow-500/10",
+                          isMobile && "py-3 px-4 text-base",
+                          favorites.includes(item.id) && "text-yellow-400"
+                        )}
+                      >
+                        <Star className={cn(
+                          "h-4 w-4 mr-2",
+                          favorites.includes(item.id) && "fill-current"
+                        )} />
+                        {favorites.includes(item.id) ? 'Remover dos Favoritos' : 'Adicionar aos Favoritos'}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMenuAction(e as any, 'deletar', item.id);
+                        }}
+                        className={cn(
+                          "cursor-pointer hover:bg-red-500/10 text-red-500",
+                          isMobile && "py-3 px-4 text-base"
+                        )}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Deletar
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
 
