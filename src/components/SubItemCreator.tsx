@@ -70,7 +70,7 @@ export const SubItemCreator: React.FC<SubItemCreatorProps> = ({
   }
 
   return (
-    <div className={cn("flex items-center gap-2 animate-fade-in", className)}>
+    <div className={cn("flex items-center gap-2 animate-fade-in relative z-50", className)}>
       {itemType === 'folder' ? (
         <Folder className="h-4 w-4 text-blue-400" />
       ) : (
@@ -81,7 +81,7 @@ export const SubItemCreator: React.FC<SubItemCreatorProps> = ({
         onChange={(e) => setNewItemName(e.target.value)}
         onKeyDown={handleKeyDown}
         onBlur={handleCreate}
-        className="h-7 text-sm bg-background border-purple-500/30 focus:border-purple-500/60 transition-all duration-300 rounded-lg z-20"
+        className="h-7 text-sm bg-background border-purple-500/30 focus:border-purple-500/60 transition-all duration-300 rounded-lg relative z-50"
         placeholder={itemType === 'folder' ? 'Nova subpasta' : 'Nova subitem'}
         autoFocus
       />

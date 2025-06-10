@@ -205,7 +205,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
 
               {showSubItemCreator === item.id && (
-                <div className="ml-6 mt-2 animate-fade-in">
+                <div className="ml-6 mt-2 animate-fade-in relative z-50 bg-background/95 backdrop-blur-sm rounded-lg p-2 border border-purple-500/20">
                   <SubItemCreator
                     parentId={item.id}
                     onCreateSubItem={handleCreateSubItem}
