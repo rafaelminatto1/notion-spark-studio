@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
+import { motion } from 'framer-motion';
 import { GraphNode, GraphLink } from './types';
 import { LayoutEngine, LayoutConfig } from './layouts/LayoutEngine';
 
@@ -269,15 +270,78 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
   return (
     <div className={`relative w-full h-full bg-background ${className || ''}`}>
       {/* Indicador de layout atual */}
-      <div className="absolute top-4 right-4 z-10 bg-black/80 backdrop-blur-sm border border-white/20 rounded-lg px-3 py-2">
-        <div className="text-white text-sm font-medium">
-          {viewMode === 'force' && '⚡ Force Layout'}
-          {viewMode === 'hierarchical' && '🌳 Hierárquico'}
-          {viewMode === 'circular' && '🔄 Circular'}
-          {viewMode === 'timeline' && '📅 Timeline'}
-          {viewMode === 'cluster' && '🎯 Clusters'}
+      <motion.div
+        className="absolute top-4 right-4 z-10"
+        key={viewMode}
+        initial={{ opacity: 0, scale: 0.8, x: 20 }}
+        animate={{ opacity: 1, scale: 1, x: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      >
+        <div className="graph-card px-4 py-3">
+          <motion.div 
+            className="text-white text-sm font-semibold flex items-center gap-2"
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.3 }}
+          >
+            {viewMode === 'force' && (
+              <>
+                <motion.span 
+                  animate={{ rotate: [0, 360] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                >
+                  ⚡
+                </motion.span>
+                Force Layout
+              </>
+            )}
+            {viewMode === 'hierarchical' && (
+              <>
+                <motion.span 
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  🌳
+                </motion.span>
+                Hierárquico
+              </>
+            )}
+            {viewMode === 'circular' && (
+              <>
+                <motion.span 
+                  animate={{ rotate: [0, 360] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                >
+                  🔄
+                </motion.span>
+                Circular
+              </>
+            )}
+            {viewMode === 'timeline' && (
+              <>
+                <motion.span 
+                  animate={{ x: [0, 5, 0] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  📅
+                </motion.span>
+                Timeline
+              </>
+            )}
+            {viewMode === 'cluster' && (
+              <>
+                <motion.span 
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                >
+                  🎯
+                </motion.span>
+                Clusters
+              </>
+            )}
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
 
       <ForceGraph2D
         ref={fgRef}

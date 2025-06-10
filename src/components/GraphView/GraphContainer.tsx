@@ -4,13 +4,16 @@ import { GraphControls } from './GraphControls';
 import { GraphSidebar } from './GraphSidebar';
 import { GraphMinimap } from './GraphMinimap';
 import { GraphAnalytics } from './GraphAnalytics';
+import { GraphHelpOverlay } from './GraphHelpOverlay';
 import { useGraphData } from '@/hooks/useGraphData';
 import { useNetworkAnalysis } from '@/hooks/useNetworkAnalysis';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { GraphFilters, GraphNode } from './types';
 import { FileItem } from '@/types';
 import { findShortestPath } from '@/utils/graphAlgorithms';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from '@/components/ui/use-toast';
+import '../../styles/graph-theme.css';
 
 interface GraphContainerProps {
   files: FileItem[];
@@ -31,6 +34,8 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
   const [viewMode, setViewMode] = useState('force');
   const [showAnalytics, setShowAnalytics] = useState(true);
   const [showMinimap, setShowMinimap] = useState(true);
+  const [showHelp, setShowHelp] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const graphRef = React.useRef<any>();
 
   const [filters, setFilters] = useState<GraphFilters>({
@@ -54,6 +59,38 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
   const { nodes, links, isLoading, isProcessing, error, refreshData } = useGraphData(files, filters);
   const { networkMetrics, findOptimalPath, analyzeNeighborhood } = useNetworkAnalysis(nodes, links);
 
+  // Atalhos de teclado
+  useKeyboardShortcuts({
+    onReset: () => {
+      setFilters({
+        searchQuery: '',
+        nodeTypes: ['file', 'folder', 'database', 'tag'],
+        tags: [],
+        minConnections: 0,
+        showOrphans: true,
+        dateRange: null,
+      });
+      setSelectedNode(null);
+      setPathFindingStart(null);
+      setShowPathFinding(false);
+      if (graphRef.current) {
+        graphRef.current.zoomToFit(400);
+      }
+      toast({
+        title: "🔄 Reset realizado!",
+        description: "Filtros e visualização resetados",
+      });
+    },
+    onTogglePathFinding: () => setShowPathFinding(!showPathFinding),
+    onToggleSettings: () => setShowSettings(!showSettings),
+    onToggleMinimap: () => setShowMinimap(!showMinimap),
+    onToggleAnalytics: () => setShowAnalytics(!showAnalytics),
+    onChangeLayout: (layout) => setViewMode(layout),
+    onZoomIn: () => graphRef.current?.zoom(graphRef.current.zoom() * 1.2),
+    onZoomOut: () => graphRef.current?.zoom(graphRef.current.zoom() * 0.8),
+    onZoomFit: () => graphRef.current?.zoomToFit(400),
+  });
+
   const selectedNodeData = selectedNode ? nodes.find(n => n.id === selectedNode) : undefined;
 
   const handleNodeClick = useCallback((nodeId: string) => {
@@ -61,8 +98,8 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
       if (!pathFindingStart) {
         setPathFindingStart(nodeId);
         toast({
-          title: "Primeiro nó selecionado",
-          description: "Agora clique no nó de destino para encontrar o caminho",
+          title: "🎯 Primeiro nó selecionado!",
+          description: "✨ Agora clique no nó de destino para encontrar o caminho otimizado",
         });
       } else {
         if (pathFindingStart !== nodeId) {
@@ -103,52 +140,104 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
 
   const handlePathFindingFromSidebar = useCallback((targetId: string) => {
     if (selectedNode && selectedNode !== targetId) {
-      const path = findShortestPath(selectedNode, targetId, links);
-      if (path.path.length > 0) {
+      const pathResult = findOptimalPath(selectedNode, targetId);
+      if (pathResult.found) {
         toast({
-          title: "Caminho encontrado!",
-          description: `Caminho com ${path.path.length} nós encontrado`,
+          title: "🚀 Rota inteligente encontrada!",
+          description: `📏 Distância: ${pathResult.distance} | 🔗 Conexões: ${pathResult.intermediateNodes.length}`,
         });
       } else {
         toast({
-          title: "Nenhum caminho encontrado",
-          description: "Não há conexão entre os nós selecionados",
+          title: "🔍 Nenhuma conexão direta",
+          description: "💡 Experimente conectar através de tags ou referências",
           variant: "destructive",
         });
       }
     }
-  }, [selectedNode, nodes, links]);
+  }, [selectedNode, findOptimalPath]);
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto" />
-          <p className="text-gray-400">Carregando dados do grafo...</p>
-        </div>
+      <div className={`graph-container ${className}`}>
+        <motion.div 
+          className="graph-loading"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+          <div className="graph-loading-spinner" />
+          <motion.div 
+            className="graph-loading-text"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+          >
+            🧠 Analisando conexões inteligentes...
+          </motion.div>
+          <motion.div 
+            className="text-sm text-gray-500"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6, duration: 0.4 }}
+          >
+            Detectando padrões e comunidades
+          </motion.div>
+        </motion.div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center space-y-4">
-          <p className="text-red-400">Erro ao carregar dados do grafo</p>
-          <p className="text-sm text-gray-500">{error}</p>
-          <button 
-            onClick={refreshData}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+      <div className={`graph-container ${className}`}>
+        <motion.div 
+          className="graph-loading"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+          <motion.div 
+            className="text-6xl mb-4"
+            initial={{ opacity: 0, rotate: -10 }}
+            animate={{ opacity: 1, rotate: 0 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
           >
-            Tentar novamente
-          </button>
-        </div>
+            🔧
+          </motion.div>
+          <motion.div 
+            className="text-xl font-semibold text-red-400 mb-2"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+          >
+            Ops! Algo deu errado
+          </motion.div>
+          <motion.p 
+            className="text-sm text-gray-400 mb-6 max-w-md text-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.4 }}
+          >
+            {error}
+          </motion.p>
+          <motion.button 
+            onClick={refreshData}
+            className="graph-button px-6 py-3"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            🔄 Tentar novamente
+          </motion.button>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className={`relative w-full h-full overflow-hidden bg-gradient-to-br from-gray-900 via-blue-900 to-black ${className}`}>
+    <div className={`graph-container relative w-full h-full overflow-hidden ${className}`}>
       <GraphEngine
         files={files}
         currentFileId={currentFileId}
@@ -159,19 +248,43 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
         layoutSettings={layoutSettings}
       />
 
-      {isProcessing && (
-        <motion.div
-          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.8 }}
-        >
-          <div className="bg-black/90 backdrop-blur-sm border border-white/20 rounded-lg p-4 text-white text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2" />
-            <p className="text-sm">Processando dados...</p>
-          </div>
-        </motion.div>
-      )}
+      <AnimatePresence>
+        {isProcessing && (
+          <motion.div
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30"
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: -20 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+          >
+            <div className="graph-card p-6 text-white text-center min-w-[200px]">
+              <motion.div 
+                className="text-3xl mb-3"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              >
+                🔄
+              </motion.div>
+              <motion.p 
+                className="text-sm font-medium"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                🧮 Calculando métricas...
+              </motion.p>
+              <motion.div 
+                className="text-xs text-gray-400 mt-2"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+              >
+                Centralidade • Comunidades • Caminhos
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <GraphControls
         filters={filters}

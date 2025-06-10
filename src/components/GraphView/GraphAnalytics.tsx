@@ -74,36 +74,78 @@ export const GraphAnalytics: React.FC<GraphAnalyticsProps> = ({
 
   return (
     <motion.div
-      className={cn("pointer-events-auto", className)}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
+      className={cn("analytics-panel pointer-events-auto", className)}
+      initial={{ opacity: 0, y: 30, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
     >
-      <Card className="p-4 bg-black/90 backdrop-blur-sm border-white/10 w-72 space-y-4">
+      <Card className="graph-card p-6 w-80 space-y-5">
         <div className="flex items-center gap-2">
           <BarChart3 className="h-5 w-5 text-blue-400" />
           <h3 className="text-white font-medium">Analytics do Grafo</h3>
         </div>
 
         {/* Métricas gerais */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="text-center p-2 bg-white/5 rounded border border-white/10">
-            <div className="text-xl font-bold text-blue-400">{metrics.totalNodes}</div>
-            <div className="text-xs text-gray-400">Nós</div>
-          </div>
-          <div className="text-center p-2 bg-white/5 rounded border border-white/10">
-            <div className="text-xl font-bold text-green-400">{metrics.totalLinks}</div>
-            <div className="text-xs text-gray-400">Links</div>
-          </div>
-          <div className="text-center p-2 bg-white/5 rounded border border-white/10">
-            <div className="text-xl font-bold text-purple-400">{metrics.avgConnections}</div>
-            <div className="text-xs text-gray-400">Média</div>
-          </div>
-          <div className="text-center p-2 bg-white/5 rounded border border-white/10">
-            <div className="text-xl font-bold text-red-400">{metrics.orphanNodes}</div>
-            <div className="text-xs text-gray-400">Órfãos</div>
-          </div>
-        </div>
+        <motion.div 
+          className="grid grid-cols-2 gap-3"
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: {
+                staggerChildren: 0.1,
+                delayChildren: 0.2
+              }
+            }
+          }}
+        >
+          <motion.div 
+            className="analytics-metric"
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0 }
+            }}
+            whileHover={{ scale: 1.05 }}
+          >
+            <div className="metric-value">{metrics.totalNodes}</div>
+            <div className="metric-label">📊 Nós</div>
+          </motion.div>
+          <motion.div 
+            className="analytics-metric"
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0 }
+            }}
+            whileHover={{ scale: 1.05 }}
+          >
+            <div className="metric-value">{metrics.totalLinks}</div>
+            <div className="metric-label">🔗 Links</div>
+          </motion.div>
+          <motion.div 
+            className="analytics-metric"
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0 }
+            }}
+            whileHover={{ scale: 1.05 }}
+          >
+            <div className="metric-value">{metrics.avgConnections}</div>
+            <div className="metric-label">⚡ Média</div>
+          </motion.div>
+          <motion.div 
+            className="analytics-metric"
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0 }
+            }}
+            whileHover={{ scale: 1.05 }}
+          >
+            <div className="metric-value">{metrics.orphanNodes}</div>
+            <div className="metric-label">🏝️ Órfãos</div>
+          </motion.div>
+        </motion.div>
 
         {/* Nós mais conectados */}
         <div className="space-y-2">

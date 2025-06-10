@@ -49,67 +49,91 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
 
   return (
     <motion.div 
-      className="absolute top-4 left-4 z-10 space-y-3"
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.3 }}
+      className="controls-panel absolute top-4 left-4 z-10 space-y-3"
+      initial={{ opacity: 0, x: -30, scale: 0.95 }}
+      animate={{ opacity: 1, x: 0, scale: 1 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
     >
-      <Card className="p-3 bg-black/90 backdrop-blur-sm border-white/10">
-        <div className="flex items-center gap-2">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              value={filters.searchQuery}
-              onChange={(e) => onFiltersChange({ ...filters, searchQuery: e.target.value })}
-              placeholder="Buscar nós..."
-              className="pl-10 bg-black/50 border-white/20 text-white placeholder-gray-400"
-            />
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1, duration: 0.4 }}
+      >
+        <Card className="graph-card p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                value={filters.searchQuery}
+                onChange={(e) => onFiltersChange({ ...filters, searchQuery: e.target.value })}
+                placeholder="🔍 Buscar arquivos, tags..."
+                className="graph-search pl-10"
+              />
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      </motion.div>
 
-      <Card className="p-3 bg-black/90 backdrop-blur-sm border-white/10">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handlePlayPause}
-            className="text-white hover:bg-white/10"
-          >
-            {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-          </Button>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.4 }}
+      >
+        <Card className="graph-card p-3">
+          <div className="flex items-center gap-2">
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handlePlayPause}
+                className="graph-button text-white p-2"
+                title={isPlaying ? "Pausar simulação" : "Iniciar simulação"}
+              >
+                {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+              </Button>
+            </motion.div>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onShowPathFindingChange(!showPathFinding)}
-            className={cn(
-              "text-white hover:bg-white/10",
-              showPathFinding && "bg-blue-600/30 text-blue-200"
-            )}
-          >
-            <Target className="h-4 w-4" />
-          </Button>
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onShowPathFindingChange(!showPathFinding)}
+                className={cn(
+                  "graph-button text-white p-2",
+                  showPathFinding && "active"
+                )}
+                title="Modo pathfinding - encontre conexões entre arquivos"
+              >
+                <Target className="h-4 w-4" />
+              </Button>
+            </motion.div>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleReset}
-            className="text-white hover:bg-white/10"
-          >
-            <RotateCcw className="h-4 w-4" />
-          </Button>
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleReset}
+                className="graph-button text-white p-2"
+                title="Resetar filtros"
+              >
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+            </motion.div>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowSettings(!showSettings)}
-            className={cn("text-white hover:bg-white/10", showSettings && "bg-white/20")}
-          >
-            <Settings className="h-4 w-4" />
-          </Button>
-        </div>
-      </Card>
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowSettings(!showSettings)}
+                className={cn("graph-button text-white p-2", showSettings && "active")}
+                title="Configurações avançadas"
+              >
+                <Settings className="h-4 w-4" />
+              </Button>
+            </motion.div>
+          </div>
+        </Card>
+      </motion.div>
 
       {showSettings && (
         <motion.div
@@ -117,7 +141,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
         >
-          <Card className="p-4 bg-black/90 backdrop-blur-sm border-white/10 space-y-4 w-80">
+          <Card className="graph-card p-6 space-y-6 w-96">
             <h3 className="text-white font-medium">Configurações</h3>
 
             <div className="flex items-center justify-between">
@@ -155,17 +179,21 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
                   { mode: 'timeline', label: '📅 Timeline', description: 'Por data de modificação' },
                   { mode: 'cluster', label: '🎯 Clusters', description: 'Agrupamentos inteligentes' }
                 ].map(({ mode, label, description }) => (
-                  <Button
-                    key={mode}
-                    variant={viewMode === mode ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => onViewModeChange(mode)}
-                    className="text-xs h-auto py-2 px-3 flex flex-col gap-1"
-                    title={description}
-                  >
-                    <span className="font-medium">{label}</span>
-                    <span className="text-[10px] opacity-70 leading-none">{description}</span>
-                  </Button>
+                  <motion.div key={mode} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Button
+                      variant={viewMode === mode ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => onViewModeChange(mode)}
+                      className={cn(
+                        "graph-button text-xs h-auto py-3 px-4 flex flex-col gap-1 w-full",
+                        viewMode === mode && "active"
+                      )}
+                      title={description}
+                    >
+                      <span className="font-medium">{label}</span>
+                      <span className="text-[10px] opacity-70 leading-none">{description}</span>
+                    </Button>
+                  </motion.div>
                 ))}
               </div>
             </div>
