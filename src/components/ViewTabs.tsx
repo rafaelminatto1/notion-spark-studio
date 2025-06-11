@@ -1,10 +1,10 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { FileText, GitBranch, LayoutDashboard, File } from 'lucide-react';
+import { FileText, GitBranch, LayoutDashboard, File, Notebook } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export type ViewMode = 'dashboard' | 'editor' | 'graph' | 'templates';
+export type ViewMode = 'dashboard' | 'editor' | 'graph' | 'templates' | 'evernote';
 
 interface ViewTabsProps {
   activeView: ViewMode;
@@ -20,6 +20,12 @@ export const ViewTabs: React.FC<ViewTabsProps> = ({
   className
 }) => {
   const tabs = [
+    {
+      id: 'evernote' as ViewMode,
+      label: 'Notebooks',
+      icon: Notebook,
+      description: 'Layout estilo Evernote'
+    },
     {
       id: 'dashboard' as ViewMode,
       label: 'Dashboard',

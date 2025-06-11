@@ -13,6 +13,7 @@ import { Dashboard } from '@/components/Dashboard';
 import { Editor } from '@/components/Editor';
 import { TemplatesManager } from '@/components/TemplatesManager';
 import { GraphContainer } from '@/components/GraphView/GraphContainer';
+import { EvernoteLayout } from '@/components/EvernoteLayout';
 import { ViewMode } from '@/components/ViewTabs'; // Import ViewMode type
 import { Sidebar } from '@/components/Sidebar'; // Import Sidebar
 
@@ -71,6 +72,13 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
   const renderContent = () => {
     console.log('[WorkspaceLayout] renderContent called. activeView:', activeView, 'currentFileId:', currentFileId);
     switch (activeView) {
+      case 'evernote':
+        console.log('[WorkspaceLayout] Rendering EvernoteLayout');
+        return (
+          <EvernoteLayout
+            isMobile={isMobile}
+          />
+        );
       case 'dashboard':
         console.log('[WorkspaceLayout] Rendering Dashboard');
         return (

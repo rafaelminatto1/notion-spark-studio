@@ -7,7 +7,7 @@ import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 export const useIndexPage = () => {
   console.log('[useIndexPage] Hook starting');
   
-  const [activeView, setActiveView] = useState<ViewMode>('dashboard');
+  const [activeView, setActiveView] = useState<ViewMode>('evernote');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [showWorkspaceSettings, setShowWorkspaceSettings] = useState(false);
