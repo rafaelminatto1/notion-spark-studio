@@ -14,6 +14,7 @@ import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import { FileSystemProvider } from "@/contexts/FileSystemContext";
 import { UserPreferencesProvider } from "@/contexts/UserPreferencesContext";
+import { PermissionsProvider } from "@/components/permissions/PermissionsEngine";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -62,7 +63,9 @@ const App = () => (
           <ConnectionStatus />
           <UserPreferencesProvider>
             <FileSystemProvider>
-              <AppContent />
+              <PermissionsProvider>
+                <AppContent />
+              </PermissionsProvider>
             </FileSystemProvider>
           </UserPreferencesProvider>
         </TooltipProvider>

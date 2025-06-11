@@ -161,8 +161,8 @@ const initialState: PermissionsState = {
   teams: [],
   auditLogs: [],
   currentUser: {
-    id: '',
-    roles: [],
+    id: 'default-user',
+    roles: ['admin'],
     teams: []
   },
   settings: {

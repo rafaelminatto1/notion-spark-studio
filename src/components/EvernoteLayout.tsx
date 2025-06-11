@@ -31,18 +31,21 @@ export const EvernoteLayout: React.FC<EvernoteLayoutProps> = ({
 
   const { checkPermission, state } = usePermissions();
   
+  // Fallback seguro para currentUser
+  const currentUserId = state.currentUser?.id || 'default-user';
+  
   // Helper functions for permission checks
   const canAccessNotebook = useCallback((notebookId: string) => {
-    return checkPermission(state.currentUser.id, notebookId, 'read');
-  }, [checkPermission, state.currentUser.id]);
+    return checkPermission(currentUserId, notebookId, 'read');
+  }, [checkPermission, currentUserId]);
   
   const canEditNotebook = useCallback((notebookId: string) => {
-    return checkPermission(state.currentUser.id, notebookId, 'update');
-  }, [checkPermission, state.currentUser.id]);
+    return checkPermission(currentUserId, notebookId, 'update');
+  }, [checkPermission, currentUserId]);
   
   const canCreateNote = useCallback((notebookId: string) => {
-    return checkPermission(state.currentUser.id, notebookId, 'create');
-  }, [checkPermission, state.currentUser.id]);
+    return checkPermission(currentUserId, notebookId, 'create');
+  }, [checkPermission, currentUserId]);
 
   // Filtrar apenas notebooks (folders) com permissão de acesso
   const notebooks = useMemo(() => 
@@ -57,9 +60,9 @@ export const EvernoteLayout: React.FC<EvernoteLayoutProps> = ({
     selectedNotebook 
       ? files
           .filter(file => file.parentId === selectedNotebook && file.type === 'file')
-          .filter(note => checkPermission(state.currentUser.id, note.id, 'read'))
+          .filter(note => checkPermission(currentUserId, note.id, 'read'))
       : [],
-    [files, selectedNotebook, checkPermission, state.currentUser.id]
+    [files, selectedNotebook, checkPermission, currentUserId]
   );
 
   const currentFile = selectedNote ? files.find(f => f.id === selectedNote) : null;
@@ -98,7 +101,7 @@ export const EvernoteLayout: React.FC<EvernoteLayoutProps> = ({
 
   const handleCreateNotebook = async () => {
     // Verificar se tem permissão para criar notebooks
-    if (!checkPermission(state.currentUser.id, 'workspace', 'create')) {
+    if (!checkPermission(currentUserId, 'workspace', 'create')) {
       console.warn('Permissão negada para criar notebooks');
       return;
     }
