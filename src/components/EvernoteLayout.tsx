@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { NotebooksPanel } from '@/components/NotebooksPanel';
 import { NotesListPanel } from '@/components/NotesListPanel';
@@ -6,6 +6,7 @@ import { NoteEditorPanel } from '@/components/NoteEditorPanel';
 import { useFileSystemContext } from '@/contexts/FileSystemContext';
 import { cn } from '@/lib/utils';
 import { FileItem } from '@/types';
+import { usePermissions } from './permissions/PermissionsEngine';
 
 interface EvernoteLayoutProps {
   isMobile?: boolean;
@@ -28,11 +29,38 @@ export const EvernoteLayout: React.FC<EvernoteLayoutProps> = ({
     navigateTo,
   } = useFileSystemContext();
 
-  // Filtrar apenas notebooks (folders) e notes
-  const notebooks = files.filter(file => file.type === 'folder');
-  const notesInSelectedNotebook = selectedNotebook 
-    ? files.filter(file => file.parentId === selectedNotebook && file.type === 'file')
-    : [];
+  const { checkPermission, state } = usePermissions();
+  
+  // Helper functions for permission checks
+  const canAccessNotebook = useCallback((notebookId: string) => {
+    return checkPermission(state.currentUser.id, notebookId, 'read');
+  }, [checkPermission, state.currentUser.id]);
+  
+  const canEditNotebook = useCallback((notebookId: string) => {
+    return checkPermission(state.currentUser.id, notebookId, 'update');
+  }, [checkPermission, state.currentUser.id]);
+  
+  const canCreateNote = useCallback((notebookId: string) => {
+    return checkPermission(state.currentUser.id, notebookId, 'create');
+  }, [checkPermission, state.currentUser.id]);
+
+  // Filtrar apenas notebooks (folders) com permissão de acesso
+  const notebooks = useMemo(() => 
+    files
+      .filter(file => file.type === 'folder')
+      .filter(notebook => canAccessNotebook(notebook.id)),
+    [files, canAccessNotebook]
+  );
+  
+  // Obter notas do notebook selecionado com permissão de visualização
+  const notesInSelectedNotebook = useMemo(() => 
+    selectedNotebook 
+      ? files
+          .filter(file => file.parentId === selectedNotebook && file.type === 'file')
+          .filter(note => checkPermission(state.currentUser.id, note.id, 'read'))
+      : [],
+    [files, selectedNotebook, checkPermission, state.currentUser.id]
+  );
 
   const currentFile = selectedNote ? files.find(f => f.id === selectedNote) : null;
 
@@ -47,9 +75,17 @@ export const EvernoteLayout: React.FC<EvernoteLayoutProps> = ({
   };
 
   const handleCreateNote = async (notebookId?: string) => {
+    const targetNotebook = notebookId || selectedNotebook;
+    
+    // Verificar se tem permissão para criar nota no notebook
+    if (targetNotebook && !canCreateNote(targetNotebook)) {
+      console.warn('Permissão negada para criar nota neste notebook');
+      return;
+    }
+    
     const newNoteId = await createFile(
       'Nova Nota',
-      notebookId || selectedNotebook || undefined,
+      targetNotebook || undefined,
       'file'
     );
     if (newNoteId) {
@@ -61,6 +97,12 @@ export const EvernoteLayout: React.FC<EvernoteLayoutProps> = ({
   };
 
   const handleCreateNotebook = async () => {
+    // Verificar se tem permissão para criar notebooks
+    if (!checkPermission(state.currentUser.id, 'workspace', 'create')) {
+      console.warn('Permissão negada para criar notebooks');
+      return;
+    }
+    
     const newNotebookId = await createFile('Novo Notebook', undefined, 'folder');
     if (newNotebookId) {
       setSelectedNotebook(newNotebookId);

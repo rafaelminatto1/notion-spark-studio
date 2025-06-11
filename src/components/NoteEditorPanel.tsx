@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { 
   Star, 
   Calendar, 
@@ -49,14 +49,33 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
   const [content, setContent] = useState(note?.content || '');
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [newTag, setNewTag] = useState('');
+  const [isAutoSaving, setIsAutoSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
   // Update local state when note changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (note) {
       setTitle(note.name);
       setContent(note.content || '');
     }
   }, [note?.id]);
+
+  // Auto-save functionality
+  useEffect(() => {
+    if (!note || content === note.content) return;
+
+    const timeoutId = setTimeout(() => {
+      setIsAutoSaving(true);
+      onUpdateNote(note.id, { 
+        content, 
+        updatedAt: new Date().toISOString() 
+      });
+      setLastSaved(new Date());
+      setTimeout(() => setIsAutoSaving(false), 1000);
+    }, 1000); // Auto-save after 1 second of inactivity
+
+    return () => clearTimeout(timeoutId);
+  }, [content, note, onUpdateNote]);
 
   const handleTitleSave = useCallback(() => {
     if (note && title.trim() !== note.name) {
@@ -64,12 +83,6 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
     }
     setIsEditingTitle(false);
   }, [note, title, onUpdateNote]);
-
-  const handleContentSave = useCallback(() => {
-    if (note && content !== note.content) {
-      onUpdateNote(note.id, { content, updatedAt: new Date().toISOString() });
-    }
-  }, [note, content, onUpdateNote]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -80,6 +93,51 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
       setIsEditingTitle(false);
       setTitle(note?.name || '');
     }
+  };
+
+  const insertFormatting = (format: string) => {
+    const textarea = document.querySelector('#note-content') as HTMLTextAreaElement;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = content.substring(start, end);
+    
+    let formattedText = '';
+    switch (format) {
+      case 'bold':
+        formattedText = `**${selectedText || 'texto em negrito'}**`;
+        break;
+      case 'italic':
+        formattedText = `*${selectedText || 'texto em itálico'}*`;
+        break;
+      case 'code':
+        formattedText = selectedText.includes('\n') 
+          ? `\`\`\`\n${selectedText || 'código'}\n\`\`\``
+          : `\`${selectedText || 'código'}\``;
+        break;
+      case 'quote':
+        formattedText = `> ${selectedText || 'citação'}`;
+        break;
+      case 'list':
+        formattedText = `- ${selectedText || 'item da lista'}`;
+        break;
+      case 'link':
+        formattedText = `[${selectedText || 'texto do link'}](url)`;
+        break;
+      default:
+        return;
+    }
+
+    const newContent = content.substring(0, start) + formattedText + content.substring(end);
+    setContent(newContent);
+    
+    // Set cursor position
+    setTimeout(() => {
+      const newCursorPos = start + formattedText.length;
+      textarea.focus();
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
   };
 
   const addTag = () => {
@@ -131,10 +189,39 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
 
   return (
     <div className="h-full flex flex-col bg-white">
-      {/* Header */}
-      <div className="p-4 border-b border-gray-200 bg-white">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
+      {/* Clean Header */}
+      <div className="p-4 border-b border-gray-100">
+        {/* Title */}
+        <div className="mb-3">
+          {isEditingTitle ? (
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onBlur={handleTitleSave}
+              onKeyDown={handleKeyDown}
+              className="text-2xl font-bold border-none p-0 focus:ring-0 bg-transparent"
+              placeholder="Título da nota..."
+              autoFocus
+            />
+          ) : (
+            <h1 
+              className="text-2xl font-bold text-gray-900 cursor-pointer hover:bg-gray-50 rounded p-2 -m-2 transition-colors"
+              onClick={() => setIsEditingTitle(true)}
+            >
+              {title || 'Sem título'}
+            </h1>
+          )}
+        </div>
+
+        {/* Actions Row */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <span>
+              {isAutoSaving ? 'Salvando...' : lastSaved ? `Salvo ${lastSaved.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : ''}
+            </span>
+          </div>
+          
+          <div className="flex items-center gap-1">
             <Button
               variant="ghost"
               size="sm"
@@ -153,18 +240,8 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
             <Button
               variant="ghost"
               size="sm"
-              className={cn(
-                "h-8 w-8 p-0",
-                isPreviewMode && "bg-gray-100"
-              )}
-              onClick={() => setIsPreviewMode(!isPreviewMode)}
+              className="h-8 w-8 p-0"
             >
-              <Eye className="h-4 w-4" />
-            </Button>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
               <Share2 className="h-4 w-4" />
             </Button>
             
@@ -189,151 +266,165 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
             </DropdownMenu>
           </div>
         </div>
-
-        {/* Title */}
-        <div className="mb-4">
-          {isEditingTitle ? (
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              onBlur={handleTitleSave}
-              onKeyDown={handleKeyDown}
-              className="text-xl font-semibold border-none p-0 focus:ring-0 bg-transparent"
-              placeholder="Título da nota..."
-              autoFocus
-            />
-          ) : (
-            <h1
-              className="text-xl font-semibold text-gray-800 cursor-pointer hover:bg-gray-50 p-2 rounded"
-              onClick={() => setIsEditingTitle(true)}
-            >
-              {note.name}
-            </h1>
-          )}
-        </div>
-
-        {/* Metadata */}
-        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-4">
-          <div className="flex items-center gap-1">
-            <Calendar className="h-4 w-4" />
-            <span>Criado em {formatDate(note.createdAt)}</span>
-          </div>
-          {note.updatedAt !== note.createdAt && (
-            <div className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
-              <span>Modificado em {formatDate(note.updatedAt)}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Tags */}
-        <div className="flex flex-wrap items-center gap-2">
-          {note.tags?.map((tag) => (
-            <Badge
-              key={tag}
-              variant="secondary"
-              className="bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer"
-              onClick={() => removeTag(tag)}
-            >
-              <Tag className="h-3 w-3 mr-1" />
-              {tag}
-              <span className="ml-1 text-blue-400 hover:text-blue-600">×</span>
-            </Badge>
-          ))}
-          
-          <div className="flex items-center gap-2">
-            <Input
-              value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  addTag();
-                }
-              }}
-              placeholder="Adicionar tag..."
-              className="h-7 w-32 text-xs"
-            />
-            <Button
-              onClick={addTag}
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2 text-xs"
-            >
-              +
-            </Button>
-          </div>
-        </div>
       </div>
 
       {/* Formatting Toolbar */}
       {!isPreviewMode && (
-        <div className="p-2 border-b border-gray-100 bg-gray-50">
+        <div className="px-4 py-2 border-b border-gray-100 bg-gray-50">
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={() => insertFormatting('bold')}
+              title="Negrito (Ctrl+B)"
+            >
               <Bold className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={() => insertFormatting('italic')}
+              title="Itálico (Ctrl+I)"
+            >
               <Italic className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <Underline className="h-4 w-4" />
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={() => insertFormatting('code')}
+              title="Código"
+            >
+              <Code className="h-4 w-4" />
             </Button>
             
-            <div className="w-px h-6 bg-gray-300 mx-2" />
+            <div className="w-px h-6 bg-gray-300 mx-1" />
             
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={() => insertFormatting('list')}
+              title="Lista"
+            >
               <List className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <ListOrdered className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={() => insertFormatting('quote')}
+              title="Citação"
+            >
               <Quote className="h-4 w-4" />
             </Button>
             
-            <div className="w-px h-6 bg-gray-300 mx-2" />
-            
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <Code className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={() => insertFormatting('link')}
+              title="Link"
+            >
               <Link className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <Image className="h-4 w-4" />
+            
+            <div className="flex-1" />
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "h-8 px-3 text-xs",
+                isPreviewMode && "bg-blue-100 text-blue-700"
+              )}
+              onClick={() => setIsPreviewMode(!isPreviewMode)}
+            >
+              <Eye className="h-3 w-3 mr-1" />
+              Preview
             </Button>
           </div>
         </div>
       )}
 
-      {/* Content Editor */}
-      <div className="flex-1 overflow-hidden">
+      {/* Content Area */}
+      <div className="flex-1 p-4">
         {isPreviewMode ? (
-          <div className="h-full overflow-y-auto p-6 prose prose-gray max-w-none">
-            <div dangerouslySetInnerHTML={{ __html: content || 'Conteúdo vazio...' }} />
+          <div className="prose prose-sm max-w-none">
+            {content ? (
+              <div dangerouslySetInnerHTML={{ 
+                __html: content
+                  .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                  .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                  .replace(/`(.*?)`/g, '<code>$1</code>')
+                  .replace(/^> (.*$)/gm, '<blockquote>$1</blockquote>')
+                  .replace(/^- (.*$)/gm, '<li>$1</li>')
+                  .replace(/\n/g, '<br>')
+              }} />
+            ) : (
+              <p className="text-gray-400 text-center py-8">
+                Comece a escrever para ver o preview...
+              </p>
+            )}
           </div>
         ) : (
           <Textarea
+            id="note-content"
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            onBlur={handleContentSave}
-            className="h-full w-full border-none resize-none focus:ring-0 text-sm leading-relaxed p-6"
             placeholder="Comece a escrever..."
-            style={{ minHeight: '100%' }}
+            className="w-full h-full resize-none border-none focus:ring-0 text-base leading-relaxed bg-transparent"
+            style={{ minHeight: '400px' }}
           />
         )}
       </div>
 
-      {/* Footer */}
-      <div className="p-3 border-t border-gray-100 bg-gray-50">
-        <div className="flex items-center justify-between text-xs text-gray-500">
-          <span>
-            {content.length} caracteres • {Math.ceil(content.split(' ').length)} palavras
-          </span>
-          <span>
-            Última atualização: {formatDate(note.updatedAt)}
-          </span>
+      {/* Footer with Tags and Metadata */}
+      <div className="p-4 border-t border-gray-100 bg-gray-50">
+        {/* Tags */}
+        <div className="mb-3">
+          <div className="flex items-center gap-2 mb-2">
+            <Tag className="h-4 w-4 text-gray-400" />
+            <span className="text-sm font-medium text-gray-600">Tags</span>
+          </div>
+          
+          <div className="flex flex-wrap gap-2 mb-2">
+            {note.tags?.map((tag) => (
+              <Badge 
+                key={tag} 
+                variant="secondary"
+                className="text-xs cursor-pointer hover:bg-red-100 hover:text-red-800"
+                onClick={() => removeTag(tag)}
+              >
+                {tag} ×
+              </Badge>
+            ))}
+          </div>
+          
+          <div className="flex gap-2">
+            <Input
+              value={newTag}
+              onChange={(e) => setNewTag(e.target.value)}
+              placeholder="Adicionar tag..."
+              className="text-sm"
+              onKeyPress={(e) => e.key === 'Enter' && addTag()}
+            />
+            <Button onClick={addTag} size="sm" variant="outline">
+              Adicionar
+            </Button>
+          </div>
+        </div>
+
+        {/* Metadata */}
+        <div className="flex items-center gap-4 text-xs text-gray-500">
+          <span>Criado em {formatDate(note.createdAt.toString())}</span>
+          <span>•</span>
+          <span>Modificado em {formatDate(note.updatedAt.toString())}</span>
         </div>
       </div>
     </div>
