@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Clock, Zap, AlertCircle, X, Users, MessageCircle, Shield, Brain } from 'lucide-react';
+import { Check, Clock, Zap, AlertCircle, X, Users, MessageCircle, Shield, Brain, CheckCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -311,6 +311,38 @@ const roadmapStatus: WeekStatus[] = [
     },
     {
       week: 5,
+      title: 'Layout Evernote - IMPLEMENTADO ✅',
+      progress: 100,
+      status: 'completed',
+      features: [
+        {
+          name: 'Layout 3 Painéis',
+          completed: true,
+          description: 'Notebooks | Lista | Editor',
+          icon: CheckCircle
+        },
+        {
+          name: 'Sistema Notebooks',
+          completed: true,
+          description: 'Organização hierárquica',
+          icon: CheckCircle
+        },
+        {
+          name: 'Lista de Notas',
+          completed: true,
+          description: '3 modos de visualização',
+          icon: CheckCircle
+        },
+        {
+          name: 'Editor Limpo',
+          completed: true,
+          description: 'Interface minimalista',
+          icon: CheckCircle
+        }
+      ]
+    },
+    {
+      week: 6,
       title: 'Design System & Mobile',
       progress: 0,
       status: 'pending',
