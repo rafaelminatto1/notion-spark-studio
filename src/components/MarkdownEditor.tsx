@@ -543,7 +543,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
             onSwipeRight={() => appleDevice.isTargetDevice && setShowPreview(false)}
             onSwipeUp={() => appleDevice.isTargetDevice && setZenMode(true)}
             onLongPress={() => appleDevice.isTargetDevice && setShowAnalytics(true)}
-            className={cn("flex-1 flex flex-col relative card-magic m-2", splitView && "border-r border-workspace-border")}
+            className={cn("flex-1 flex flex-col relative", splitView && "border-r border-workspace-border")}
           >
             {renderLineNumbers()}
             
@@ -618,7 +618,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
 🧮 **Fórmulas:** $$E = mc^2$$
 `}
               className={cn(
-                "flex-1 border-none resize-none bg-transparent text-workspace-text leading-relaxed font-mono text-base focus:ring-0 focus:outline-none p-4 overflow-y-auto input-magic transition-all duration-300 textarea-clean",
+                "editor-clean flex-1 border-none resize-none bg-transparent text-workspace-text leading-relaxed font-mono text-base focus:ring-0 focus:outline-none p-4 overflow-y-auto transition-all duration-300",
                 appleDevice.isTargetDevice && "apple-editor",
                 showLineNumbers && "pl-16",
                 appleDevice.isTargetDevice ? appleDevice.fontSize.medium : (isMobile ? "text-lg" : "text-base"),

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { FileText, Tag, MessageCircle, Star, ArrowLeft, ArrowRight, Type, Database as DatabaseIcon } from 'lucide-react';
+import { FileText, Tag, MessageCircle, Star, ArrowLeft, ArrowRight, ArrowUpLeft, Type, Database as DatabaseIcon, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TagInput } from '@/components/TagInput';
 import { Backlinks } from '@/components/Backlinks';
@@ -11,12 +11,17 @@ import { DatabaseView } from '@/components/database/DatabaseView';
 import { FavoritesManager } from '@/components/FavoritesManager';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { Dashboard } from '@/components/Dashboard';
+import { CollaborationProvider, useCollaborationContext } from '@/components/collaboration/CollaborationProvider';
+import { LiveCursors } from '@/components/collaboration/LiveCursors';
+import { OperationalTransform } from '@/components/collaboration/OperationalTransform';
+import { CommentsSystem } from '@/components/collaboration/CommentsSystem';
 import { FileItem, Comment, Block } from '@/types';
 import { useComments } from '@/hooks/useComments';
 import { useVersionHistory } from '@/hooks/useVersionHistory';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { parseLinks } from '@/utils/linkParser';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { v4 as uuidv4 } from 'uuid';
 
 interface EditorProps {
   file: FileItem | undefined;
@@ -30,9 +35,13 @@ interface EditorProps {
   onGoForward?: () => void;
   canGoBack?: boolean;
   canGoForward?: boolean;
+  currentUserId?: string;
+  currentUserName?: string;
+  currentUserAvatar?: string;
+  collaborationEnabled?: boolean;
 }
 
-export const Editor: React.FC<EditorProps> = ({
+const EditorInner: React.FC<EditorProps> = ({
   file,
   files,
   favorites,
@@ -43,221 +52,100 @@ export const Editor: React.FC<EditorProps> = ({
   onGoBack,
   onGoForward,
   canGoBack,
-  canGoForward
+  canGoForward,
+  currentUserId = 'anonymous',
+  currentUserName = 'Usuário Anônimo',
+  currentUserAvatar,
+  collaborationEnabled = true
 }) => {
-  const [showComments, setShowComments] = useState(false);
-  const [useBlockEditor, setUseBlockEditor] = useState(false);
-  const [useMarkdownEditor, setUseMarkdownEditor] = useState(false);
   const [localContent, setLocalContent] = useState(file?.content || '');
+  const [useMarkdownEditor, setUseMarkdownEditor] = useState(false);
+  const [useBlockEditor, setUseBlockEditor] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [showCollaborationComments, setShowCollaborationComments] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+
   const editorRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
-  // Initialize auto-save
+  // Collaboration context
+  const collaboration = useCollaborationContext();
+
+  // Auto-save functionality
   const { forceSave } = useAutoSave({
-    file: file ? { ...file, content: localContent } : undefined,
-    onUpdateFile,
-    enabled: true,
-    interval: 30000 // 30 seconds
+    content: localContent,
+    onSave: (content) => {
+      if (file) {
+        onUpdateFile(file.id, { content });
+      }
+    },
+    delay: 1000
   });
 
   // Update local content when file changes
   useEffect(() => {
-    if (file) {
-      setLocalContent(file.content || '');
+    if (file?.content !== localContent) {
+      setLocalContent(file?.content || '');
     }
-  }, [file?.id]);
+  }, [file?.content]);
 
-  const {
-    isAddingComment,
-    commentPosition,
-    addComment,
-    updateComment,
-    deleteComment,
-    startAddingComment,
-    cancelAddingComment
-  } = useComments(file?.id || null, file?.comments || []);
-
-  const handleContentChange = useCallback((content: string) => {
-    // Update local content immediately for responsive UI
-    setLocalContent(content);
+  // Handle content changes with collaboration
+  const handleContentChange = useCallback((newContent: string) => {
+    setLocalContent(newContent);
+    setIsTyping(true);
     
-    // Auto-save will handle the actual saving with debounce
-  }, []);
+    // Update typing presence
+    collaboration.updatePresence(true, true);
+    
+    // Clear typing indicator after 2 seconds of inactivity
+    const typingTimeout = setTimeout(() => {
+      setIsTyping(false);
+      collaboration.updatePresence(false, true);
+    }, 2000);
 
-  const handleTagsChange = useCallback((tags: string[]) => {
+    return () => clearTimeout(typingTimeout);
+  }, [collaboration]);
+
+  // Handle operational transform content changes
+  const handleOTContentChange = useCallback((content: string) => {
+    setLocalContent(content);
     if (file) {
-      onUpdateFile(file.id, { tags });
+      onUpdateFile(file.id, { content });
     }
   }, [file, onUpdateFile]);
 
-  const handleAddComment = useCallback((content: string) => {
-    if (!file) return;
+  // Create file from name helper
+  const handleCreateFileFromName = useCallback(async (name: string) => {
+    onCreateFile(name);
+    return uuidv4(); // Return mock ID
+  }, [onCreateFile]);
 
-    const newComment = addComment(
-      content,
-      'editor-content',
-      commentPosition.x,
-      commentPosition.y
-    );
-
-    if (newComment) {
-      const updatedComments = [...(file.comments || []), newComment];
-      onUpdateFile(file.id, { comments: updatedComments });
-    }
-
-    cancelAddingComment();
-  }, [file, addComment, commentPosition, onUpdateFile, cancelAddingComment]);
-
-  const handleUpdateComment = useCallback((commentId: string, content: string) => {
-    if (!file) return;
-
-    const updatedComments = updateComment(commentId, content);
-    onUpdateFile(file.id, { comments: updatedComments });
-  }, [file, updateComment, onUpdateFile]);
-
-  const handleDeleteComment = useCallback((commentId: string) => {
-    if (!file) return;
-
-    const updatedComments = deleteComment(commentId);
-    onUpdateFile(file.id, { comments: updatedComments });
-  }, [file, deleteComment, onUpdateFile]);
-
-  const handleEditorClick = useCallback((e: React.MouseEvent) => {
-    if (!showComments || !editorRef.current) return;
-
-    const rect = editorRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    startAddingComment(x, y);
-  }, [showComments, startAddingComment]);
-
-  const handleBlocksChange = useCallback((blocks: Block[]) => {
-    if (file) {
-      // Convert blocks to content string for compatibility and store blocks
-      const content = blocks.map(block => {
-        switch (block.type) {
-          case 'heading':
-            const level = block.properties?.level || 1;
-            return `${'#'.repeat(level)} ${block.content}`;
-          case 'list':
-            return `- ${block.content}`;
-          case 'code':
-            return `\`\`\`\n${block.content}\n\`\`\``;
-          case 'quote':
-            return `> ${block.content}`;
-          case 'callout':
-            return `> **${block.properties?.type || 'info'}**: ${block.content}`;
-          default:
-            return block.content;
-        }
-      }).join('\n\n');
-      
-      setLocalContent(content);
-    }
-  }, [file]);
-
+  // Blocks conversion utilities
   const contentToBlocks = (content: string, existingBlocks?: Block[]): Block[] => {
-    // If we have existing blocks, use them
     if (existingBlocks && existingBlocks.length > 0) {
       return existingBlocks;
     }
 
-    // Otherwise, parse from content
-    if (!content) return [{
-      id: 'default',
-      type: 'text',
-      content: '',
-      properties: {}
-    }];
-    
-    const lines = content.split('\n').filter(line => line.trim());
-    const blocks: Block[] = [];
-    
-    lines.forEach((line, index) => {
-      if (line.startsWith('### ')) {
-        blocks.push({
-          id: `block-${index}`,
-          type: 'heading',
-          content: line.slice(4),
-          properties: { level: 3 }
-        });
-      } else if (line.startsWith('## ')) {
-        blocks.push({
-          id: `block-${index}`,
-          type: 'heading',
-          content: line.slice(3),
-          properties: { level: 2 }
-        });
-      } else if (line.startsWith('# ')) {
-        blocks.push({
-          id: `block-${index}`,
-          type: 'heading',
-          content: line.slice(2),
-          properties: { level: 1 }
-        });
-      } else if (line.startsWith('- ')) {
-        blocks.push({
-          id: `block-${index}`,
-          type: 'list',
-          content: line.slice(2),
-          properties: {}
-        });
-      } else if (line.startsWith('> **')) {
-        // Parse callout
-        const match = line.match(/^> \*\*(\w+)\*\*: (.+)$/);
-        if (match) {
-          blocks.push({
-            id: `block-${index}`,
-            type: 'callout',
-            content: match[2],
-            properties: { type: match[1].toLowerCase() }
-          });
-        }
-      } else if (line.startsWith('> ')) {
-        blocks.push({
-          id: `block-${index}`,
-          type: 'quote',
-          content: line.slice(2),
-          properties: {}
-        });
-      } else if (line.trim()) {
-        blocks.push({
-          id: `block-${index}`,
-          type: 'text',
-          content: line,
-          properties: {}
-        });
-      }
-    });
-    
-    return blocks.length > 0 ? blocks : [{
-      id: 'default',
-      type: 'text',
-      content: '',
-      properties: {}
-    }];
+    const lines = content.split('\n');
+    return lines.map((line, index) => ({
+      id: uuidv4(),
+      type: line.startsWith('#') ? 'heading' : 
+            line.startsWith('-') || line.startsWith('*') ? 'list' :
+            line.trim() === '' ? 'paragraph' : 'text',
+      content: line,
+      order: index
+    }));
   };
 
-  const handleCreateFileFromName = useCallback(async (name: string): Promise<string> => {
-    // Generate a unique file ID
-    const fileId = Date.now().toString();
-    
-    // Call the original onCreateFile function
-    onCreateFile(name);
-    
-    // Navigate to the new file after a short delay to allow file creation
-    setTimeout(() => {
-      const newFile = files.find(f => f.name === name);
-      if (newFile) {
-        onNavigateToFile(newFile.id);
-      }
-    }, 100);
-    
-    return fileId;
-  }, [onCreateFile, onNavigateToFile, files]);
+  const handleBlocksChange = useCallback((blocks: Block[]) => {
+    const content = blocks
+      .sort((a, b) => a.order - b.order)
+      .map(block => block.content)
+      .join('\n');
+    handleContentChange(content);
+  }, [handleContentChange]);
 
-  // Calculate backlinks for the current file
+  // Backlinks finder
   const findBacklinks = (files: FileItem[], fileName: string): FileItem[] => {
     return files.filter(file => 
       file.type === 'file' && 
@@ -267,93 +155,15 @@ export const Editor: React.FC<EditorProps> = ({
     );
   };
 
-  const backlinks = file ? findBacklinks(files, file.name) : [];
-
-  // Parse links from content
-  const renderLinks = () => {
-    if (!file?.content) return null;
-    
-    const links = parseLinks(file.content);
-    if (links.length === 0) return null;
-    
-    return (
-      <div className="mt-4">
-        <h4 className="text-sm font-medium text-gray-300 mb-2">Links encontrados:</h4>
-        <div className="space-y-2">
-          {links.map((link, index) => {
-            const targetFile = files.find(f => f.name === link.target && f.type === 'file');
-            const fileExists = !!targetFile;
-            
-            return (
-              <Button
-                key={index}
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  if (fileExists && targetFile) {
-                    onNavigateToFile(targetFile.id);
-                  } else {
-                    onCreateFile(link.target);
-                  }
-                }}
-                className={`inline-flex items-center gap-1 h-auto p-1 text-sm font-normal mr-2 ${
-                  fileExists 
-                    ? "text-blue-400 hover:text-blue-300 hover:bg-blue-400/10" 
-                    : "text-red-400 hover:text-red-300 hover:bg-red-400/10"
-                }`}
-              >
-                🔗{link.target} {!fileExists && '(criar)'}
-              </Button>
-            );
-          })}
-        </div>
-      </div>
-    );
-  };
-
-  // Render backlinks
-  const renderBacklinks = () => {
-    if (backlinks.length === 0) {
-      return (
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <ArrowLeft className="h-4 w-4 text-gray-400" />
-            <h3 className="text-sm font-medium text-gray-300">Backlinks</h3>
-          </div>
-          <p className="text-xs text-gray-500">Nenhuma referência encontrada</p>
-        </div>
-      );
-    }
-
-    return (
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <ArrowLeft className="h-4 w-4 text-gray-400" />
-          <h3 className="text-sm font-medium text-gray-300">
-            Backlinks ({backlinks.length})
-          </h3>
-        </div>
-        
-        <div className="space-y-2">
-          {backlinks.map(backFile => (
-            <Button
-              key={backFile.id}
-              variant="ghost"
-              size="sm"
-              onClick={() => onNavigateToFile(backFile.id)}
-              className="w-full justify-start gap-2 h-auto p-2 text-left hover:bg-notion-dark-hover"
-            >
-              <div className="flex items-center gap-2 min-w-0 flex-1">
-                {backFile.emoji && <span className="text-sm">{backFile.emoji}</span>}
-                <FileText className="h-3 w-3 text-gray-400 flex-shrink-0" />
-                <span className="text-sm text-gray-300 truncate">{backFile.name}</span>
-              </div>
-            </Button>
-          ))}
-        </div>
-      </div>
-    );
-  };
+  // Available users for collaboration
+  const availableUsers = [
+    { id: currentUserId, name: currentUserName, avatar: currentUserAvatar },
+    ...collaboration.getActiveCollaborators().map(cursor => ({
+      id: cursor.userId,
+      name: cursor.userName,
+      avatar: cursor.userAvatar
+    }))
+  ];
 
   if (!file) {
     return (
@@ -420,7 +230,19 @@ export const Editor: React.FC<EditorProps> = ({
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-notion-dark">
+    <div className="flex-1 flex flex-col bg-notion-dark relative">
+      {/* Live Cursors Overlay */}
+      {collaborationEnabled && (
+        <LiveCursors
+          collaborators={collaboration.cursors}
+          currentUserId={currentUserId}
+          containerRef={editorRef}
+          onCursorUpdate={collaboration.updateCursor}
+          onSelectionUpdate={collaboration.updateSelection}
+          className="absolute inset-0 z-30 pointer-events-none"
+        />
+      )}
+
       {/* Navigation Bar */}
       <div className="p-4 border-b border-notion-dark-border">
         <div className="flex items-center justify-between">
@@ -449,6 +271,16 @@ export const Editor: React.FC<EditorProps> = ({
               onNavigate={onNavigateToFile}
             />
           </div>
+
+          {/* Collaboration Status */}
+          {collaborationEnabled && collaboration.getActiveCollaborators().length > 0 && (
+            <div className="flex items-center gap-2 px-3 py-1 bg-green-500/20 rounded-lg border border-green-500/30">
+              <Users className="h-4 w-4 text-green-400" />
+              <span className="text-sm text-green-400">
+                {collaboration.getActiveCollaborators().length + 1} colaboradores
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -504,6 +336,19 @@ export const Editor: React.FC<EditorProps> = ({
               <MessageCircle className="h-4 w-4 mr-2" />
               Comentários ({file.comments?.length || 0})
             </Button>
+            {collaborationEnabled && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowCollaborationComments(!showCollaborationComments)}
+                className={`text-gray-400 hover:text-white ${
+                  showCollaborationComments ? 'bg-blue-500 text-white' : ''
+                }`}
+              >
+                <MessageCircle className="h-4 w-4 mr-2" />
+                Colaboração ({collaboration.comments.length})
+              </Button>
+            )}
           </div>
         </div>
         
@@ -516,51 +361,145 @@ export const Editor: React.FC<EditorProps> = ({
             placeholder="Adicionar tags..."
           />
         </div>
+
+        {/* Backlinks - Moved to top */}
+        <div className="backlinks-container mt-6 pt-4 border-t border-notion-dark-border/50">
+          <Backlinks
+            backlinks={findBacklinks(files, file.name)}
+            onNavigate={onNavigateToFile}
+          />
+        </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 p-6 relative" ref={editorRef}>
-        {useBlockEditor ? (
-          <BlockEditor
-            blocks={contentToBlocks(localContent, (file as any).blocks)}
-            onBlocksChange={handleBlocksChange}
-            className="flex-1"
-            isMobile={isMobile}
-          />
-        ) : (
-          <MarkdownEditor
-            content={localContent}
-            onChange={handleContentChange}
-            files={files}
-            onNavigateToFile={onNavigateToFile}
-            onCreateFile={handleCreateFileFromName}
-            className="flex-1"
-            isMobile={isMobile}
-          />
-        )}
+      <div className="flex-1 relative">
+        <div className="flex h-full">
+          {/* Main Editor */}
+          <div className="flex-1 p-6 relative" ref={editorRef}>
+            {collaborationEnabled ? (
+              <OperationalTransform
+                content={localContent}
+                onChange={handleOTContentChange}
+                onOperationSend={collaboration.sendOperation}
+                onOperationReceive={collaboration.receiveOperation}
+                userId={currentUserId}
+                version={0}
+                className="h-full"
+              >
+                {useBlockEditor ? (
+                  <BlockEditor
+                    blocks={contentToBlocks(localContent, (file as any).blocks)}
+                    onBlocksChange={handleBlocksChange}
+                    className="flex-1"
+                    isMobile={isMobile}
+                  />
+                ) : (
+                  <MarkdownEditor
+                    content={localContent}
+                    onChange={handleContentChange}
+                    files={files}
+                    onNavigateToFile={onNavigateToFile}
+                    onCreateFile={handleCreateFileFromName}
+                    className="flex-1"
+                    isMobile={isMobile}
+                  />
+                )}
+              </OperationalTransform>
+            ) : (
+              <>
+                {useBlockEditor ? (
+                  <BlockEditor
+                    blocks={contentToBlocks(localContent, (file as any).blocks)}
+                    onBlocksChange={handleBlocksChange}
+                    className="flex-1"
+                    isMobile={isMobile}
+                  />
+                ) : (
+                  <MarkdownEditor
+                    content={localContent}
+                    onChange={handleContentChange}
+                    files={files}
+                    onNavigateToFile={onNavigateToFile}
+                    onCreateFile={handleCreateFileFromName}
+                    className="flex-1"
+                    isMobile={isMobile}
+                  />
+                )}
+              </>
+            )}
 
-        {/* Comments Overlay */}
-        {showComments && (
-          <CommentsPanel
-            comments={file.comments || []}
-            isAddingComment={false}
-            commentPosition={{ x: 0, y: 0 }}
-            onAddComment={() => {}}
-            onUpdateComment={() => {}}
-            onDeleteComment={() => {}}
-            onCancelAddingComment={() => {}}
-            className="absolute inset-0 pointer-events-none"
-          />
-        )}
-      </div>
+            {/* Comments Overlay */}
+            {showComments && (
+              <CommentsPanel
+                comments={file.comments || []}
+                isAddingComment={false}
+                commentPosition={{ x: 0, y: 0 }}
+                onAddComment={() => {}}
+                onUpdateComment={() => {}}
+                onDeleteComment={() => {}}
+                onCancelAddingComment={() => {}}
+                className="absolute inset-0 pointer-events-none"
+              />
+            )}
+          </div>
 
-      {/* Backlinks */}
-      <div className="border-t border-notion-dark-border p-6">
-        <Backlinks
-          backlinks={findBacklinks(files, file.name)}
-          onNavigate={onNavigateToFile}
-        />
+          {/* Collaboration Comments Sidebar */}
+          {collaborationEnabled && showCollaborationComments && (
+            <div className="w-96 border-l border-notion-dark-border bg-notion-dark-hover/50 p-4 overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white">Comentários Colaborativos</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowCollaborationComments(false)}
+                  className="text-gray-400 hover:text-white"
+                >
+                  ✕
+                </Button>
+              </div>
+
+              <CommentsSystem
+                comments={collaboration.comments}
+                currentUserId={currentUserId}
+                currentUserName={currentUserName}
+                currentUserAvatar={currentUserAvatar}
+                documentContent={localContent}
+                onAddComment={collaboration.addComment}
+                onUpdateComment={collaboration.updateComment}
+                onDeleteComment={collaboration.deleteComment}
+                onReplyToComment={collaboration.replyToComment}
+                onReactionAdd={collaboration.addReaction}
+                onReactionRemove={collaboration.removeReaction}
+                onMentionUser={collaboration.mentionUser}
+                availableUsers={availableUsers}
+              />
+            </div>
+          )}
+        </div>
       </div>
     </div>
+  );
+};
+
+export const Editor: React.FC<EditorProps> = (props) => {
+  const { collaborationEnabled = true, file, currentUserId = 'anonymous', currentUserName = 'Usuário Anônimo', currentUserAvatar } = props;
+
+  if (!collaborationEnabled || !file) {
+    return <EditorInner {...props} />;
+  }
+
+  return (
+    <CollaborationProvider
+      documentId={file.id}
+      userId={currentUserId}
+      userName={currentUserName}
+      userAvatar={currentUserAvatar}
+      enabled={collaborationEnabled}
+      onContentChange={(content) => {
+        props.onUpdateFile(file.id, { content });
+      }}
+    >
+      <EditorInner {...props} />
+    </CollaborationProvider>
   );
 };

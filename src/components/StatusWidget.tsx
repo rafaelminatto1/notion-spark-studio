@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Clock, Zap, AlertCircle, X } from 'lucide-react';
+import { Check, Clock, Zap, AlertCircle, X, Users, MessageCircle, Shield, Brain } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { Progress } from '@/components/ui/progress';
 
 export type TaskStatus = 'pending' | 'in-progress' | 'completed' | 'error';
 
@@ -165,6 +166,182 @@ interface StatusWidgetProps {
   className?: string;
   compact?: boolean;
 }
+
+interface WeekStatus {
+  week: number;
+  title: string;
+  progress: number;
+  status: 'completed' | 'in-progress' | 'pending';
+  features: {
+    name: string;
+    completed: boolean;
+    description: string;
+    icon: React.ElementType;
+  }[];
+}
+
+const roadmapStatus: WeekStatus[] = [
+  {
+    week: 1,
+    title: 'Performance & Otimização',
+    progress: 100,
+    status: 'completed',
+    features: [
+      {
+        name: 'Graph View Web Workers',
+        completed: true,
+        description: 'Cálculos pesados em worker threads',
+        icon: Zap
+      },
+      {
+        name: 'Search Enhancement',
+        completed: true,
+        description: 'Busca com debounce e cancelation',
+        icon: Zap
+      },
+      {
+        name: 'Micro-Interactions',
+        completed: true,
+        description: 'Haptic feedback e animações',
+        icon: Zap
+      },
+      {
+        name: 'Virtualização Avançada',
+        completed: true,
+        description: 'Lista virtualizada para performance',
+        icon: Zap
+      }
+    ]
+  },
+  {
+    week: 2,
+    title: 'UX/UI Refinements',
+    progress: 100,
+    status: 'completed',
+    features: [
+      {
+        name: 'Adaptive UI System',
+        completed: true,
+        description: 'UI que aprende padrões de uso',
+        icon: Brain
+      },
+      {
+        name: 'Advanced Gestures',
+        completed: true,
+        description: 'Sistema de gestos Apple-like',
+        icon: Zap
+      },
+      {
+        name: 'Enhanced Animations',
+        completed: true,
+        description: 'Transições fluidas e micro-interações',
+        icon: Zap
+      },
+      {
+        name: 'Command Palette AI',
+        completed: true,
+        description: 'Sugestões contextuais inteligentes',
+        icon: Brain
+      }
+    ]
+  },
+  {
+    week: 3,
+    title: 'Collaboration & Permissions',
+    progress: 100,
+    status: 'completed',
+    features: [
+      {
+        name: 'RBAC Permissions',
+        completed: true,
+        description: 'Sistema avançado de permissões',
+        icon: Shield
+      },
+      {
+        name: 'Live Cursors',
+        completed: true,
+        description: 'Cursores colaborativos em tempo real',
+        icon: Users
+      },
+      {
+        name: 'Operational Transform',
+        completed: true,
+        description: 'Edição simultânea sem conflitos',
+        icon: Zap
+      },
+      {
+        name: 'Comments & Annotations',
+        completed: true,
+        description: 'Sistema completo de comentários',
+        icon: MessageCircle
+      }
+    ]
+  },
+  {
+    week: 4,
+    title: 'AI & Intelligence',
+    progress: 100,
+    status: 'completed',
+    features: [
+      {
+        name: 'Auto-tagging com NLP',
+        completed: true,
+        description: 'Tags automáticas baseadas em conteúdo',
+        icon: Brain
+      },
+      {
+        name: 'Content Similarity',
+        completed: true,
+        description: 'Detecção de documentos similares',
+        icon: Brain
+      },
+      {
+        name: 'Smart Suggestions',
+        completed: true,
+        description: 'Sugestões de conteúdo inteligentes',
+        icon: Brain
+      },
+      {
+        name: 'Analytics & Insights',
+        completed: true,
+        description: 'Métricas e insights de uso',
+        icon: Brain
+              }
+      ]
+    },
+    {
+      week: 5,
+      title: 'Design System & Mobile',
+      progress: 0,
+      status: 'pending',
+      features: [
+        {
+          name: 'Design System Evolution',
+          completed: false,
+          description: 'Sistema de design consistente',
+          icon: Zap
+        },
+        {
+          name: 'Mobile Optimization',
+          completed: false,
+          description: 'Experiência móvel otimizada',
+          icon: Zap
+        },
+        {
+          name: 'Offline Support',
+          completed: false,
+          description: 'Funcionalidade offline',
+          icon: Zap
+        },
+        {
+          name: 'Performance Monitoring',
+          completed: false,
+          description: 'Monitoramento em tempo real',
+          icon: Brain
+        }
+      ]
+    }
+  ];
 
 export const StatusWidget: React.FC<StatusWidgetProps> = ({ 
   className,

@@ -486,3 +486,49 @@ body {
 .toast-auto-close {
   animation: fade-in 0.3s ease-out, fade-out 0.3s ease-out 2s forwards;
 }
+
+/* Template Modal - Always on top */
+.template-modal-overlay {
+  z-index: 9999 !important;
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+/* Ensure template modal content is above everything */
+.template-modal-content {
+  z-index: 10000 !important;
+  position: relative !important;
+}
+
+/* Clean editor style - no borders like Notion/Evernote */
+.editor-clean {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.editor-clean:focus {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  ring: none !important;
+}
+
+/* Backlinks styling improvements */
+.backlinks-container {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 1rem;
+  margin-top: 1.5rem;
+}
+
+.backlink-item {
+  transition: all 0.2s ease;
+  border-radius: 8px;
+}
+
+.backlink-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateX(4px);
+}

@@ -538,8 +538,8 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="w-full max-w-4xl max-h-[90vh] m-4 bg-gradient-to-br from-background via-background/95 to-background border border-white/20 rounded-2xl shadow-2xl overflow-hidden">
+    <div className="template-modal-overlay fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md">
+      <div className="template-modal-content w-full max-w-4xl max-h-[90vh] m-4 bg-gradient-to-br from-background via-background/95 to-background border border-white/20 rounded-2xl shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-white/10 bg-gradient-to-r from-purple-500/10 to-blue-500/10">
           <div className="flex items-center gap-3">
