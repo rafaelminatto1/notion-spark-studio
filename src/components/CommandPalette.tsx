@@ -18,25 +18,281 @@ import {
   User,
   Calendar,
   Database,
-  Sparkles
+  Sparkles,
+  Brain,
+  TrendingUp,
+  Link,
+  Mic
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSemanticSearch } from '@/hooks/useSemanticSearch';
 import { useFileSystemContext } from '@/contexts/FileSystemContext';
 import { cn } from '@/lib/utils';
 
+// Declarações de tipos para Web Speech API
+declare global {
+  interface Window {
+    SpeechRecognition: any;
+    webkitSpeechRecognition: any;
+  }
+}
+
+// Interface para tracking de uso de comandos
+interface CommandUsage {
+  commandId: string;
+  count: number;
+  lastUsed: Date;
+  context: string[];
+  timeOfDay: 'morning' | 'afternoon' | 'evening' | 'night';
+  dayOfWeek: number;
+}
+
+// Interface para sugestões contextuais
+interface ContextualSuggestion {
+  id: string;
+  title: string;
+  description: string;
+  confidence: number; // 0-1
+  reason: string;
+  command: Command;
+}
+
 interface Command {
   id: string;
   title: string;
   description?: string;
-  category: 'search' | 'create' | 'navigate' | 'actions' | 'recent' | 'ai';
+  category: 'search' | 'create' | 'navigate' | 'actions' | 'recent' | 'ai' | 'suggested' | 'chained';
   icon: React.ComponentType<{ className?: string }>;
   keywords: string[];
   action: () => void;
   shortcut?: string;
   score?: number;
   context?: string[];
+  chainable?: boolean;
+  requiredContext?: string[];
+  usageCount?: number;
+  lastUsed?: Date;
 }
+
+// Hook para learning algorithm
+const useCommandLearning = () => {
+  const [commandUsage, setCommandUsage] = useState<CommandUsage[]>([]);
+  const [contextualSuggestions, setContextualSuggestions] = useState<ContextualSuggestion[]>([]);
+
+  // Carregar dados do localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('command-palette-usage');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setCommandUsage(parsed.map((item: any) => ({
+          ...item,
+          lastUsed: new Date(item.lastUsed)
+        })));
+      } catch (error) {
+        console.warn('Erro ao carregar histórico de comandos:', error);
+      }
+    }
+  }, []);
+
+  // Registrar uso de comando
+  const recordCommandUsage = useCallback((commandId: string, context: string[]) => {
+    const now = new Date();
+    const hour = now.getHours();
+    const timeOfDay = hour < 6 ? 'night' : hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
+    
+    setCommandUsage(prev => {
+      const existing = prev.find(usage => usage.commandId === commandId);
+      const updated = existing 
+        ? { ...existing, count: existing.count + 1, lastUsed: now, context }
+        : { 
+            commandId, 
+            count: 1, 
+            lastUsed: now, 
+            context,
+            timeOfDay: timeOfDay as any,
+            dayOfWeek: now.getDay()
+          };
+
+      const newUsage = existing 
+        ? prev.map(usage => usage.commandId === commandId ? updated : usage)
+        : [...prev, updated];
+
+      // Salvar no localStorage
+      localStorage.setItem('command-palette-usage', JSON.stringify(newUsage));
+      return newUsage;
+    });
+  }, []);
+
+  // Gerar sugestões contextuais baseadas no uso
+  const generateContextualSuggestions = useCallback((
+    currentContext: string[], 
+    timeOfDay: string,
+    availableCommands: Command[]
+  ): ContextualSuggestion[] => {
+    const suggestions: ContextualSuggestion[] = [];
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentDay = now.getDay();
+
+    commandUsage.forEach(usage => {
+      const command = availableCommands.find(cmd => cmd.id === usage.commandId);
+      if (!command) return;
+
+      let confidence = 0;
+      let reason = '';
+
+      // Bonus baseado na frequência de uso
+      const frequencyScore = Math.min(usage.count / 10, 0.4);
+      confidence += frequencyScore;
+
+      // Bonus baseado no contexto
+      const contextMatch = currentContext.some(ctx => 
+        usage.context.some(usageCtx => usageCtx.toLowerCase().includes(ctx.toLowerCase()))
+      );
+      if (contextMatch) {
+        confidence += 0.3;
+        reason = 'Baseado no contexto atual';
+      }
+
+      // Bonus baseado no horário
+      if (usage.timeOfDay === timeOfDay) {
+        confidence += 0.2;
+        reason = reason ? `${reason} e horário habitual` : 'Comando usado neste horário';
+      }
+
+      // Bonus para comandos usados recentemente
+      const daysSinceLastUse = (now.getTime() - usage.lastUsed.getTime()) / (1000 * 60 * 60 * 24);
+      if (daysSinceLastUse < 1) {
+        confidence += 0.3;
+        reason = reason ? `${reason} (usado recentemente)` : 'Usado recentemente';
+      }
+
+      // Bonus para dias da semana similares
+      if (usage.dayOfWeek === currentDay) {
+        confidence += 0.1;
+      }
+
+      if (confidence > 0.3) {
+        suggestions.push({
+          id: `contextual-${command.id}`,
+          title: command.title,
+          description: `${command.description} • ${reason}`,
+          confidence,
+          reason,
+          command: { ...command, category: 'suggested' as any }
+        });
+      }
+    });
+
+    return suggestions.sort((a, b) => b.confidence - a.confidence).slice(0, 5);
+  }, [commandUsage]);
+
+  return {
+    commandUsage,
+    recordCommandUsage,
+    generateContextualSuggestions,
+    contextualSuggestions
+  };
+};
+
+// Hook para command chaining
+const useCommandChaining = () => {
+  const [commandChain, setCommandChain] = useState<Command[]>([]);
+  const [isChaining, setIsChaining] = useState(false);
+
+  const startChain = useCallback((initialCommand: Command) => {
+    if (initialCommand.chainable) {
+      setCommandChain([initialCommand]);
+      setIsChaining(true);
+    }
+  }, []);
+
+  const addToChain = useCallback((command: Command) => {
+    setCommandChain(prev => [...prev, command]);
+  }, []);
+
+  const executeChain = useCallback(() => {
+    commandChain.forEach((command, index) => {
+      setTimeout(() => command.action(), index * 500);
+    });
+    setCommandChain([]);
+    setIsChaining(false);
+  }, [commandChain]);
+
+  const clearChain = useCallback(() => {
+    setCommandChain([]);
+    setIsChaining(false);
+  }, []);
+
+  return {
+    commandChain,
+    isChaining,
+    startChain,
+    addToChain,
+    executeChain,
+    clearChain
+  };
+};
+
+// Hook para voice commands (experimental)
+const useVoiceCommands = () => {
+  const [isListening, setIsListening] = useState(false);
+  const [transcript, setTranscript] = useState('');
+  const recognitionRef = useRef<any>(null);
+
+  useEffect(() => {
+    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+      const SpeechRecognitionConstructor = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognitionConstructor();
+      
+      if (recognitionRef.current) {
+        recognitionRef.current.continuous = false;
+        recognitionRef.current.interimResults = true;
+        recognitionRef.current.lang = 'pt-BR';
+
+        recognitionRef.current.onresult = (event) => {
+          const result = event.results[event.results.length - 1];
+          if (result.isFinal) {
+            setTranscript(result[0].transcript);
+            setIsListening(false);
+          }
+        };
+
+        recognitionRef.current.onerror = () => {
+          setIsListening(false);
+        };
+
+        recognitionRef.current.onend = () => {
+          setIsListening(false);
+        };
+      }
+    }
+  }, []);
+
+  const startListening = useCallback(() => {
+    if (recognitionRef.current && !isListening) {
+      setTranscript('');
+      setIsListening(true);
+      recognitionRef.current.start();
+    }
+  }, [isListening]);
+
+  const stopListening = useCallback(() => {
+    if (recognitionRef.current && isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    }
+  }, [isListening]);
+
+  return {
+    isListening,
+    transcript,
+    startListening,
+    stopListening,
+    isSupported: !!recognitionRef.current
+  };
+};
 
 interface CommandPaletteProps {
   open: boolean;
@@ -57,6 +313,52 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   
   const { files, currentFileId, recentFiles } = useFileSystemContext();
   const { results: searchResults, isSearching } = useSemanticSearch(files);
+  
+  // Hooks para funcionalidades IA
+  const { 
+    recordCommandUsage, 
+    generateContextualSuggestions 
+  } = useCommandLearning();
+  
+  const {
+    commandChain,
+    isChaining,
+    startChain,
+    addToChain,
+    executeChain,
+    clearChain
+  } = useCommandChaining();
+  
+  const {
+    isListening,
+    transcript,
+    startListening,
+    stopListening,
+    isSupported: voiceSupported
+  } = useVoiceCommands();
+
+  // Context atual para sugestões
+  const currentContext = useMemo(() => {
+    const context: string[] = [];
+    if (currentFileId) {
+      const currentFile = files.find(f => f.id === currentFileId);
+      if (currentFile) {
+        context.push(currentFile.type, currentFile.name);
+        // Adicionar tags se existirem
+        if (currentFile.tags) {
+          context.push(...currentFile.tags);
+        }
+      }
+    }
+    return context;
+  }, [currentFileId, files]);
+
+  // Aplicar voice command transcript ao query
+  useEffect(() => {
+    if (transcript && open) {
+      setQuery(transcript);
+    }
+  }, [transcript, open]);
 
   // Comandos base do sistema
   const baseCommands = useMemo((): Command[] => [
@@ -161,7 +463,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 
   // Comandos de arquivos recentes
   const recentCommands = useMemo((): Command[] => {
-    return (recentFiles || []).slice(0, 5).map(file => ({
+    // Simular arquivos recentes baseado nos arquivos existentes
+    const simulatedRecentFiles = files.slice(0, 5);
+    return simulatedRecentFiles.map(file => ({
       id: `recent-${file.id}`,
       title: file.name,
       description: `Aberto recentemente • ${file.type}`,
@@ -174,7 +478,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       },
       context: ['📁 Recentes']
     }));
-  }, [recentFiles, onNavigateToFile, onOpenChange]);
+  }, [files, onNavigateToFile, onOpenChange]);
 
   // Comandos de busca (arquivos encontrados)
   const searchCommands = useMemo((): Command[] => {
@@ -196,14 +500,25 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     }));
   }, [isSearching, query, searchResults, onNavigateToFile, onOpenChange]);
 
+  // Gerar sugestões contextuais baseadas em IA
+  const contextualSuggestions = useMemo(() => {
+    const now = new Date();
+    const hour = now.getHours();
+    const timeOfDay = hour < 6 ? 'night' : hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
+    
+    return generateContextualSuggestions(currentContext, timeOfDay, baseCommands);
+  }, [generateContextualSuggestions, currentContext, baseCommands]);
+
   // Filtrar e pontuar comandos
   const filteredCommands = useMemo(() => {
     if (!query.trim()) {
-      // Sem query: mostrar recentes e comandos principais
+      // Sem query: mostrar sugestões contextuais, recentes e comandos principais
+      const contextualCommands = contextualSuggestions.map(suggestion => suggestion.command);
       return [
+        ...contextualCommands,
         ...recentCommands,
         ...baseCommands.filter(cmd => ['create', 'ai'].includes(cmd.category))
-      ];
+      ].slice(0, 12);
     }
 
     const queryLower = query.toLowerCase();
@@ -267,6 +582,22 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       }));
   }, [filteredCommands]);
 
+  // Executar comando com tracking de uso
+  const executeCommand = useCallback((command: Command) => {
+    // Registrar uso para learning algorithm
+    recordCommandUsage(command.id, currentContext);
+    
+    // Verificar se é chainable
+    if (command.chainable && !isChaining) {
+      startChain(command);
+    } else if (isChaining) {
+      addToChain(command);
+    } else {
+      command.action();
+      onOpenChange(false);
+    }
+  }, [recordCommandUsage, currentContext, isChaining, startChain, addToChain, onOpenChange]);
+
   // Navegação por teclado
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     const totalCommands = filteredCommands.length;
@@ -283,14 +614,33 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       case 'Enter':
         e.preventDefault();
         if (filteredCommands[selectedIndex]) {
-          filteredCommands[selectedIndex].action();
+          if (e.shiftKey && isChaining) {
+            executeChain();
+          } else {
+            executeCommand(filteredCommands[selectedIndex]);
+          }
         }
         break;
       case 'Escape':
-        onOpenChange(false);
+        if (isChaining) {
+          clearChain();
+        } else {
+          onOpenChange(false);
+        }
+        break;
+      case ' ':
+        // Espaço para voice commands
+        if (e.ctrlKey && voiceSupported) {
+          e.preventDefault();
+          if (isListening) {
+            stopListening();
+          } else {
+            startListening();
+          }
+        }
         break;
     }
-  }, [filteredCommands, selectedIndex, onOpenChange]);
+  }, [filteredCommands, selectedIndex, executeCommand, isChaining, executeChain, clearChain, voiceSupported, isListening, startListening, stopListening, onOpenChange]);
 
   // Reset quando abre/fecha
   useEffect(() => {
@@ -336,6 +686,30 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         <div className="flex flex-col max-h-[80vh]">
           {/* Header com Input */}
           <div className="p-4 border-b border-slate-700">
+            {/* Command Chain Indicator */}
+            {isChaining && (
+              <div className="mb-3 flex items-center gap-2 p-2 bg-blue-900/20 border border-blue-700 rounded-lg">
+                <Link className="h-4 w-4 text-blue-400" />
+                <span className="text-sm text-blue-300">
+                  Encadeamento: {commandChain.length} comando(s)
+                </span>
+                <div className="flex gap-1 ml-auto">
+                  <button
+                    onClick={executeChain}
+                    className="px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded"
+                  >
+                    Executar (Shift+Enter)
+                  </button>
+                  <button
+                    onClick={clearChain}
+                    className="px-2 py-1 text-xs bg-slate-600 hover:bg-slate-700 text-white rounded"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
@@ -343,10 +717,44 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Digite um comando ou busque por arquivos..."
-                className="pl-10 bg-slate-800 border-slate-600 text-white placeholder-slate-400 focus:border-blue-500"
+                placeholder={
+                  isListening 
+                    ? "🎤 Ouvindo..." 
+                    : "Digite um comando ou busque por arquivos..."
+                }
+                className={cn(
+                  "pl-10 bg-slate-800 border-slate-600 text-white placeholder-slate-400 focus:border-blue-500",
+                  isListening && "border-red-500 bg-red-900/10"
+                )}
               />
+              
+              {/* Voice Command Button */}
+              {voiceSupported && (
+                <button
+                  onClick={isListening ? stopListening : startListening}
+                  className={cn(
+                    "absolute right-3 top-1/2 transform -translate-y-1/2 p-1 rounded",
+                    isListening 
+                      ? "text-red-400 bg-red-900/20" 
+                      : "text-slate-400 hover:text-white hover:bg-slate-700"
+                  )}
+                  title="Comando de voz (Ctrl+Space)"
+                >
+                  <Mic className="h-4 w-4" />
+                </button>
+              )}
             </div>
+            
+            {/* Context Info */}
+            {currentContext.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1">
+                {currentContext.slice(0, 3).map((ctx, index) => (
+                  <Badge key={index} variant="secondary" className="text-xs">
+                    {ctx}
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Resultados */}
@@ -390,15 +798,25 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                                 ? "bg-blue-600 text-white" 
                                 : "hover:bg-slate-800 text-slate-300 hover:text-white"
                             )}
-                            onClick={() => command.action()}
+                            onClick={() => executeCommand(command)}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: commandIndex * 0.02 }}
                           >
-                            <command.icon className={cn(
-                              "h-4 w-4 flex-shrink-0",
-                              isSelected ? "text-white" : "text-slate-400"
-                            )} />
+                                                        <div className="flex items-center gap-2 flex-shrink-0">
+                              <command.icon className={cn(
+                                "h-4 w-4",
+                                isSelected ? "text-white" : "text-slate-400"
+                              )} />
+                              
+                              {/* Indicadores especiais */}
+                              {command.category === 'suggested' && (
+                                <Brain className="h-3 w-3 text-purple-400" title="Sugestão IA" />
+                              )}
+                              {command.chainable && (
+                                <Link className="h-3 w-3 text-blue-400" title="Encadeável" />
+                              )}
+                            </div>
                             
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">

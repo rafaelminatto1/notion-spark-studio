@@ -1,221 +1,366 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { BarChart3, Network, Users, Eye } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { GraphNode, GraphLink } from './types';
-import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { 
+  BarChart3, 
+  Network, 
+  TrendingUp, 
+  Users, 
+  Activity,
+  Target,
+  GitBranch,
+  Zap,
+  Eye,
+  Link
+} from 'lucide-react';
+import { GraphNode, GraphLink } from '@/types/graph';
+import { useGraphAnalytics } from '@/hooks/useGraphAnalytics';
 
 interface GraphAnalyticsProps {
   nodes: GraphNode[];
   links: GraphLink[];
-  selectedNode: string | null;
-  className?: string;
+  selectedNode?: string | null;
+  onNodeSelect: (nodeId: string) => void;
+  onPathFind: (sourceId: string, targetId: string) => void;
 }
 
 export const GraphAnalytics: React.FC<GraphAnalyticsProps> = ({
   nodes,
   links,
   selectedNode,
-  className
+  onNodeSelect,
+  onPathFind
 }) => {
-  // Calcular métricas
-  const metrics = React.useMemo(() => {
+  const { centralityAnalysis, communityDetection, networkAnalytics } = useGraphAnalytics(nodes, links);
+  
+  // Calcular estatísticas de rede
+  const networkStats = useMemo(() => {
     const totalNodes = nodes.length;
     const totalLinks = links.length;
-    const avgConnections = totalNodes > 0 ? totalLinks * 2 / totalNodes : 0;
+    const density = totalLinks / (totalNodes * (totalNodes - 1) / 2);
     
     // Encontrar nós mais conectados
-    const nodeConnections = nodes.map(node => ({
-      id: node.id,
-      name: node.name,
-      connections: node.connections,
-      type: node.type
-    })).sort((a, b) => b.connections - a.connections);
-
-    // Clusters mais comuns
-    const clusterCounts = nodes.reduce((acc, node) => {
-      if (node.cluster) {
-        acc[node.cluster] = (acc[node.cluster] || 0) + 1;
-      }
-      return acc;
-    }, {} as Record<string, number>);
-
-    const topClusters = Object.entries(clusterCounts)
-      .sort(([,a], [,b]) => b - a)
+    const mostConnected = nodes
+      .map(node => ({
+        ...node,
+        degree: centralityAnalysis.degreeCentrality.get(node.id) || 0
+      }))
+      .sort((a, b) => b.degree - a.degree)
       .slice(0, 5);
 
-    // Tipos de arquivo mais comuns
-    const typeCounts = nodes.reduce((acc, node) => {
-      acc[node.type] = (acc[node.type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    // Encontrar nós centrais (betweenness)
+    const mostCentral = nodes
+      .map(node => ({
+        ...node,
+        betweenness: centralityAnalysis.betweennessCentrality.get(node.id) || 0
+      }))
+      .sort((a, b) => b.betweenness - a.betweenness)
+      .slice(0, 5);
+
+    // Clusters principais
+    const mainClusters = communityDetection
+      .sort((a, b) => b.nodes.length - a.nodes.length)
+      .slice(0, 5);
 
     return {
       totalNodes,
       totalLinks,
-      avgConnections: Math.round(avgConnections * 10) / 10,
-      topNodes: nodeConnections.slice(0, 5),
-      topClusters,
-      typeCounts,
-      orphanNodes: nodes.filter(n => n.connections === 0).length
+      density: density * 100,
+      avgConnections: totalLinks / totalNodes,
+      mostConnected,
+      mostCentral,
+      mainClusters,
+      isolatedNodes: nodes.filter(node => 
+        !links.some(link => 
+          link.source === node.id || link.target === node.id
+        )
+      ).length
     };
-  }, [nodes, links]);
-
-  const getTypeColor = (type: string) => {
-    const colors = {
-      file: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-      folder: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
-      database: 'bg-green-500/20 text-green-300 border-green-500/30',
-      tag: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
-    };
-    return colors[type as keyof typeof colors] || colors.file;
-  };
+  }, [nodes, links, centralityAnalysis, communityDetection]);
 
   return (
-    <motion.div
-      className={cn("analytics-panel pointer-events-auto", className)}
-      initial={{ opacity: 0, y: 30, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-    >
-      <Card className="graph-card p-6 w-80 space-y-5">
-        <div className="flex items-center gap-2">
-          <BarChart3 className="h-5 w-5 text-blue-400" />
-          <h3 className="text-white font-medium">Analytics do Grafo</h3>
-        </div>
+    <div className="space-y-6 p-4">
+      {/* Métricas Gerais */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card className="bg-notion-dark-hover border-notion-dark-border">
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Network className="h-4 w-4 text-blue-400" />
+              <div className="space-y-1">
+                <p className="text-xs text-gray-400">Nós</p>
+                <p className="text-xl font-bold text-white">{networkStats.totalNodes}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* Métricas gerais */}
-        <motion.div 
-          className="grid grid-cols-2 gap-3"
-          initial="hidden"
-          animate="visible"
-          variants={{
-            hidden: { opacity: 0 },
-            visible: {
-              opacity: 1,
-              transition: {
-                staggerChildren: 0.1,
-                delayChildren: 0.2
-              }
-            }
-          }}
-        >
-          <motion.div 
-            className="analytics-metric"
-            variants={{
-              hidden: { opacity: 0, y: 20 },
-              visible: { opacity: 1, y: 0 }
-            }}
-            whileHover={{ scale: 1.05 }}
-          >
-            <div className="metric-value">{metrics.totalNodes}</div>
-            <div className="metric-label">📊 Nós</div>
-          </motion.div>
-          <motion.div 
-            className="analytics-metric"
-            variants={{
-              hidden: { opacity: 0, y: 20 },
-              visible: { opacity: 1, y: 0 }
-            }}
-            whileHover={{ scale: 1.05 }}
-          >
-            <div className="metric-value">{metrics.totalLinks}</div>
-            <div className="metric-label">🔗 Links</div>
-          </motion.div>
-          <motion.div 
-            className="analytics-metric"
-            variants={{
-              hidden: { opacity: 0, y: 20 },
-              visible: { opacity: 1, y: 0 }
-            }}
-            whileHover={{ scale: 1.05 }}
-          >
-            <div className="metric-value">{metrics.avgConnections}</div>
-            <div className="metric-label">⚡ Média</div>
-          </motion.div>
-          <motion.div 
-            className="analytics-metric"
-            variants={{
-              hidden: { opacity: 0, y: 20 },
-              visible: { opacity: 1, y: 0 }
-            }}
-            whileHover={{ scale: 1.05 }}
-          >
-            <div className="metric-value">{metrics.orphanNodes}</div>
-            <div className="metric-label">🏝️ Órfãos</div>
-          </motion.div>
-        </motion.div>
+        <Card className="bg-notion-dark-hover border-notion-dark-border">
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Link className="h-4 w-4 text-green-400" />
+              <div className="space-y-1">
+                <p className="text-xs text-gray-400">Conexões</p>
+                <p className="text-xl font-bold text-white">{networkStats.totalLinks}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* Nós mais conectados */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Network className="h-4 w-4 text-gray-400" />
-            <span className="text-white text-sm font-medium">Top Conexões</span>
-          </div>
-          <div className="space-y-1">
-            {metrics.topNodes.map((node, index) => (
-              <div 
-                key={node.id}
-                className={cn(
-                  "flex items-center justify-between p-2 rounded text-sm",
-                  selectedNode === node.id ? "bg-blue-600/30" : "bg-white/5",
-                  "border border-white/10"
-                )}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-400">#{index + 1}</span>
-                  <span className="text-white truncate max-w-[120px]">{node.name}</span>
-                </div>
+        <Card className="bg-notion-dark-hover border-notion-dark-border">
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Activity className="h-4 w-4 text-purple-400" />
+              <div className="space-y-1">
+                <p className="text-xs text-gray-400">Densidade</p>
+                <p className="text-xl font-bold text-white">{networkStats.density.toFixed(1)}%</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-notion-dark-hover border-notion-dark-border">
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <GitBranch className="h-4 w-4 text-orange-400" />
+              <div className="space-y-1">
+                <p className="text-xs text-gray-400">Clusters</p>
+                <p className="text-xl font-bold text-white">{communityDetection.length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Nós Mais Conectados */}
+      <Card className="bg-notion-dark-hover border-notion-dark-border">
+        <CardHeader>
+          <CardTitle className="text-sm flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-green-400" />
+            🌟 Nós Mais Conectados
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {networkStats.mostConnected.map((node, index) => (
+            <motion.div
+              key={node.id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="flex items-center justify-between p-3 rounded-lg bg-notion-dark/50 hover:bg-notion-purple/10 transition-colors cursor-pointer"
+              onClick={() => onNodeSelect(node.id)}
+            >
+              <div className="flex items-center space-x-3">
                 <Badge variant="outline" className="text-xs">
-                  {node.connections}
+                  #{index + 1}
                 </Badge>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Distribuição por tipo */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Eye className="h-4 w-4 text-gray-400" />
-            <span className="text-white text-sm font-medium">Tipos</span>
-          </div>
-          <div className="space-y-1">
-            {Object.entries(metrics.typeCounts).map(([type, count]) => (
-              <div key={type} className="flex items-center justify-between">
-                <Badge 
-                  variant="outline" 
-                  className={cn("text-xs", getTypeColor(type))}
-                >
-                  {type}
-                </Badge>
-                <span className="text-gray-300 text-sm">{count}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Top Clusters */}
-        {metrics.topClusters.length > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-gray-400" />
-              <span className="text-white text-sm font-medium">Clusters</span>
-            </div>
-            <div className="space-y-1">
-              {metrics.topClusters.map(([cluster, count]) => (
-                <div key={cluster} className="flex items-center justify-between p-2 bg-white/5 rounded border border-white/10">
-                  <span className="text-white text-sm truncate">{cluster}</span>
-                  <Badge variant="outline" className="text-xs">
-                    {count}
-                  </Badge>
+                <div>
+                  <p className="font-medium text-white">{node.title}</p>
+                  <p className="text-xs text-gray-400">
+                    {node.degree} conexões
+                  </p>
                 </div>
-              ))}
+              </div>
+              <div className="flex items-center space-x-2">
+                <Progress 
+                  value={(node.degree / networkStats.mostConnected[0].degree) * 100} 
+                  className="w-16 h-2" 
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onNodeSelect(node.id);
+                  }}
+                >
+                  <Eye className="h-3 w-3" />
+                </Button>
+              </div>
+            </motion.div>
+          ))}
+        </CardContent>
+      </Card>
+
+      {/* Nós Mais Centrais (Betweenness) */}
+      <Card className="bg-notion-dark-hover border-notion-dark-border">
+        <CardHeader>
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Target className="h-4 w-4 text-purple-400" />
+            🎯 Nós Mais Centrais (Pontes)
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {networkStats.mostCentral.map((node, index) => (
+            <motion.div
+              key={node.id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="flex items-center justify-between p-3 rounded-lg bg-notion-dark/50 hover:bg-notion-purple/10 transition-colors cursor-pointer"
+              onClick={() => onNodeSelect(node.id)}
+            >
+              <div className="flex items-center space-x-3">
+                <Badge variant="outline" className="text-xs">
+                  #{index + 1}
+                </Badge>
+                <div>
+                  <p className="font-medium text-white">{node.title}</p>
+                  <p className="text-xs text-gray-400">
+                    Centralidade: {(node.betweenness * 100).toFixed(1)}%
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Progress 
+                  value={networkStats.mostCentral[0].betweenness > 0 
+                    ? (node.betweenness / networkStats.mostCentral[0].betweenness) * 100 
+                    : 0
+                  } 
+                  className="w-16 h-2" 
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onNodeSelect(node.id);
+                  }}
+                >
+                  <Eye className="h-3 w-3" />
+                </Button>
+              </div>
+            </motion.div>
+          ))}
+        </CardContent>
+      </Card>
+
+      {/* Clusters Principais */}
+      <Card className="bg-notion-dark-hover border-notion-dark-border">
+        <CardHeader>
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Users className="h-4 w-4 text-blue-400" />
+            🏷️ Principais Clusters
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {networkStats.mainClusters.map((cluster, index) => (
+            <motion.div
+              key={cluster.id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="flex items-center justify-between p-3 rounded-lg bg-notion-dark/50"
+            >
+              <div className="flex items-center space-x-3">
+                <div 
+                  className="w-4 h-4 rounded-full" 
+                  style={{ backgroundColor: cluster.color }}
+                />
+                <div>
+                  <p className="font-medium text-white">{cluster.name}</p>
+                  <p className="text-xs text-gray-400">
+                    {cluster.nodes.length} nós
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Progress 
+                  value={(cluster.nodes.length / networkStats.mainClusters[0].nodes.length) * 100} 
+                  className="w-16 h-2" 
+                />
+                <Badge variant="secondary" className="text-xs">
+                  {((cluster.nodes.length / networkStats.totalNodes) * 100).toFixed(1)}%
+                </Badge>
+              </div>
+            </motion.div>
+          ))}
+        </CardContent>
+      </Card>
+
+      {/* Path Finding Tool */}
+      {selectedNode && (
+        <Card className="bg-notion-dark-hover border-notion-dark-border">
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Zap className="h-4 w-4 text-yellow-400" />
+              🛤️ Path Finding
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="text-sm text-gray-300">
+                Nó selecionado: <span className="text-white font-medium">
+                  {nodes.find(n => n.id === selectedNode)?.title}
+                </span>
+              </div>
+              <div className="text-xs text-gray-400">
+                Clique em outro nó no grafo para encontrar o caminho entre eles
+              </div>
+              <div className="flex gap-2">
+                {networkStats.mostConnected.slice(0, 3).map(node => (
+                  <Button
+                    key={node.id}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onPathFind(selectedNode, node.id)}
+                    disabled={node.id === selectedNode}
+                    className="text-xs"
+                  >
+                    → {node.title}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Insights da Rede */}
+      <Card className="bg-notion-dark-hover border-notion-dark-border">
+        <CardHeader>
+          <CardTitle className="text-sm flex items-center gap-2">
+            <BarChart3 className="h-4 w-4 text-cyan-400" />
+            💡 Insights da Rede
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-gray-400">Conexões médias:</span>
+                <span className="text-white">{networkStats.avgConnections.toFixed(1)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Nós isolados:</span>
+                <span className="text-white">{networkStats.isolatedNodes}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Maior cluster:</span>
+                <span className="text-white">
+                  {networkStats.mainClusters[0]?.nodes.length || 0} nós
+                </span>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="p-3 rounded-lg bg-notion-dark/50">
+                <div className="text-xs text-gray-400 mb-1">Qualidade da Rede</div>
+                <div className="text-lg font-bold">
+                  {networkStats.density > 20 ? (
+                    <span className="text-green-400">🟢 Muito Conectada</span>
+                  ) : networkStats.density > 10 ? (
+                    <span className="text-yellow-400">🟡 Moderadamente Conectada</span>
+                  ) : (
+                    <span className="text-red-400">🔴 Pouco Conectada</span>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-        )}
+        </CardContent>
       </Card>
-    </motion.div>
+    </div>
   );
 }; 

@@ -7,6 +7,9 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { useGlobalSearch, SearchResult } from '@/hooks/useGlobalSearch';
+import { useDebounceSearch } from '@/hooks/useDebounceSearch';
+import { useSearchCache } from '@/hooks/useAdvancedCache';
+import { useMicroInteractions, SmartSkeleton } from '@/components/ui/MicroInteractions';
 import { FileItem } from '@/types';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -26,9 +29,41 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
+  
+  // Hook de micro-interactions
+  const { triggerInteractionFeedback, showToast } = useMicroInteractions();
+  
+  // Hook de cache avançado para resultados de busca
+  const searchCache = useSearchCache();
+  
+  // Hook de debounced search com analytics
+  const {
+    query,
+    setQuery: setDebouncedQuery,
+    debouncedQuery,
+    isSearching: isDebouncing,
+    trackSearchResult
+  } = useDebounceSearch('', {
+    delay: 300,
+    minQueryLength: 2,
+    enableAnalytics: true,
+    onAnalytics: (data) => {
+      console.log('Search Analytics:', data);
+      
+      // Cache resultados de busca para acesso rápido
+      if (data.hasResults) {
+        const cacheKey = `search:${data.query}:${JSON.stringify(filters)}`;
+        searchCache.set(cacheKey, {
+          results: searchResults,
+          timestamp: Date.now(),
+          query: data.query,
+          filters: filters
+        }, { priority: 'medium', ttl: 2 * 60 * 1000 }); // 2 minutos
+      }
+    }
+  });
+  
   const { 
-    query, 
-    setQuery, 
     filters, 
     setFilters, 
     searchResults, 
@@ -43,9 +78,18 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
   ).sort();
 
   const handleFileSelect = (fileId: string) => {
+    // Trigger haptic feedback
+    triggerInteractionFeedback('click');
+    
+    // Track search result
+    trackSearchResult(searchResults.length);
+    
     onFileSelect(fileId);
     setIsOpen(false);
-    setQuery('');
+    setDebouncedQuery('');
+    
+    // Show success feedback
+    showToast('Arquivo aberto com sucesso', 'success', { duration: 2000 });
   };
 
   const hasActiveFilters = filters.tags.length > 0 || filters.dateRange || filters.type !== 'all';
@@ -78,7 +122,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
         <Input
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => setDebouncedQuery(e.target.value)}
           onFocus={() => setIsOpen(true)}
           placeholder={placeholder}
           className="pl-10 pr-24 bg-notion-dark-hover border-notion-dark-border"
@@ -248,32 +292,33 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
       {/* Search Results */}
       {isOpen && (query || hasActiveFilters) && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-notion-dark border border-notion-dark-border rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
-          {isSearching ? (
-            <div className="p-4 text-center">
-              <Search className="h-6 w-6 mx-auto mb-2 animate-pulse text-gray-400" />
-              <p className="text-gray-400">Buscando...</p>
-            </div>
-          ) : searchResults.length === 0 ? (
-            <div className="p-4 text-center text-gray-400">
-              <Search className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p>Nenhum resultado encontrado</p>
-              {query && <p className="text-xs mt-1">Tente termos diferentes ou use filtros</p>}
-            </div>
-          ) : (
-            <div className="p-2">
-              <div className="text-xs text-gray-400 px-2 py-1 mb-2">
-                {searchResults.length} resultado(s) encontrado(s)
+          <SmartSkeleton 
+            lines={4} 
+            isLoading={isSearching || isDebouncing}
+            className="p-4"
+          >
+            {searchResults.length === 0 ? (
+              <div className="p-4 text-center text-gray-400">
+                <Search className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p>Nenhum resultado encontrado</p>
+                {query && <p className="text-xs mt-1">Tente termos diferentes ou use filtros</p>}
               </div>
-              {searchResults.map(result => (
-                <SearchResultItem
-                  key={result.file.id}
-                  result={result}
-                  query={query}
-                  onSelect={() => handleFileSelect(result.file.id)}
-                />
-              ))}
-            </div>
-          )}
+            ) : (
+              <div className="p-2">
+                <div className="text-xs text-gray-400 px-2 py-1 mb-2">
+                  {searchResults.length} resultado(s) encontrado(s)
+                </div>
+                {searchResults.map(result => (
+                  <SearchResultItem
+                    key={result.file.id}
+                    result={result}
+                    query={query}
+                    onSelect={() => handleFileSelect(result.file.id)}
+                  />
+                ))}
+              </div>
+            )}
+          </SmartSkeleton>
         </div>
       )}
 

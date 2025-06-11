@@ -6,6 +6,7 @@ import { GraphMinimap } from './GraphMinimap';
 import { GraphAnalytics } from './GraphAnalytics';
 import { GraphHelpOverlay } from './GraphHelpOverlay';
 import { PerformanceDashboard } from './PerformanceDashboard';
+import { GraphViewRevolutionary } from '../GraphViewRevolutionary';
 import { useGraphData } from '@/hooks/useGraphData';
 import { useNetworkAnalysis } from '@/hooks/useNetworkAnalysis';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
@@ -14,6 +15,9 @@ import { FileItem } from '@/types';
 import { findShortestPath } from '@/utils/graphAlgorithms';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from '@/components/ui/use-toast';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Sparkles, Network } from 'lucide-react';
 import '../../styles/graph-theme.css';
 
 interface GraphContainerProps {
@@ -38,6 +42,7 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
   const [showHelp, setShowHelp] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showPerformance, setShowPerformance] = useState(false);
+  const [useRevolutionary, setUseRevolutionary] = useState(true); // Novo estado para toggle
   const graphRef = React.useRef<any>();
 
   const [filters, setFilters] = useState<GraphFilters>({
@@ -240,8 +245,56 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
     );
   }
 
+  // Renderizar GraphViewRevolutionary se ativado
+  if (useRevolutionary) {
+    return (
+      <div className={`graph-container relative w-full h-full overflow-hidden ${className}`}>
+        {/* Toggle para alternar entre versões */}
+        <div className="absolute top-4 right-4 z-50">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setUseRevolutionary(false)}
+            className="bg-notion-dark-hover border-notion-dark-border text-white gap-2"
+          >
+            <Network className="h-4 w-4" />
+            Clássico
+          </Button>
+        </div>
+        
+        <GraphViewRevolutionary
+          files={files}
+          currentFileId={currentFileId}
+          onFileSelect={onFileSelect}
+          className="w-full h-full"
+        />
+        
+        {/* Badge identificando a versão revolucionária */}
+        <div className="absolute top-4 left-4 z-50">
+          <Badge variant="default" className="bg-gradient-to-r from-purple-600 to-blue-600 text-white gap-2">
+            <Sparkles className="h-3 w-3" />
+            Revolucionário v2.0
+          </Badge>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`graph-container relative w-full h-full overflow-hidden ${className}`}>
+      {/* Toggle para alternar para versão revolucionária */}
+      <div className="absolute top-4 right-4 z-50">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setUseRevolutionary(true)}
+          className="bg-notion-dark-hover border-notion-dark-border text-white gap-2"
+        >
+          <Sparkles className="h-4 w-4" />
+          Revolucionário
+        </Button>
+      </div>
+      
       <GraphEngine
         files={files}
         currentFileId={currentFileId}

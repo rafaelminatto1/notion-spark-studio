@@ -3,8 +3,10 @@ import { FixedSizeList as List } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FileItem } from '@/types';
 import { cn } from '@/lib/utils';
-import { ChevronRight, ChevronDown, File, Folder, Database } from 'lucide-react';
+import { ChevronRight, ChevronDown, File, Folder, Database, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useMicroInteractions, SmartSkeleton } from '@/components/ui/MicroInteractions';
+import { useDebounceSearch } from '@/hooks/useDebounceSearch';
 
 interface VirtualizedFileTreeProps {
   files: FileItem[];
@@ -13,6 +15,8 @@ interface VirtualizedFileTreeProps {
   onFileSelect: (fileId: string) => void;
   onToggleFolder: (folderId: string) => void;
   className?: string;
+  isLoading?: boolean;
+  searchQuery?: string;
 }
 
 interface FlatFileItem extends FileItem {
@@ -21,6 +25,7 @@ interface FlatFileItem extends FileItem {
   isVisible: boolean;
   hasChildren: boolean;
   isExpanded: boolean;
+  collaborators?: string[];
 }
 
 const ITEM_HEIGHT = 40;
@@ -36,30 +41,67 @@ const TreeItem = memo<{
   item: FlatFileItem;
   style: React.CSSProperties;
   isSelected: boolean;
+  isHovered: boolean;
+  searchQuery: string;
   onSelect: (fileId: string) => void;
   onToggle: (folderId: string) => void;
-}>(({ item, style, isSelected, onSelect, onToggle }) => {
+  onHover: (fileId: string | null) => void;
+}>(({ item, style, isSelected, isHovered, searchQuery, onSelect, onToggle, onHover }) => {
   const Icon = IconMap[item.type as keyof typeof IconMap] || File;
   const indentWidth = item.level * 20;
+  const { triggerInteractionFeedback } = useMicroInteractions();
 
   const handleClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // Trigger haptic feedback
+    triggerInteractionFeedback('click');
     
     if (item.type === 'folder') {
       onToggle(item.id);
     } else {
       onSelect(item.id);
     }
-  }, [item.id, item.type, onSelect, onToggle]);
+  }, [item.id, item.type, onSelect, onToggle, triggerInteractionFeedback]);
+
+  const handleMouseEnter = useCallback(() => {
+    onHover(item.id);
+    triggerInteractionFeedback('hover');
+  }, [item.id, onHover, triggerInteractionFeedback]);
+
+  const handleMouseLeave = useCallback(() => {
+    onHover(null);
+  }, [onHover]);
+
+  // Highlight search terms
+  const highlightText = (text: string, query: string) => {
+    if (!query) return text;
+    
+    const parts = text.split(new RegExp(`(${query})`, 'gi'));
+    return parts.map((part, index) => (
+      part.toLowerCase() === query.toLowerCase() ? (
+        <mark key={index} className="bg-yellow-400 text-black px-0.5 rounded">
+          {part}
+        </mark>
+      ) : part
+    ));
+  };
 
   return (
-    <div
+    <motion.div
       style={style}
       className={cn(
-        "flex items-center cursor-pointer group transition-all duration-200 hover:bg-slate-700/50",
-        isSelected && "bg-blue-600/20 border-r-2 border-blue-400"
+        "flex items-center cursor-pointer group transition-all duration-200",
+        "hover:bg-slate-700/50",
+        isSelected && "bg-blue-600/20 border-r-2 border-blue-400",
+        isHovered && "bg-slate-600/30"
       )}
       onClick={handleClick}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: "spring", stiffness: 400, damping: 30 }}
     >
       <div style={{ width: indentWidth }} />
       
@@ -92,7 +134,7 @@ const TreeItem = memo<{
         "flex-1 truncate text-sm",
         isSelected ? "text-white font-medium" : "text-slate-300"
       )}>
-        {item.name}
+        {highlightText(item.name, searchQuery)}
       </span>
       
       <div className="flex-shrink-0 flex items-center space-x-1 mr-2">
@@ -122,7 +164,7 @@ const TreeItem = memo<{
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 });
 
@@ -134,9 +176,28 @@ export const VirtualizedFileTree: React.FC<VirtualizedFileTreeProps> = memo(({
   expandedFolders,
   onFileSelect,
   onToggleFolder,
-  className
+  className,
+  isLoading = false,
+  searchQuery: externalSearchQuery = ''
 }) => {
   const listRef = useRef<any>(null);
+  const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
+  
+  // Micro-interactions
+  const { triggerInteractionFeedback } = useMicroInteractions();
+  
+  // Search interno
+  const {
+    query: internalSearchQuery,
+    setQuery,
+    debouncedQuery
+  } = useDebounceSearch('', {
+    delay: 200,
+    minQueryLength: 1
+  });
+  
+  // Usar busca externa se fornecida, senão usar interna
+  const activeSearchQuery = externalSearchQuery || debouncedQuery;
 
   const flatItems = useMemo(() => {
     const buildFlatTree = (items: FileItem[], level = 0, parentExpanded = true): FlatFileItem[] => {
@@ -199,11 +260,14 @@ export const VirtualizedFileTree: React.FC<VirtualizedFileTreeProps> = memo(({
         item={item}
         style={style}
         isSelected={item.id === currentFileId}
+        isHovered={item.id === hoveredItemId}
+        searchQuery={activeSearchQuery}
         onSelect={onFileSelect}
         onToggle={onToggleFolder}
+        onHover={setHoveredItemId}
       />
     );
-  }, [visibleItems, currentFileId, onFileSelect, onToggleFolder]);
+  }, [visibleItems, currentFileId, hoveredItemId, activeSearchQuery, onFileSelect, onToggleFolder]);
 
   if (visibleItems.length === 0) {
     return (
