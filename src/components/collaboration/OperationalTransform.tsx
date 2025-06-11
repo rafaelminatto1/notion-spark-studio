@@ -1,338 +1,500 @@
-import React, { useCallback, useRef, useEffect } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Merge, 
+  GitBranch, 
+  AlertTriangle, 
+  CheckCircle, 
+  Clock,
+  Users,
+  ArrowRight,
+  Zap
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-export interface Operation {
+// Tipos para Operational Transform
+export interface TextOperation {
   id: string;
   type: 'insert' | 'delete' | 'retain';
   position: number;
   content?: string;
   length?: number;
-  userId: string;
   timestamp: number;
-  version: number;
+  userId: string;
+  userName: string;
+  documentVersion: number;
 }
 
-export interface OperationState {
+export interface DocumentState {
   content: string;
   version: number;
-  pendingOperations: Operation[];
-  confirmedOperations: Operation[];
+  lastModified: Date;
+  activeOperations: TextOperation[];
+}
+
+export interface ConflictInfo {
+  id: string;
+  operations: TextOperation[];
+  type: 'concurrent_edit' | 'version_mismatch' | 'user_conflict';
+  severity: 'low' | 'medium' | 'high';
+  resolved: boolean;
+  resolution?: 'manual' | 'auto_merge' | 'user_choice';
 }
 
 interface OperationalTransformProps {
-  content: string;
-  onChange: (content: string) => void;
-  onOperationSend: (operation: Operation) => void;
-  onOperationReceive: (operation: Operation) => void;
-  userId: string;
-  version: number;
+  documentId: string;
+  initialContent: string;
+  currentUserId: string;
+  onContentChange: (content: string, operation: TextOperation) => void;
+  onConflictDetected: (conflict: ConflictInfo) => void;
+  onConflictResolved: (conflictId: string, resolution: string) => void;
   className?: string;
-  children: React.ReactNode;
 }
 
-export class OTEngine {
-  static transform(op1: Operation, op2: Operation): [Operation, Operation] {
-    // Transform two concurrent operations
-    if (op1.type === 'insert' && op2.type === 'insert') {
-      if (op1.position <= op2.position) {
-        return [
-          op1,
-          { ...op2, position: op2.position + (op1.content?.length || 0) }
-        ];
-      } else {
-        return [
-          { ...op1, position: op1.position + (op2.content?.length || 0) },
-          op2
-        ];
-      }
-    }
-
-    if (op1.type === 'delete' && op2.type === 'delete') {
-      if (op1.position <= op2.position) {
-        return [
-          op1,
-          { ...op2, position: Math.max(op1.position, op2.position - (op1.length || 0)) }
-        ];
-      } else {
-        return [
-          { ...op1, position: Math.max(op2.position, op1.position - (op2.length || 0)) },
-          op2
-        ];
-      }
-    }
-
-    if (op1.type === 'insert' && op2.type === 'delete') {
-      if (op1.position <= op2.position) {
-        return [
-          op1,
-          { ...op2, position: op2.position + (op1.content?.length || 0) }
-        ];
-      } else {
-        return [
-          { ...op1, position: op1.position - (op2.length || 0) },
-          op2
-        ];
-      }
-    }
-
-    if (op1.type === 'delete' && op2.type === 'insert') {
-      if (op2.position <= op1.position) {
-        return [
-          { ...op1, position: op1.position + (op2.content?.length || 0) },
-          op2
-        ];
-      } else {
-        return [
-          op1,
-          { ...op2, position: op2.position - (op1.length || 0) }
-        ];
-      }
-    }
-
-    return [op1, op2];
-  }
-
-  static apply(content: string, operation: Operation): string {
-    switch (operation.type) {
-      case 'insert':
-        return (
-          content.slice(0, operation.position) +
-          (operation.content || '') +
-          content.slice(operation.position)
-        );
-      
-      case 'delete':
-        return (
-          content.slice(0, operation.position) +
-          content.slice(operation.position + (operation.length || 0))
-        );
-      
-      case 'retain':
-        return content;
-      
-      default:
-        return content;
-    }
-  }
-
-  static compose(ops: Operation[]): Operation[] {
-    // Compose sequential operations for optimization
-    const composed: Operation[] = [];
-    
-    for (const op of ops) {
-      const lastOp = composed[composed.length - 1];
-      
-      if (!lastOp) {
-        composed.push(op);
-        continue;
-      }
-
-      // Merge consecutive inserts at same position
-      if (
-        lastOp.type === 'insert' && 
-        op.type === 'insert' && 
-        lastOp.position + (lastOp.content?.length || 0) === op.position &&
-        lastOp.userId === op.userId
-      ) {
-        lastOp.content = (lastOp.content || '') + (op.content || '');
-        continue;
-      }
-
-      // Merge consecutive deletes at same position
-      if (
-        lastOp.type === 'delete' && 
-        op.type === 'delete' && 
-        lastOp.position === op.position &&
-        lastOp.userId === op.userId
-      ) {
-        lastOp.length = (lastOp.length || 0) + (op.length || 0);
-        continue;
-      }
-
-      composed.push(op);
-    }
-
-    return composed;
-  }
-}
-
-export const OperationalTransform: React.FC<OperationalTransformProps> = ({
-  content,
-  onChange,
-  onOperationSend,
-  onOperationReceive,
-  userId,
-  version,
-  className,
-  children
-}) => {
-  const stateRef = useRef<OperationState>({
-    content,
-    version,
-    pendingOperations: [],
-    confirmedOperations: []
+// Hook para gerenciar Operational Transform
+const useOperationalTransform = (
+  documentId: string, 
+  initialContent: string,
+  currentUserId: string
+) => {
+  const [documentState, setDocumentState] = useState<DocumentState>({
+    content: initialContent,
+    version: 1,
+    lastModified: new Date(),
+    activeOperations: []
   });
 
-  const lastContentRef = useRef(content);
-  const isApplyingRef = useRef(false);
+  const [pendingOperations, setPendingOperations] = useState<TextOperation[]>([]);
+  const [conflicts, setConflicts] = useState<ConflictInfo[]>([]);
+  const [isConnected, setIsConnected] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing' | 'conflict' | 'offline'>('synced');
 
-  // Create operation from content change
-  const createOperation = useCallback((oldContent: string, newContent: string): Operation | null => {
-    if (oldContent === newContent) return null;
+  const operationQueue = useRef<TextOperation[]>([]);
+  const lastAcknowledgedVersion = useRef(1);
 
-    // Find the first difference
-    let start = 0;
-    while (start < oldContent.length && start < newContent.length && oldContent[start] === newContent[start]) {
-      start++;
-    }
-
-    // Find the last difference
-    let oldEnd = oldContent.length;
-    let newEnd = newContent.length;
-    while (oldEnd > start && newEnd > start && oldContent[oldEnd - 1] === newContent[newEnd - 1]) {
-      oldEnd--;
-      newEnd--;
-    }
-
-    const deletedText = oldContent.slice(start, oldEnd);
-    const insertedText = newContent.slice(start, newEnd);
-
-    // Create appropriate operation
-    if (deletedText && insertedText) {
-      // Replace operation (delete + insert)
-      return {
-        id: uuidv4(),
-        type: 'insert',
-        position: start,
-        content: insertedText,
-        userId,
-        timestamp: Date.now(),
-        version: stateRef.current.version
-      };
-    } else if (deletedText) {
-      // Delete operation
-      return {
-        id: uuidv4(),
-        type: 'delete',
-        position: start,
-        length: deletedText.length,
-        userId,
-        timestamp: Date.now(),
-        version: stateRef.current.version
-      };
-    } else if (insertedText) {
-      // Insert operation
-      return {
-        id: uuidv4(),
-        type: 'insert',
-        position: start,
-        content: insertedText,
-        userId,
-        timestamp: Date.now(),
-        version: stateRef.current.version
-      };
-    }
-
-    return null;
-  }, [userId]);
-
-  // Handle content changes
+  // Simular conexão WebSocket
   useEffect(() => {
-    if (isApplyingRef.current || content === lastContentRef.current) {
-      return;
-    }
+    setIsConnected(true);
+    console.log(`OT conectado ao documento ${documentId}`);
 
-    const operation = createOperation(lastContentRef.current, content);
-    if (operation) {
-      // Add to pending operations
-      stateRef.current.pendingOperations.push(operation);
-      
-      // Send operation to other collaborators
-      onOperationSend(operation);
-      
-      // Update version
-      stateRef.current.version++;
-    }
+    // Simular recebimento de operações de outros usuários
+    const simulateRemoteOperations = () => {
+      const mockOperations: TextOperation[] = [
+        {
+          id: `op-${Date.now()}-1`,
+          type: 'insert',
+          position: Math.floor(Math.random() * documentState.content.length),
+          content: ' [editado por outro usuário]',
+          timestamp: Date.now(),
+          userId: 'user-2',
+          userName: 'Maria Silva',
+          documentVersion: documentState.version + 1
+        }
+      ];
 
-    lastContentRef.current = content;
-    stateRef.current.content = content;
-  }, [content, createOperation, onOperationSend]);
+      // Simular conflito ocasional
+      if (Math.random() < 0.1) { // 10% chance de conflito
+        setTimeout(() => {
+          handleRemoteOperations(mockOperations);
+        }, Math.random() * 3000 + 1000);
+      }
+    };
 
-  // Apply remote operation
-  const applyRemoteOperation = useCallback((remoteOp: Operation) => {
-    isApplyingRef.current = true;
+    const interval = setInterval(simulateRemoteOperations, 10000);
+    return () => clearInterval(interval);
+  }, [documentId]);
 
-    try {
-      let transformedOp = remoteOp;
+  // Aplicar operação local
+  const applyLocalOperation = useCallback((operation: TextOperation) => {
+    setDocumentState(prev => {
+      const newContent = applyOperationToText(prev.content, operation);
+      const newState = {
+        ...prev,
+        content: newContent,
+        version: prev.version + 1,
+        lastModified: new Date(),
+        activeOperations: [...prev.activeOperations, operation]
+      };
 
-      // Transform against pending operations
-      for (const pendingOp of stateRef.current.pendingOperations) {
-        const [, transformed] = OTEngine.transform(pendingOp, transformedOp);
-        transformedOp = transformed;
+      // Adicionar à fila de operações pendentes
+      operationQueue.current.push(operation);
+      setSyncStatus('syncing');
+
+      // Simular envio para servidor
+      setTimeout(() => {
+        acknowledgePendingOperations([operation]);
+      }, 100 + Math.random() * 500);
+
+      return newState;
+    });
+  }, []);
+
+  // Lidar com operações remotas
+  const handleRemoteOperations = useCallback((operations: TextOperation[]) => {
+    setDocumentState(prev => {
+      let newContent = prev.content;
+      let newVersion = prev.version;
+      const newActiveOperations = [...prev.activeOperations];
+
+      for (const operation of operations) {
+        // Verificar conflitos
+        const hasConflict = checkForConflicts(operation, prev.activeOperations);
+        
+        if (hasConflict) {
+          const conflict: ConflictInfo = {
+            id: `conflict-${Date.now()}`,
+            operations: [operation, ...prev.activeOperations.slice(-3)],
+            type: 'concurrent_edit',
+            severity: 'medium',
+            resolved: false
+          };
+          
+          setConflicts(prevConflicts => [...prevConflicts, conflict]);
+          setSyncStatus('conflict');
+        } else {
+          // Transformar operação baseada no estado atual
+          const transformedOperation = transformOperation(operation, prev.activeOperations);
+          newContent = applyOperationToText(newContent, transformedOperation);
+          newActiveOperations.push(transformedOperation);
+          newVersion = Math.max(newVersion, operation.documentVersion);
+        }
       }
 
-      // Apply the transformed operation
-      const newContent = OTEngine.apply(stateRef.current.content, transformedOp);
-      
-      // Update state
-      stateRef.current.content = newContent;
-      stateRef.current.confirmedOperations.push(transformedOp);
-      stateRef.current.version = Math.max(stateRef.current.version, remoteOp.version + 1);
-      
-      // Update content
-      lastContentRef.current = newContent;
-      onChange(newContent);
-
-    } catch (error) {
-      console.error('Failed to apply remote operation:', error);
-    } finally {
-      isApplyingRef.current = false;
-    }
-  }, [onChange]);
-
-  // Confirm operation (when server acknowledges)
-  const confirmOperation = useCallback((operationId: string) => {
-    const index = stateRef.current.pendingOperations.findIndex(op => op.id === operationId);
-    if (index !== -1) {
-      const [confirmedOp] = stateRef.current.pendingOperations.splice(index, 1);
-      stateRef.current.confirmedOperations.push(confirmedOp);
-    }
+      return {
+        ...prev,
+        content: newContent,
+        version: newVersion,
+        activeOperations: newActiveOperations.slice(-10) // Manter apenas últimas 10
+      };
+    });
   }, []);
 
-  // Handle operation conflicts and resolution
-  const resolveConflicts = useCallback(() => {
-    // Implement conflict resolution strategy
-    // For now, we use operational transform which should prevent most conflicts
-    
-    // Clean up old operations (older than 5 minutes)
-    const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
-    stateRef.current.confirmedOperations = stateRef.current.confirmedOperations.filter(
-      op => op.timestamp > fiveMinutesAgo
+  // Reconhecer operações enviadas
+  const acknowledgePendingOperations = useCallback((operations: TextOperation[]) => {
+    setPendingOperations(prev => 
+      prev.filter(pending => !operations.some(ack => ack.id === pending.id))
     );
+    
+    operationQueue.current = operationQueue.current.filter(
+      pending => !operations.some(ack => ack.id === pending.id)
+    );
+
+    if (operationQueue.current.length === 0) {
+      setSyncStatus('synced');
+    }
   }, []);
 
-  // Periodic conflict resolution
-  useEffect(() => {
-    const interval = setInterval(resolveConflicts, 30000); // Every 30 seconds
-    return () => clearInterval(interval);
-  }, [resolveConflicts]);
+  // Resolver conflito
+  const resolveConflict = useCallback((conflictId: string, resolution: 'accept_local' | 'accept_remote' | 'merge') => {
+    setConflicts(prev => 
+      prev.map(conflict => 
+        conflict.id === conflictId 
+          ? { ...conflict, resolved: true, resolution: resolution === 'merge' ? 'auto_merge' : 'user_choice' }
+          : conflict
+      )
+    );
 
-  // Set up operation receiving
-  useEffect(() => {
-    const unsubscribe = onOperationReceive(applyRemoteOperation);
-    return unsubscribe;
-  }, [onOperationReceive, applyRemoteOperation]);
+    // Se não há mais conflitos não resolvidos, voltar ao estado synced
+    const hasUnresolvedConflicts = conflicts.some(c => !c.resolved && c.id !== conflictId);
+    if (!hasUnresolvedConflicts) {
+      setSyncStatus('synced');
+    }
+  }, [conflicts]);
+
+  return {
+    documentState,
+    pendingOperations,
+    conflicts,
+    isConnected,
+    syncStatus,
+    applyLocalOperation,
+    handleRemoteOperations,
+    resolveConflict
+  };
+};
+
+// Aplicar operação ao texto
+const applyOperationToText = (text: string, operation: TextOperation): string => {
+  switch (operation.type) {
+    case 'insert':
+      return text.slice(0, operation.position) + 
+             (operation.content || '') + 
+             text.slice(operation.position);
+    
+    case 'delete':
+      return text.slice(0, operation.position) + 
+             text.slice(operation.position + (operation.length || 0));
+    
+    case 'retain':
+      return text; // Operação de retenção não altera o texto
+    
+    default:
+      return text;
+  }
+};
+
+// Verificar conflitos entre operações
+const checkForConflicts = (operation: TextOperation, activeOperations: TextOperation[]): boolean => {
+  return activeOperations.some(active => {
+    // Conflito se operações se sobrepõem
+    const activeEnd = active.position + (active.length || active.content?.length || 0);
+    const operationEnd = operation.position + (operation.length || operation.content?.length || 0);
+    
+    return (
+      active.userId !== operation.userId &&
+      operation.timestamp - active.timestamp < 5000 && // 5 segundos de janela
+      (
+        (operation.position >= active.position && operation.position <= activeEnd) ||
+        (operationEnd >= active.position && operationEnd <= activeEnd)
+      )
+    );
+  });
+};
+
+// Transformar operação baseada em operações concorrentes
+const transformOperation = (operation: TextOperation, concurrentOps: TextOperation[]): TextOperation => {
+  let transformedOp = { ...operation };
+  
+  // Ajustar posição baseado em operações anteriores
+  for (const concurrentOp of concurrentOps) {
+    if (concurrentOp.timestamp < operation.timestamp) {
+      if (concurrentOp.type === 'insert' && concurrentOp.position <= transformedOp.position) {
+        transformedOp.position += concurrentOp.content?.length || 0;
+      } else if (concurrentOp.type === 'delete' && concurrentOp.position < transformedOp.position) {
+        transformedOp.position -= concurrentOp.length || 0;
+      }
+    }
+  }
+  
+  return transformedOp;
+};
+
+// Componente de status de sincronização
+interface SyncStatusProps {
+  status: 'synced' | 'syncing' | 'conflict' | 'offline';
+  conflictsCount: number;
+  pendingCount: number;
+}
+
+const SyncStatus: React.FC<SyncStatusProps> = ({ status, conflictsCount, pendingCount }) => {
+  const getStatusConfig = () => {
+    switch (status) {
+      case 'synced':
+        return {
+          icon: CheckCircle,
+          color: 'text-green-600',
+          bg: 'bg-green-50 border-green-200',
+          message: 'Sincronizado'
+        };
+      case 'syncing':
+        return {
+          icon: Clock,
+          color: 'text-blue-600',
+          bg: 'bg-blue-50 border-blue-200',
+          message: `Sincronizando... (${pendingCount})`
+        };
+      case 'conflict':
+        return {
+          icon: AlertTriangle,
+          color: 'text-orange-600',
+          bg: 'bg-orange-50 border-orange-200',
+          message: `${conflictsCount} conflito${conflictsCount > 1 ? 's' : ''}`
+        };
+      case 'offline':
+        return {
+          icon: AlertTriangle,
+          color: 'text-red-600',
+          bg: 'bg-red-50 border-red-200',
+          message: 'Offline'
+        };
+    }
+  };
+
+  const config = getStatusConfig();
+  const Icon = config.icon;
 
   return (
-    <div className={className}>
-      {children}
-      
-      {/* Debug info in development */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="fixed bottom-4 left-4 bg-black/80 text-white text-xs p-2 rounded font-mono z-50">
-          <div>Version: {stateRef.current.version}</div>
-          <div>Pending: {stateRef.current.pendingOperations.length}</div>
-          <div>Confirmed: {stateRef.current.confirmedOperations.length}</div>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className={cn(
+        "flex items-center gap-2 px-3 py-2 text-sm border rounded-lg",
+        config.bg
+      )}
+    >
+      <Icon className={cn("h-4 w-4", config.color)} />
+      <span className={cn("font-medium", config.color)}>
+        {config.message}
+      </span>
+    </motion.div>
+  );
+};
+
+// Componente principal
+export const OperationalTransform: React.FC<OperationalTransformProps> = ({
+  documentId,
+  initialContent,
+  currentUserId,
+  onContentChange,
+  onConflictDetected,
+  onConflictResolved,
+  className
+}) => {
+  const {
+    documentState,
+    pendingOperations,
+    conflicts,
+    isConnected,
+    syncStatus,
+    applyLocalOperation,
+    resolveConflict
+  } = useOperationalTransform(documentId, initialContent, currentUserId);
+
+  // Notificar sobre mudanças de conteúdo
+  useEffect(() => {
+    const lastOperation = documentState.activeOperations[documentState.activeOperations.length - 1];
+    if (lastOperation) {
+      onContentChange(documentState.content, lastOperation);
+    }
+  }, [documentState.content, documentState.activeOperations, onContentChange]);
+
+  // Notificar sobre conflitos
+  useEffect(() => {
+    const unresolvedConflicts = conflicts.filter(c => !c.resolved);
+    if (unresolvedConflicts.length > 0) {
+      const latestConflict = unresolvedConflicts[unresolvedConflicts.length - 1];
+      onConflictDetected(latestConflict);
+    }
+  }, [conflicts, onConflictDetected]);
+
+  // Criar operação de edição
+  const handleTextChange = useCallback((newContent: string, cursorPosition: number) => {
+    const currentContent = documentState.content;
+    
+    if (newContent === currentContent) return;
+
+    // Detectar tipo de mudança
+    let operation: TextOperation;
+    
+    if (newContent.length > currentContent.length) {
+      // Inserção
+      const insertedText = newContent.slice(cursorPosition - (newContent.length - currentContent.length), cursorPosition);
+      operation = {
+        id: `op-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        type: 'insert',
+        position: cursorPosition - insertedText.length,
+        content: insertedText,
+        timestamp: Date.now(),
+        userId: currentUserId,
+        userName: 'Você',
+        documentVersion: documentState.version + 1
+      };
+    } else {
+      // Deleção
+      const deletedLength = currentContent.length - newContent.length;
+      operation = {
+        id: `op-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        type: 'delete',
+        position: cursorPosition,
+        length: deletedLength,
+        timestamp: Date.now(),
+        userId: currentUserId,
+        userName: 'Você',
+        documentVersion: documentState.version + 1
+      };
+    }
+
+    applyLocalOperation(operation);
+  }, [documentState, currentUserId, applyLocalOperation]);
+
+  return (
+    <div className={cn("operational-transform", className)}>
+      {/* Status de Sincronização */}
+      <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
+        <SyncStatus
+          status={syncStatus}
+          conflictsCount={conflicts.filter(c => !c.resolved).length}
+          pendingCount={pendingOperations.length}
+        />
+      </div>
+
+      {/* Conflitos Ativos */}
+      <AnimatePresence>
+        {conflicts.filter(c => !c.resolved).map((conflict) => (
+          <motion.div
+            key={conflict.id}
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            className="fixed top-16 left-1/2 transform -translate-x-1/2 z-40 max-w-md"
+          >
+            <div className="bg-white border border-orange-200 rounded-lg shadow-lg p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Merge className="h-5 w-5 text-orange-600" />
+                <h3 className="font-semibold text-gray-900">Conflito Detectado</h3>
+              </div>
+              
+              <p className="text-sm text-gray-600 mb-4">
+                Edições simultâneas detectadas. Como deseja resolver?
+              </p>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    resolveConflict(conflict.id, 'accept_local');
+                    onConflictResolved(conflict.id, 'accept_local');
+                  }}
+                  className="flex-1 px-3 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                >
+                  Manter Minha Versão
+                </button>
+                <button
+                  onClick={() => {
+                    resolveConflict(conflict.id, 'accept_remote');
+                    onConflictResolved(conflict.id, 'accept_remote');
+                  }}
+                  className="flex-1 px-3 py-2 text-sm bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+                >
+                  Aceitar Remota
+                </button>
+                <button
+                  onClick={() => {
+                    resolveConflict(conflict.id, 'merge');
+                    onConflictResolved(conflict.id, 'merge');
+                  }}
+                  className="flex-1 px-3 py-2 text-sm bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+                >
+                  Mesclar
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </AnimatePresence>
+
+      {/* Operações Recentes */}
+      {documentState.activeOperations.length > 0 && (
+        <div className="fixed bottom-4 right-4 z-30 max-w-sm">
+          <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3">
+            <h4 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
+              <GitBranch className="h-4 w-4" />
+              Operações Recentes
+            </h4>
+            <div className="space-y-1 max-h-32 overflow-y-auto">
+              {documentState.activeOperations.slice(-5).map((op, index) => (
+                <div key={op.id} className="flex items-center gap-2 text-xs text-gray-600">
+                  <div className={cn(
+                    "w-2 h-2 rounded-full",
+                    op.type === 'insert' ? 'bg-green-500' : 'bg-red-500'
+                  )} />
+                  <span className="truncate">
+                    {op.userName} {op.type === 'insert' ? 'inseriu' : 'deletou'} 
+                    {op.content && ` "${op.content.slice(0, 10)}..."`}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </div>
