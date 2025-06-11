@@ -99,8 +99,8 @@ const week2Tasks: ImplementationTask[] = [
     id: 'gesture-enhancement',
     title: 'Mobile Gestures Enhancement',
     description: 'Custom gesture recognition e accessibility gestures',
-    status: 'pending',
-    progress: 0,
+    status: 'completed',
+    progress: 100,
     estimatedTime: '3 dias',
     priority: 'high',
     tags: ['mobile', 'gestures', 'accessibility']
@@ -109,11 +109,55 @@ const week2Tasks: ImplementationTask[] = [
     id: 'adaptive-ui',
     title: 'Adaptive UI System',
     description: 'UI que se adapta ao contexto do usuário',
-    status: 'pending',
-    progress: 0,
+    status: 'completed',
+    progress: 100,
     estimatedTime: '4 dias',
     priority: 'medium',
     tags: ['ux', 'adaptive', 'personalization']
+  }
+];
+
+// Dados das tarefas da Semana 3
+const week3Tasks: ImplementationTask[] = [
+  {
+    id: 'permissions-engine',
+    title: 'Sistema de Permissões Granulares',
+    description: 'RBAC implementation com regras condicionais',
+    status: 'completed',
+    progress: 100,
+    estimatedTime: '4 dias',
+    priority: 'critical',
+    tags: ['security', 'rbac', 'permissions']
+  },
+  {
+    id: 'realtime-collaboration',
+    title: 'Real-time Collaboration',
+    description: 'Live cursors e operational transform',
+    status: 'pending',
+    progress: 0,
+    estimatedTime: '5 dias',
+    priority: 'critical',
+    tags: ['collaboration', 'realtime', 'sync']
+  },
+  {
+    id: 'comments-annotations',
+    title: 'Comments & Annotations',
+    description: 'Threaded comments com @mentions',
+    status: 'pending',
+    progress: 0,
+    estimatedTime: '3 dias',
+    priority: 'high',
+    tags: ['collaboration', 'comments', 'social']
+  },
+  {
+    id: 'workspace-analytics',
+    title: 'Workspace Analytics',
+    description: 'Analytics e insights de colaboração',
+    status: 'pending',
+    progress: 0,
+    estimatedTime: '3 dias',
+    priority: 'medium',
+    tags: ['analytics', 'insights', 'metrics']
   }
 ];
 
@@ -127,11 +171,29 @@ export const StatusWidget: React.FC<StatusWidgetProps> = ({
   compact = false 
 }) => {
   const [isExpanded, setIsExpanded] = useState(!compact);
-  const [currentWeek, setCurrentWeek] = useState(2); // Mudamos para Semana 2
+  const [currentWeek, setCurrentWeek] = useState(3); // Mudamos para Semana 3
 
   // Determinar quais tarefas mostrar baseado na semana atual
-  const currentTasks = currentWeek === 1 ? week1Tasks : week2Tasks;
-  const weekTitle = currentWeek === 1 ? 'Performance & Otimização' : 'UX/UI Refinements';
+  const getCurrentTasks = () => {
+    switch (currentWeek) {
+      case 1: return week1Tasks;
+      case 2: return week2Tasks;
+      case 3: return week3Tasks;
+      default: return week3Tasks;
+    }
+  };
+  
+  const getWeekTitle = () => {
+    switch (currentWeek) {
+      case 1: return 'Performance & Otimização';
+      case 2: return 'UX/UI Refinements';
+      case 3: return 'Collaboration & Permissions';
+      default: return 'Collaboration & Permissions';
+    }
+  };
+
+  const currentTasks = getCurrentTasks();
+  const weekTitle = getWeekTitle();
 
   // Calcular estatísticas
   const totalTasks = currentTasks.length;
