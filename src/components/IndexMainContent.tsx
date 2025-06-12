@@ -4,7 +4,7 @@ import { QuickSwitcher } from '@/components/QuickSwitcher';
 import { CommandPalette } from '@/components/CommandPalette';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { WorkspaceProvider } from '@/components/WorkspaceProvider';
-import { WorkspaceLayout } from '@/components/WorkspaceLayout';
+import { EvernoteLayout } from '@/components/EvernoteLayout';
 import { AppHeader } from '@/components/AppHeader';
 import { MobileHeader } from '@/components/MobileHeader';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
@@ -129,14 +129,7 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
               "flex-1 min-h-0 relative",
               isMobile ? "pt-16 pb-24" : ""
             )}>
-              <WorkspaceLayout
-                activeView={activeView}
-                onViewChange={handleViewChangeFromWorkspace}
-                sidebarOpen={isMobileSidebarOpen}
-                onSidebarOpenChange={onToggleMobileSidebar}
-                isMobile={isMobile}
-                onNavigateToFile={onNavigateToFile}
-              />
+              <EvernoteLayout />
             </div>
           </div>
           

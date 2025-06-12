@@ -2,7 +2,8 @@ import React, { createContext, useContext, ReactNode } from 'react';
 import { useFileSystem } from '@/hooks/useFileSystem';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useNavigation } from '@/hooks/useNavigation';
-import { FileItem } from '@/types'; // Assuming FileItem is defined here or in a common types file
+import { FileItem } from '@/types';
+import { ViewMode } from '@/components/ViewTabs';
 
 // Define the shape of the context value
 export interface FileSystemContextType {

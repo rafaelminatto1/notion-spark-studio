@@ -30,53 +30,70 @@ export const EvernoteLayout: React.FC<EvernoteLayoutProps> = ({
   const [showComments, setShowComments] = useState(false);
   
   const {
-    files,
+    files = [],
     getCurrentFile,
     updateFile,
     createFile,
     deleteFile,
-    favorites,
+    favorites = [],
     toggleFavorite,
     navigateTo,
-  } = useFileSystemContext();
+    loading = false
+  } = useFileSystemContext() || {};
 
   const { checkPermission, state } = usePermissions();
   
   // Fallback seguro para currentUser
-  const currentUserId = state.currentUser?.id || 'default-user';
+  const currentUserId = state?.currentUser?.id || 'default-user';
+  
+  // Loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <div className="animate-spin h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-500">Carregando notas...</p>
+        </div>
+      </div>
+    );
+  }
   
   // Helper functions for permission checks
   const canAccessNotebook = useCallback((notebookId: string) => {
+    if (!checkPermission || !notebookId) return true; // Fallback permissivo
     return checkPermission(currentUserId, notebookId, 'read');
   }, [checkPermission, currentUserId]);
   
   const canEditNotebook = useCallback((notebookId: string) => {
+    if (!checkPermission || !notebookId) return true; // Fallback permissivo
     return checkPermission(currentUserId, notebookId, 'update');
   }, [checkPermission, currentUserId]);
   
   const canCreateNote = useCallback((notebookId: string) => {
+    if (!checkPermission || !notebookId) return true; // Fallback permissivo
     return checkPermission(currentUserId, notebookId, 'create');
   }, [checkPermission, currentUserId]);
 
   // Filtrar apenas notebooks (folders) com permissão de acesso
-  const notebooks = useMemo(() => 
-    files
-      .filter(file => file.type === 'folder')
-      .filter(notebook => canAccessNotebook(notebook.id)),
-    [files, canAccessNotebook]
-  );
+  const notebooks = useMemo(() => {
+    if (!files || !Array.isArray(files)) return [];
+    return files
+      .filter(file => file?.type === 'folder')
+      .filter(notebook => notebook?.id && canAccessNotebook(notebook.id));
+  }, [files, canAccessNotebook]);
   
   // Obter notas do notebook selecionado com permissão de visualização
-  const notesInSelectedNotebook = useMemo(() => 
-    selectedNotebook 
-      ? files
-          .filter(file => file.parentId === selectedNotebook && file.type === 'file')
-          .filter(note => checkPermission(currentUserId, note.id, 'read'))
-      : [],
-    [files, selectedNotebook, checkPermission, currentUserId]
-  );
+  const notesInSelectedNotebook = useMemo(() => {
+    if (!selectedNotebook || !files || !Array.isArray(files)) return [];
+    return files
+      .filter(file => file?.parentId === selectedNotebook && file?.type === 'file')
+      .filter(note => {
+        if (!note?.id || !checkPermission) return true; // Fallback permissivo
+        return checkPermission(currentUserId, note.id, 'read');
+      });
+  }, [files, selectedNotebook, checkPermission, currentUserId]);
 
-  const currentFile = selectedNote ? files.find(f => f.id === selectedNote) : null;
+  const currentFile = selectedNote && files ? files.find(f => f?.id === selectedNote) : null;
 
   const handleNotebookSelect = (notebookId: string) => {
     setSelectedNotebook(notebookId);
