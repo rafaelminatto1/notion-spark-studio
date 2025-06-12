@@ -54,21 +54,29 @@ export const NotesListPanel: React.FC<NotesListPanelProps> = ({
 
   // Memoized filtering and sorting for better performance
   const filteredNotes = useMemo(() => {
+    if (!notes || !Array.isArray(notes)) return [];
+    
     return notes
       .filter(note => {
+        if (!note || !note.name || !note.id) return false;
         const matchesSearch = note.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                              (note.content || '').toLowerCase().includes(searchTerm.toLowerCase());
         const matchesFavorites = !showFavoritesOnly || favorites.includes(note.id);
         return matchesSearch && matchesFavorites;
       })
       .sort((a, b) => {
+        if (!a || !b) return 0;
         switch (sortMode) {
           case 'title':
-            return a.name.localeCompare(b.name);
+            return (a.name || '').localeCompare(b.name || '');
           case 'created':
-            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+            const aCreated = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const bCreated = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return bCreated - aCreated;
           case 'updated':
-            return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+            const aUpdated = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+            const bUpdated = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+            return bUpdated - aUpdated;
           default:
             return 0;
         }
@@ -109,6 +117,8 @@ export const NotesListPanel: React.FC<NotesListPanelProps> = ({
 
   // Memoized render function for better performance
   const renderNoteItem = useCallback((note: FileItem) => {
+    if (!note || !note.id || !note.name) return null;
+    
     const isSelected = selectedNote === note.id;
     const isFavorite = favorites.includes(note.id);
     
@@ -130,7 +140,7 @@ export const NotesListPanel: React.FC<NotesListPanelProps> = ({
             </div>
           </div>
                         <span className="text-xs text-gray-500 flex-shrink-0">
-                {formatDate(note.updatedAt.toString())}
+                {note.updatedAt ? formatDate(note.updatedAt.toString()) : 'N/A'}
               </span>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

@@ -25,8 +25,8 @@ export const NotebooksPanel: React.FC<NotebooksPanelProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedNotebooks, setExpandedNotebooks] = useState<Set<string>>(new Set());
 
-  const filteredNotebooks = notebooks.filter(notebook =>
-    notebook.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredNotebooks = (notebooks || []).filter(notebook =>
+    notebook && notebook.name && notebook.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const toggleNotebookExpansion = (notebookId: string) => {
@@ -93,6 +93,8 @@ export const NotebooksPanel: React.FC<NotebooksPanelProps> = ({
 
           {/* Notebooks */}
           {filteredNotebooks.map((notebook) => {
+            if (!notebook || !notebook.id || !notebook.name) return null;
+            
             const isSelected = selectedNotebook === notebook.id;
             const isExpanded = expandedNotebooks.has(notebook.id);
             
@@ -166,7 +168,7 @@ export const NotebooksPanel: React.FC<NotebooksPanelProps> = ({
       {/* Bottom Actions */}
       <div className="p-4 border-t border-gray-200 bg-white">
         <div className="text-xs text-gray-500 text-center">
-          {notebooks.length} notebook{notebooks.length !== 1 ? 's' : ''}
+          {(notebooks || []).length} notebook{(notebooks || []).length !== 1 ? 's' : ''}
         </div>
       </div>
     </div>

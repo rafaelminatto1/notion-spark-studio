@@ -57,6 +57,8 @@ export const EvernoteLayout: React.FC<EvernoteLayoutProps> = ({
       </div>
     );
   }
+
+
   
   // Helper functions for permission checks
   const canAccessNotebook = useCallback((notebookId: string) => {
@@ -268,6 +270,37 @@ export const EvernoteLayout: React.FC<EvernoteLayoutProps> = ({
       )
     })));
   }, []);
+
+  // Empty state check
+  if (!files || files.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center max-w-md">
+          <div className="text-6xl mb-4">📝</div>
+          <h3 className="text-xl font-medium text-gray-900 mb-2">
+            Bem-vindo ao Notion Spark Studio!
+          </h3>
+          <p className="text-gray-500 mb-6">
+            Comece criando seu primeiro notebook para organizar suas notas
+          </p>
+          <div className="space-y-3">
+            <button
+              onClick={handleCreateNotebook}
+              className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Criar Primeiro Notebook
+            </button>
+            <button
+              onClick={() => handleCreateNote()}
+              className="w-full px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Criar Nota Rápida
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isMobile) {
     return (

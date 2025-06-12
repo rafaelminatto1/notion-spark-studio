@@ -54,15 +54,15 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
 
   // Update local state when note changes
   useEffect(() => {
-    if (note) {
-      setTitle(note.name);
+    if (note && note.name !== undefined) {
+      setTitle(note.name || '');
       setContent(note.content || '');
     }
   }, [note?.id]);
 
   // Auto-save functionality
   useEffect(() => {
-    if (!note || content === note.content) return;
+    if (!note || !note.id || content === note.content) return;
 
     const timeoutId = setTimeout(() => {
       setIsAutoSaving(true);
@@ -78,7 +78,7 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
   }, [content, note, onUpdateNote]);
 
   const handleTitleSave = useCallback(() => {
-    if (note && title.trim() !== note.name) {
+    if (note && note.id && title.trim() !== note.name) {
       onUpdateNote(note.id, { name: title.trim() });
     }
     setIsEditingTitle(false);
