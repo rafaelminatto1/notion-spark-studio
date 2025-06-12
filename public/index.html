@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#3B82F6" />
+    <meta name="background-color" content="#F8FAFC" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Spark Studio" />
+    <meta name="msapplication-TileColor" content="#3B82F6" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Plataforma avançada de notas estilo Notion com IA, colaboração em tempo real e sincronização offline" />
+    <meta name="keywords" content="notas, notion, IA, colaboração, produtividade, markdown, offline" />
+    <meta name="author" content="Notion Spark Studio" />
+    <meta name="robots" content="index,follow" />
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Notion Spark Studio" />
+    <meta property="og:title" content="Notion Spark Studio - Notas Inteligentes" />
+    <meta property="og:description" content="Plataforma avançada de notas estilo Notion com IA, colaboração em tempo real e sincronização offline" />
+    <meta property="og:image" content="/og-image.png" />
+    <meta property="og:url" content="https://notion-spark-studio.vercel.app" />
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Notion Spark Studio - Notas Inteligentes" />
+    <meta name="twitter:description" content="Plataforma avançada de notas estilo Notion com IA, colaboração em tempo real e sincronização offline" />
+    <meta name="twitter:image" content="/twitter-image.png" />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-192x192.png" />
+    
+    <!-- Splash Screens for iOS -->
+    <link rel="apple-touch-startup-image" href="/splash/iphone5_splash.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)" />
+    <link rel="apple-touch-startup-image" href="/splash/iphone6_splash.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" />
+    <link rel="apple-touch-startup-image" href="/splash/iphoneplus_splash.png" media="(device-width: 621px) and (device-height: 1104px) and (-webkit-device-pixel-ratio: 3)" />
+    <link rel="apple-touch-startup-image" href="/splash/iphonex_splash.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)" />
+    <link rel="apple-touch-startup-image" href="/splash/ipad_splash.png" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2)" />
+    <link rel="apple-touch-startup-image" href="/splash/ipadpro1_splash.png" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2)" />
+    <link rel="apple-touch-startup-image" href="/splash/ipadpro3_splash.png" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)" />
+    <link rel="apple-touch-startup-image" href="/splash/ipadpro2_splash.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)" />
+    
+    <!-- Microsoft Tiles -->
+    <meta name="msapplication-TileImage" content="/icons/icon-144x144.png" />
+    <meta name="msapplication-config" content="/browserconfig.xml" />
+    
+    <!-- Additional PWA Features -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="Spark Studio" />
+    
+    <!-- Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+    
+    <!-- Performance Hints -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+    
+    <title>Notion Spark Studio - Notas Inteligentes</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('SW registered: ', registration);
+              
+              // Check for updates
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                if (newWorker) {
+                  newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                      // New content available, notify user
+                      if (confirm('Nova versão disponível! Atualizar agora?')) {
+                        window.location.reload();
+                      }
+                    }
+                  });
+                }
+              });
+            })
+            .catch((registrationError) => {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+      
+      // Install prompt
+      let deferredPrompt;
+      const installButton = document.createElement('button');
+      installButton.textContent = 'Instalar App';
+      installButton.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+        background: #3B82F6;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        display: none;
+        transition: all 0.3s ease;
+      `;
+      
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installButton.style.display = 'block';
+        document.body.appendChild(installButton);
+      });
+      
+      installButton.addEventListener('click', async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          console.log(`User response to install prompt: ${outcome}`);
+          deferredPrompt = null;
+          installButton.style.display = 'none';
+        }
+      });
+      
+      window.addEventListener('appinstalled', () => {
+        console.log('PWA was installed');
+        installButton.style.display = 'none';
+      });
+      
+      // Performance monitoring
+      window.addEventListener('load', () => {
+        if ('performance' in window) {
+          const navigation = performance.getEntriesByType('navigation')[0];
+          const loadTime = navigation.loadEventEnd - navigation.loadEventStart;
+          console.log(`App loaded in ${loadTime}ms`);
+          
+          // Report to analytics if needed
+          if (window.gtag) {
+            gtag('event', 'page_load_time', {
+              value: Math.round(loadTime),
+              custom_parameter: 'load_time_ms'
+            });
+          }
+        }
+      });
+      
+      // Network status monitoring
+      function updateOnlineStatus() {
+        const status = navigator.onLine ? 'online' : 'offline';
+        document.body.setAttribute('data-network-status', status);
+        
+        // Dispatch custom event for app components
+        window.dispatchEvent(new CustomEvent('networkstatuschange', {
+          detail: { online: navigator.onLine }
+        }));
+      }
+      
+      window.addEventListener('online', updateOnlineStatus);
+      window.addEventListener('offline', updateOnlineStatus);
+      updateOnlineStatus(); // Initial status
+    </script>
+    
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html> 
