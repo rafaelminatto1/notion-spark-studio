@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback, useMemo } from 'react';
 import { useCollaboration } from '@/hooks/useCollaboration';
 import { CollaboratorCursor } from './LiveCursors';
 import { Operation } from './OperationalTransform';

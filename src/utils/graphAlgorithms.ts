@@ -4,17 +4,17 @@ export const performClustering = (nodes: GraphNode[]): GraphCluster[] => {
   const clusters: GraphCluster[] = [];
   
   const calculateSimilarity = (node1: GraphNode, node2: GraphNode): number => {
-    const tagSimilarity = jaccard(node1.tags, node2.tags);
-    const collaboratorSimilarity = jaccard(node1.collaborators, node2.collaborators);
+    const tagSimilarity = jaccard(node1.metadata.tags, node2.metadata.tags);
+    const collaboratorSimilarity = jaccard(node1.metadata.collaborators, node2.metadata.collaborators);
     
-    const timeDiff = Math.abs(node1.lastModified.getTime() - node2.lastModified.getTime());
+    const timeDiff = Math.abs(node1.metadata.lastModified.getTime() - node2.metadata.lastModified.getTime());
     const maxTimeDiff = 30 * 24 * 60 * 60 * 1000;
     const timeSimilarity = Math.max(0, 1 - (timeDiff / maxTimeDiff));
     
     const typeSimilarity = node1.type === node2.type ? 1 : 0;
     
-    const sizeDiff = Math.abs(node1.wordCount - node2.wordCount);
-    const maxSize = Math.max(node1.wordCount, node2.wordCount, 1000);
+    const sizeDiff = Math.abs(node1.metadata.wordCount - node2.metadata.wordCount);
+    const maxSize = Math.max(node1.metadata.wordCount, node2.metadata.wordCount, 1000);
     const sizeSimilarity = Math.max(0, 1 - (sizeDiff / maxSize));
     
     return (
@@ -247,7 +247,7 @@ function getMostFrequentTags(nodes: GraphNode[], count: number): string[] {
   const tagCounts = new Map<string, number>();
   
   for (const node of nodes) {
-    for (const tag of node.tags) {
+    for (const tag of node.metadata.tags) {
       tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
     }
   }
@@ -262,7 +262,7 @@ function getMostFrequentCollaborators(nodes: GraphNode[], count: number): string
   const collabCounts = new Map<string, number>();
   
   for (const node of nodes) {
-    for (const collab of node.collaborators) {
+    for (const collab of node.metadata.collaborators) {
       collabCounts.set(collab, (collabCounts.get(collab) || 0) + 1);
     }
   }

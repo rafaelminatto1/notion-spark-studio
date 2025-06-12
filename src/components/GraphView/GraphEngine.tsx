@@ -36,7 +36,7 @@ const smartClustering = (nodes: GraphNode[], links: GraphLink[]) => {
       .map(link => link.source === node.id ? link.target : link.source);
     
     // Agrupar por tags similares
-    const dominantTag = node.tags[0] || 'sem-categoria';
+    const dominantTag = node.metadata.tags[0] || 'sem-categoria';
     const communityId = `cluster-${dominantTag}`;
     
     if (!communities.has(communityId)) {
@@ -165,19 +165,25 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
   const { nodes, links } = useMemo(() => {
     const graphNodes: GraphNode[] = files.map(file => ({
       id: file.id,
-      name: file.name,
+      title: file.name,
       type: file.type as 'file' | 'folder',
       size: Math.max(8, Math.min(20, (file.content?.length || 0) / 100)),
       color: file.type === 'folder' ? '#4f46e5' : 
              file.tags?.includes('importante') ? '#dc2626' : 
              file.tags?.includes('projeto') ? '#059669' : '#6366f1',
-      connections: 0, // Será calculado abaixo
-      lastModified: file.updatedAt || new Date(),
-      wordCount: file.content?.split(' ').length || 0,
-      collaborators: file.collaborators || [],
-      tags: file.tags || [],
-      x: undefined,
-      y: undefined
+      position: { x: Math.random() * 800, y: Math.random() * 600 },
+      connections: [],
+      metadata: {
+        lastModified: file.updatedAt || new Date(),
+        wordCount: file.content?.split(' ').length || 0,
+        collaborators: file.collaborators || [],
+        tags: file.tags || [],
+        fileSize: file.content?.length || 0,
+        language: 'markdown',
+        isTemplate: false,
+        isShared: false,
+        accessLevel: 'private',
+      },
     }));
 
     const graphLinks: GraphLink[] = [];
@@ -198,7 +204,8 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
             type: 'link',
             strength: 0.8,
             color: 'rgba(99, 102, 241, 0.6)',
-            width: 2
+            width: 2,
+            bidirectional: false
           });
         }
       });
@@ -211,7 +218,8 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
           type: 'parent',
           strength: 1.0,
           color: 'rgba(156, 163, 175, 0.4)',
-          width: 1
+          width: 1,
+          bidirectional: false
         });
       }
 
@@ -228,7 +236,8 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
                 type: 'tag',
                 strength: strength * 0.5,
                 color: 'rgba(245, 101, 101, 0.3)',
-                width: 1
+                width: 1,
+                bidirectional: false
               });
             }
           }
@@ -251,10 +260,10 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
     let filteredNodes = nodes.filter(node => {
       if (!filters.nodeTypes.includes(node.type)) return false;
       if (node.connections < filters.minConnections) return false;
-      if (filters.tags.length > 0 && !filters.tags.some(tag => node.tags.includes(tag))) return false;
+      if (filters.tags.length > 0 && !filters.tags.some(tag => node.metadata.tags.includes(tag))) return false;
       
       if (filters.dateRange) {
-        const nodeDate = new Date(node.lastModified);
+        const nodeDate = new Date(node.metadata.lastModified);
         if (nodeDate < filters.dateRange.start || nodeDate > filters.dateRange.end) return false;
       }
       
@@ -290,10 +299,10 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
       },
       nodeLabel: (node: GraphNode) => `
         <div style="background: rgba(0,0,0,0.8); color: white; padding: 8px; border-radius: 4px; font-size: 12px;">
-          <strong>${node.name}</strong><br/>
+          <strong>${node.title}</strong><br/>
           Conexões: ${node.connections}<br/>
-          Palavras: ${node.wordCount}<br/>
-          Tags: ${node.tags.join(', ') || 'Nenhuma'}
+          Palavras: ${node.metadata.wordCount}<br/>
+          Tags: ${node.metadata.tags.join(', ') || 'Nenhuma'}
         </div>
       `,
       linkLabel: (link: GraphLink) => `
@@ -360,7 +369,7 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
           dagMode: 'lr',
           dagLevelDistance: layoutSettings.distance,
           nodeAutoColorBy: (node: GraphNode) => {
-            const date = new Date(node.lastModified);
+            const date = new Date(node.metadata.lastModified);
             const now = new Date();
             const daysDiff = (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24);
             
@@ -382,7 +391,7 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
         setPathStart(node.id);
         toast({
           title: "🎯 Ponto inicial selecionado",
-          description: `${node.name} - Selecione o destino`,
+          description: `${node.title} - Selecione o destino`,
         });
       } else if (!pathEnd && node.id !== pathStart) {
         setPathEnd(node.id);
@@ -397,7 +406,7 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
           toast({
             title: path.length > 1 ? "🛤️ Caminho encontrado!" : "❌ Nenhum caminho encontrado",
             description: path.length > 1 ? 
-              `Caminho: ${path.map(id => filteredData.nodes.find(n => n.id === id)?.name).join(' → ')}` :
+              `Caminho: ${path.map(id => filteredData.nodes.find(n => n.id === id)?.title).join(' → ')}` :
               "Não há conexão entre os nós selecionados",
           });
         }, 500);
@@ -425,7 +434,7 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
     if (sourceNode && targetNode) {
       toast({
         title: "🔗 Link selecionado",
-        description: `${sourceNode.name} ↔ ${targetNode.name} (${link.type})`,
+        description: `${sourceNode.title} ↔ ${targetNode.title} (${link.type})`,
       });
     }
   }, [filteredData, toast]);
@@ -476,7 +485,7 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
       const node = filteredData.nodes.find(n => n.id === currentFileId);
       if (node) {
         setTimeout(() => {
-          graphRef.current.centerAt(node.x, node.y, 1000);
+          graphRef.current.centerAt(node.position.x, node.position.y, 1000);
           graphRef.current.zoom(2, 1000);
         }, 100);
       }

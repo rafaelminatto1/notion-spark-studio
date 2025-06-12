@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import * as d3 from 'd3';
 import { Button } from '@/components/ui/button';
@@ -31,6 +30,12 @@ interface GraphViewProps {
   currentFileId: string | null;
   onFileSelect: (fileId: string) => void;
   className?: string;
+}
+
+// Adicionar tipagem para permitir acesso a fx/fy
+interface GraphNodeWithForce extends GraphNode {
+  fx?: number | null;
+  fy?: number | null;
 }
 
 export const GraphView: React.FC<GraphViewProps> = ({
@@ -210,17 +215,17 @@ export const GraphView: React.FC<GraphViewProps> = ({
       .call(d3.drag<SVGGElement, GraphNode>()
         .on('start', (event, d) => {
           if (!event.active) simulation.alphaTarget(0.3).restart();
-          d.fx = d.x;
-          d.fy = d.y;
+          (d as GraphNodeWithForce).fx = (d as GraphNodeWithForce).x;
+          (d as GraphNodeWithForce).fy = (d as GraphNodeWithForce).y;
         })
         .on('drag', (event, d) => {
-          d.fx = event.x;
-          d.fy = event.y;
+          (d as GraphNodeWithForce).fx = event.x;
+          (d as GraphNodeWithForce).fy = event.y;
         })
         .on('end', (event, d) => {
           if (!event.active) simulation.alphaTarget(0);
-          d.fx = null;
-          d.fy = null;
+          (d as GraphNodeWithForce).fx = null;
+          (d as GraphNodeWithForce).fy = null;
         })
       );
 
@@ -302,12 +307,12 @@ export const GraphView: React.FC<GraphViewProps> = ({
 
     simulation.on('tick', () => {
       link
-        .attr('x1', (d: any) => d.source.x)
-        .attr('y1', (d: any) => d.source.y)
-        .attr('x2', (d: any) => d.target.x)
-        .attr('y2', (d: any) => d.target.y);
+        .attr('x1', (d: any) => (d as GraphNodeWithForce).source.x)
+        .attr('y1', (d: any) => (d as GraphNodeWithForce).source.y)
+        .attr('x2', (d: any) => (d as GraphNodeWithForce).target.x)
+        .attr('y2', (d: any) => (d as GraphNodeWithForce).target.y);
 
-      nodeGroup.attr('transform', (d: any) => `translate(${d.x},${d.y})`);
+      nodeGroup.attr('transform', (d: any) => `translate(${(d as GraphNodeWithForce).x},${(d as GraphNodeWithForce).y})`);
     });
 
     const resetZoom = () => {

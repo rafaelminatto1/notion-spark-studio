@@ -11,6 +11,8 @@ import {
   Zap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
+import { useRealtime } from '@/hooks/useRealtime';
 
 // Tipos para Operational Transform
 export interface TextOperation {
@@ -24,6 +26,9 @@ export interface TextOperation {
   userName: string;
   documentVersion: number;
 }
+
+// Alias para compatibilidade com imports existentes
+export type Operation = TextOperation;
 
 export interface DocumentState {
   content: string;
@@ -347,8 +352,15 @@ export const OperationalTransform: React.FC<OperationalTransformProps> = ({
     isConnected,
     syncStatus,
     applyLocalOperation,
+    handleRemoteOperations,
     resolveConflict
   } = useOperationalTransform(documentId, initialContent, currentUserId);
+
+  const { user } = useAuth();
+  const { subscribe, unsubscribe } = useRealtime();
+  const contentRef = useRef(initialContent);
+  const operationsRef = useRef<Operation[]>([]);
+  const pendingOperationsRef = useRef<Operation[]>([]);
 
   // Notificar sobre mudanças de conteúdo
   useEffect(() => {
@@ -367,45 +379,147 @@ export const OperationalTransform: React.FC<OperationalTransformProps> = ({
     }
   }, [conflicts, onConflictDetected]);
 
-  // Criar operação de edição
-  const handleTextChange = useCallback((newContent: string, cursorPosition: number) => {
-    const currentContent = documentState.content;
-    
-    if (newContent === currentContent) return;
+  const applyOperation = useCallback((operation: Operation, content: string): string => {
+    if (operation.type === 'insert' && operation.text) {
+      return (
+        content.slice(0, operation.position) +
+        operation.text +
+        content.slice(operation.position)
+      );
+    } else if (operation.type === 'delete') {
+      return (
+        content.slice(0, operation.position) +
+        content.slice(operation.position + 1)
+      );
+    }
+    return content;
+  }, []);
 
-    // Detectar tipo de mudança
-    let operation: TextOperation;
-    
-    if (newContent.length > currentContent.length) {
-      // Inserção
-      const insertedText = newContent.slice(cursorPosition - (newContent.length - currentContent.length), cursorPosition);
-      operation = {
-        id: `op-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        type: 'insert',
-        position: cursorPosition - insertedText.length,
-        content: insertedText,
-        timestamp: Date.now(),
-        userId: currentUserId,
-        userName: 'Você',
-        documentVersion: documentState.version + 1
-      };
-    } else {
-      // Deleção
-      const deletedLength = currentContent.length - newContent.length;
-      operation = {
-        id: `op-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        type: 'delete',
-        position: cursorPosition,
-        length: deletedLength,
-        timestamp: Date.now(),
-        userId: currentUserId,
-        userName: 'Você',
-        documentVersion: documentState.version + 1
-      };
+  const transformOperation = useCallback((
+    op1: Operation,
+    op2: Operation
+  ): Operation => {
+    if (op1.timestamp > op2.timestamp) {
+      return op1;
     }
 
-    applyLocalOperation(operation);
-  }, [documentState, currentUserId, applyLocalOperation]);
+    if (op1.type === 'insert' && op2.type === 'insert') {
+      if (op1.position < op2.position) {
+        return op1;
+      } else {
+        return {
+          ...op1,
+          position: op1.position + (op2.text?.length || 0),
+        };
+      }
+    } else if (op1.type === 'insert' && op2.type === 'delete') {
+      if (op1.position <= op2.position) {
+        return op1;
+      } else {
+        return {
+          ...op1,
+          position: op1.position - 1,
+        };
+      }
+    } else if (op1.type === 'delete' && op2.type === 'insert') {
+      if (op1.position < op2.position) {
+        return op1;
+      } else {
+        return {
+          ...op1,
+          position: op1.position + (op2.text?.length || 0),
+        };
+      }
+    } else if (op1.type === 'delete' && op2.type === 'delete') {
+      if (op1.position < op2.position) {
+        return op1;
+      } else if (op1.position > op2.position) {
+        return {
+          ...op1,
+          position: op1.position - 1,
+        };
+      } else {
+        return {
+          ...op1,
+          type: 'delete',
+          position: -1, // Marca como operação já aplicada
+        };
+      }
+    }
+
+    return op1;
+  }, []);
+
+  const handleLocalChange = useCallback((operation: Operation) => {
+    if (!user) return;
+
+    const newOperation: Operation = {
+      ...operation,
+      userId: user.id,
+      timestamp: Date.now(),
+    };
+
+    // Aplicar operação localmente
+    contentRef.current = applyOperation(newOperation, contentRef.current);
+    onContentChange(contentRef.current, newOperation);
+
+    // Adicionar à lista de operações pendentes
+    pendingOperationsRef.current.push(newOperation);
+  }, [user, applyOperation, onContentChange]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = subscribe(`operations:${documentId}`, {
+      event: '*',
+      schema: 'public',
+      table: 'document_operations',
+      filter: `document_id=eq.${documentId}`,
+    }, (payload) => {
+      if (payload.eventType === 'INSERT') {
+        const operation = payload.new as Operation;
+        if (operation.userId === user.id) return;
+
+        // Transformar operação contra operações pendentes
+        let transformedOperation = operation;
+        pendingOperationsRef.current.forEach(pendingOp => {
+          transformedOperation = transformOperation(transformedOperation, pendingOp);
+        });
+
+        // Aplicar operação transformada
+        if (transformedOperation.position >= 0) {
+          contentRef.current = applyOperation(transformedOperation, contentRef.current);
+          onContentChange(contentRef.current, transformedOperation);
+        }
+
+        // Adicionar à lista de operações
+        operationsRef.current.push(operation);
+      }
+    });
+
+    return () => {
+      unsubscribe(channel);
+    };
+  }, [documentId, user, subscribe, unsubscribe, applyOperation, transformOperation, onContentChange]);
+
+  const insertText = useCallback((position: number, text: string) => {
+    handleLocalChange({
+      type: 'insert',
+      position,
+      text,
+      timestamp: Date.now(),
+      userId: user?.id || '',
+    });
+  }, [user, handleLocalChange]);
+
+  const deleteText = useCallback((position: number) => {
+    handleLocalChange({
+      type: 'delete',
+      position,
+      timestamp: Date.now(),
+      userId: user?.id || '',
+    });
+  }, [user, handleLocalChange]);
 
   return (
     <div className={cn("operational-transform", className)}>

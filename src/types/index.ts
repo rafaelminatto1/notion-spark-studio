@@ -14,6 +14,8 @@ export interface FileItem {
   isPublic?: boolean;
   isProtected?: boolean;
   showInSidebar?: boolean;
+  isFavorite?: boolean;
+  isShared?: boolean;
   comments?: Comment[];
 }
 

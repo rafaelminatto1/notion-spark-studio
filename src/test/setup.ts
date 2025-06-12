@@ -1,39 +1,109 @@
 import '@testing-library/jest-dom';
+import { vi } from 'vitest';
 
-// Mock para window.matchMedia
+// Mock do ResizeObserver
+const ResizeObserverMock = vi.fn(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}));
+
+vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+
+// Mock do IntersectionObserver
+const IntersectionObserverMock = vi.fn(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}));
+
+vi.stubGlobal('IntersectionObserver', IntersectionObserverMock);
+
+// Mock do matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: vi.fn().mockImplementation(query => ({
     matches: false,
     media: query,
     onchange: null,
-    addListener: vi.fn(), // deprecated
-    removeListener: vi.fn(), // deprecated
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
     addEventListener: vi.fn(),
     removeEventListener: vi.fn(),
     dispatchEvent: vi.fn(),
   })),
 });
 
-// Mock para ResizeObserver
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}));
+// Mock do localStorage
+const localStorageMock = (() => {
+  let store: Record<string, string> = {};
 
-// Mock para IntersectionObserver
-global.IntersectionObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}));
+  return {
+    getItem: (key: string) => store[key] || null,
+    setItem: (key: string, value: string) => {
+      store[key] = value;
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
+  };
+})();
 
-// Mock para localStorage
-const localStorageMock = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock,
+});
+
+// Mock do sessionStorage
+const sessionStorageMock = (() => {
+  let store: Record<string, string> = {};
+
+  return {
+    getItem: (key: string) => store[key] || null,
+    setItem: (key: string, value: string) => {
+      store[key] = value;
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
+  };
+})();
+
+Object.defineProperty(window, 'sessionStorage', {
+  value: sessionStorageMock,
+});
+
+// Mock do fetch
+global.fetch = vi.fn();
+
+// Mock do console
+const originalConsole = { ...console };
+const mockConsole = {
+  ...console,
+  error: vi.fn(),
+  warn: vi.fn(),
+  log: vi.fn(),
 };
-global.localStorage = localStorageMock; 
+
+Object.defineProperty(global, 'console', {
+  value: mockConsole,
+});
+
+// Restaura console original após cada teste
+afterEach(() => {
+  Object.defineProperty(global, 'console', {
+    value: originalConsole,
+  });
+});
+
+// Limpa todos os mocks após cada teste
+afterEach(() => {
+  vi.clearAllMocks();
+  localStorageMock.clear();
+  sessionStorageMock.clear();
+}); 

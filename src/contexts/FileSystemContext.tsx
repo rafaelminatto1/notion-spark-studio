@@ -51,6 +51,7 @@ export const FileSystemProvider: React.FC<{ children: ReactNode }> = ({ children
       fileSystem.setCurrentFileId(fileId);
       navigation.navigateTo(fileId);
     },
+    setActiveView: navigation.setActiveView
   };
 
   return (

@@ -97,7 +97,7 @@ export const GraphSidebar: React.FC<GraphSidebarProps> = ({
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-medium text-white truncate">
-                    {nodeData.name}
+                    {nodeData.title}
                   </h3>
                   <p className="text-sm text-gray-400 capitalize">
                     {nodeData.type}
@@ -108,7 +108,7 @@ export const GraphSidebar: React.FC<GraphSidebarProps> = ({
               <div className="space-y-2 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-gray-400">Conexões:</span>
-                  <span className="text-white">{nodeData.connections}</span>
+                  <span className="text-white">{nodeData.connections.length}</span>
                 </div>
                 
                 <div className="flex items-center justify-between">
@@ -125,23 +125,23 @@ export const GraphSidebar: React.FC<GraphSidebarProps> = ({
                   </div>
                 )}
 
-                {nodeData.wordCount && (
+                {nodeData.metadata.wordCount && (
                   <div className="flex items-center justify-between">
                     <span className="text-gray-400">Palavras:</span>
-                    <span className="text-white">{nodeData.wordCount}</span>
+                    <span className="text-white">{nodeData.metadata.wordCount}</span>
                   </div>
                 )}
               </div>
             </Card>
 
-            {nodeData.tags && nodeData.tags.length > 0 && (
+            {nodeData.metadata.tags && nodeData.metadata.tags.length > 0 && (
               <Card className="p-4 bg-white/5 border-white/10">
                 <div className="flex items-center gap-2 mb-3">
                   <Tag className="h-4 w-4 text-orange-400" />
                   <h4 className="font-medium text-white">Tags</h4>
                 </div>
                 <div className="flex flex-wrap gap-1">
-                  {nodeData.tags.map((tag, index) => (
+                  {nodeData.metadata.tags.map((tag, index) => (
                     <Badge
                       key={index}
                       variant="secondary"
@@ -154,14 +154,14 @@ export const GraphSidebar: React.FC<GraphSidebarProps> = ({
               </Card>
             )}
 
-            {nodeData.collaborators && nodeData.collaborators.length > 0 && (
+            {nodeData.metadata.collaborators && nodeData.metadata.collaborators.length > 0 && (
               <Card className="p-4 bg-white/5 border-white/10">
                 <div className="flex items-center gap-2 mb-3">
                   <Users className="h-4 w-4 text-blue-400" />
                   <h4 className="font-medium text-white">Colaboradores</h4>
                 </div>
                 <div className="space-y-1">
-                  {nodeData.collaborators.map((collaborator, index) => (
+                  {nodeData.metadata.collaborators.map((collaborator, index) => (
                     <div
                       key={index}
                       className="text-sm text-gray-300 bg-white/5 rounded px-2 py-1"
@@ -182,7 +182,7 @@ export const GraphSidebar: React.FC<GraphSidebarProps> = ({
                 <div className="flex justify-between">
                   <span className="text-gray-400">Última modificação:</span>
                   <span className="text-gray-300">
-                    {formatDate(nodeData.lastModified)}
+                    {formatDate(nodeData.metadata.lastModified)}
                   </span>
                 </div>
                 
@@ -241,6 +241,36 @@ export const GraphSidebar: React.FC<GraphSidebarProps> = ({
                       </Badge>
                     </div>
                   )}
+
+                  {nodeData.metadata.wordCount && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-400">Palavras:</span>
+                      <span className="text-white">{nodeData.metadata.wordCount}</span>
+                    </div>
+                  )}
+
+                  {nodeData.metadata.tags && nodeData.metadata.tags.length > 0 && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-gray-400">Tags:</span>
+                      {nodeData.metadata.tags.map((tag, index) => (
+                        <span key={index} className="bg-purple-700 text-white px-2 py-0.5 rounded text-xs mr-1 mb-1">{tag}</span>
+                      ))}
+                    </div>
+                  )}
+
+                  {nodeData.metadata.collaborators && nodeData.metadata.collaborators.length > 0 && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-gray-400">Colaboradores:</span>
+                      {nodeData.metadata.collaborators.map((collaborator, index) => (
+                        <span key={index} className="bg-blue-700 text-white px-2 py-0.5 rounded text-xs mr-1 mb-1">{collaborator}</span>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-400">Modificado:</span>
+                    <span className="text-white">{formatDate(nodeData.metadata.lastModified)}</span>
+                  </div>
                 </div>
               </Card>
             )}

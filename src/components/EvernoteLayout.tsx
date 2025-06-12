@@ -321,175 +321,53 @@ export const EvernoteLayout: React.FC<EvernoteLayoutProps> = ({
   }
 
   return (
-    <div className="h-full bg-white">
-      <ResizablePanelGroup direction="horizontal" className="h-full">
-        {/* Sidebar esquerda - Notebooks */}
-        <ResizablePanel
-          defaultSize={20}
-          minSize={15}
-          maxSize={30}
-          className="bg-gray-50 border-r border-gray-200"
-        >
-          <NotebooksPanel
-            notebooks={notebooks}
-            selectedNotebook={selectedNotebook}
-            onNotebookSelect={handleNotebookSelect}
-            onCreateNotebook={handleCreateNotebook}
-            onCreateNote={handleCreateNote}
-            isMobile={false}
-          />
-        </ResizablePanel>
-
-        <ResizableHandle className="w-1 bg-gray-200 hover:bg-gray-300 transition-colors" />
-
-        {/* Painel central - Lista de Notas */}
-        <ResizablePanel
-          defaultSize={30}
-          minSize={20}
-          maxSize={50}
-          className="bg-white border-r border-gray-200"
-        >
-          <NotesListPanel
-            notes={notesInSelectedNotebook}
-            selectedNote={selectedNote}
-            selectedNotebook={selectedNotebook}
-            onNoteSelect={handleNoteSelect}
-            onCreateNote={() => handleCreateNote(selectedNotebook || undefined)}
-            onDeleteNote={deleteFile}
-            favorites={favorites}
-            onToggleFavorite={toggleFavorite}
-          />
-        </ResizablePanel>
-
-        <ResizableHandle className="w-1 bg-gray-200 hover:bg-gray-300 transition-colors" />
-
-        {/* Painel direita - Editor com colaboração */}
-        <ResizablePanel
-          defaultSize={showComments ? 40 : 50}
-          minSize={30}
-          className="bg-white relative"
-        >
-          <div className="h-full flex flex-col">
-            {/* Controles de colaboração */}
-            <div className="border-b border-gray-200 p-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {showCollaboration && currentFile && (
-                    <PresenceAwareness 
-                      documentId={currentFile.id}
-                      currentUser={{
-                        id: currentUserId,
-                        name: 'Usuário Atual',
-                        email: 'usuario@exemplo.com',
-                        avatar: '',
-                        color: '#3B82F6'
-                      }}
-                    />
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setShowComments(!showComments)}
-                    className={cn(
-                      "px-3 py-1 text-sm border rounded transition-colors",
-                      showComments 
-                        ? "bg-blue-500 text-white border-blue-500" 
-                        : "bg-white text-gray-600 border-gray-300 hover:border-gray-400"
-                    )}
-                  >
-                    Comentários ({commentThreads.length})
-                  </button>
-                  <button
-                    onClick={() => setShowCollaboration(!showCollaboration)}
-                    className={cn(
-                      "px-3 py-1 text-sm border rounded transition-colors",
-                      showCollaboration 
-                        ? "bg-green-500 text-white border-green-500" 
-                        : "bg-white text-gray-600 border-gray-300 hover:border-gray-400"
-                    )}
-                  >
-                    Colaboração
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Editor */}
-            <div className="flex-1 relative">
-              <NoteEditorPanel
-                note={currentFile}
-                onUpdateNote={updateFile}
-                onToggleFavorite={toggleFavorite}
-                isFavorite={currentFile ? favorites.includes(currentFile.id) : false}
-              />
-
-              {/* Componentes de colaboração */}
-              {showCollaboration && currentFile && (
-                <>
-                  <LiveCursors 
-                    currentUser={{
-                      id: currentUserId,
-                      name: 'Usuário Atual',
-                      email: 'usuario@exemplo.com',
-                      avatar: '',
-                      color: '#3B82F6'
-                    }}
-                    documentId={currentFile.id}
-                  />
-                  <OperationalTransform
-                    documentId={currentFile.id}
-                    initialContent={currentFile.content || ''}
-                    currentUserId={currentUserId}
-                    onContentChange={handleContentChange}
-                    onConflictDetected={handleConflictDetected}
-                    onConflictResolved={handleConflictResolved}
-                  />
-                </>
-              )}
-
-              {/* Resolver conflitos */}
-              {activeConflicts.length > 0 && (
-                <ConflictResolver
-                  conflicts={activeConflicts}
-                  originalContent={currentFile?.content || ''}
-                  currentUserId={currentUserId}
-                  onResolveConflict={handleResolveConflict}
-                  onDismissConflict={(conflictId) => 
-                    setActiveConflicts(prev => prev.filter(c => c.id !== conflictId))
-                  }
+    <div className="h-full w-full bg-[#f7faff] dark:bg-[#181f2a] flex flex-row">
+      {/* Sidebar esquerda - Notebooks */}
+      <div className="hidden md:flex w-64 flex-shrink-0 h-full sticky top-0 z-40 border-r border-[#e3e8f0] dark:border-[#232b3b] bg-white dark:bg-[#1a2233]">
+        <NotebooksPanel
+          notebooks={notebooks}
+          selectedNotebook={selectedNotebook}
+          onNotebookSelect={handleNotebookSelect}
+          onCreateNotebook={handleCreateNotebook}
+          onCreateNote={handleCreateNote}
+          isMobile={false}
+        />
+      </div>
+      {/* Painel central - Lista de Notas */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Header do Editor */}
+        <div className="sticky top-0 z-30 bg-white/95 dark:bg-[#181f2a]/95 backdrop-blur-xl border-b border-[#e3e8f0] dark:border-[#232b3b]">
+          {/* Aqui pode entrar o AppHeader se desejar header global */}
+        </div>
+        <div className="flex flex-row h-full">
+          {/* Lista de Notas */}
+          <div className="w-80 border-r border-[#e3e8f0] dark:border-[#232b3b] bg-[#f7faff] dark:bg-[#232b3b] h-full">
+            <NotesListPanel
+              notes={notesInSelectedNotebook}
+              selectedNote={selectedNote}
+              selectedNotebook={selectedNotebook}
+              onNoteSelect={handleNoteSelect}
+              onCreateNote={() => handleCreateNote(selectedNotebook || undefined)}
+              onDeleteNote={deleteFile}
+              favorites={favorites}
+              onToggleFavorite={toggleFavorite}
+            />
+          </div>
+          {/* Editor de Nota */}
+          <div className="flex-1 flex flex-col h-full">
+            <div className="flex-1 flex flex-col justify-start items-center p-0 md:p-8">
+              <div className="w-full max-w-4xl">
+                <NoteEditorPanel
+                  note={currentFile}
+                  onUpdateNote={updateFile}
+                  onToggleFavorite={toggleFavorite}
+                  isFavorite={currentFile ? favorites.includes(currentFile.id) : false}
                 />
-              )}
+              </div>
             </div>
           </div>
-        </ResizablePanel>
-
-        {/* Painel de comentários (condicional) */}
-        {showComments && (
-          <>
-            <ResizableHandle className="w-1 bg-gray-200 hover:bg-gray-300 transition-colors" />
-            <ResizablePanel
-              defaultSize={30}
-              minSize={20}
-              maxSize={40}
-              className="bg-gray-50 border-l border-gray-200"
-            >
-              <div className="h-full p-4">
-                <ThreadedComments
-                  threads={commentThreads}
-                  currentUserId={currentUserId}
-                  currentUserName="Usuário Atual"
-                  onAddComment={handleAddComment}
-                  onEditComment={handleEditComment}
-                  onDeleteComment={handleDeleteComment}
-                  onReactToComment={handleReactToComment}
-                  onResolveThread={handleResolveThread}
-                  onPinComment={handlePinComment}
-                />
-              </div>
-            </ResizablePanel>
-          </>
-        )}
-      </ResizablePanelGroup>
+        </div>
+      </div>
     </div>
   );
 }; 

@@ -10,7 +10,7 @@ import { GraphViewRevolutionary } from '../GraphViewRevolutionary';
 import { useGraphData } from '@/hooks/useGraphData';
 import { useNetworkAnalysis } from '@/hooks/useNetworkAnalysis';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
-import { GraphFilters, GraphNode } from './types';
+import { GraphFilters, GraphNode, LayoutSettings, ViewMode } from './types';
 import { FileItem } from '@/types';
 import { findShortestPath } from '@/utils/graphAlgorithms';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -36,7 +36,7 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [showPathFinding, setShowPathFinding] = useState(false);
   const [pathFindingStart, setPathFindingStart] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState('force');
+  const [viewMode, setViewMode] = useState<ViewMode>('force');
   const [showAnalytics, setShowAnalytics] = useState(true);
   const [showMinimap, setShowMinimap] = useState(true);
   const [showHelp, setShowHelp] = useState(false);
@@ -54,13 +54,13 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
     dateRange: null,
   });
 
-  const [layoutSettings, setLayoutSettings] = useState({
-    physics: true,
+  const [layoutSettings, setLayoutSettings] = useState<LayoutSettings>({
+    type: 'force',
+    forceStrength: 1,
     linkDistance: 120,
-    chargeStrength: -400,
-    clustering: true,
-    centerStrength: 0.3,
     collisionRadius: 15,
+    centeringStrength: 0.3,
+    physics: true,
   });
 
   const { nodes, links, isLoading, isProcessing, error, refreshData } = useGraphData(files, filters);
@@ -399,7 +399,7 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
           <div className="flex items-center gap-4">
             <span>{nodes.length} nós</span>
             <span>{links.length} links</span>
-            {selectedNode && <span>Selecionado: {selectedNodeData?.name}</span>}
+            {selectedNode && <span>Selecionado: {selectedNodeData?.title}</span>}
           </div>
           <div className="flex items-center gap-2">
             <button

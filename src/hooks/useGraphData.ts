@@ -26,16 +26,17 @@ export const useGraphData = (files: FileItem[], filters: GraphFilters): UseGraph
       
       return {
         id: file.id,
-        name: file.name,
+        title: file.name, // Alterado para title conforme interface padrão
         type: (file.type as any) || 'file',
         size,
         color,
-        connections,
-        lastModified: new Date(file.updatedAt || file.createdAt),
-        wordCount: calculateWordCount(file.content || ''),
-        collaborators: extractCollaborators(file),
-        tags: extractTags(file),
+        position: { x: Math.random() * 800, y: Math.random() * 600 }, // Posição inicial
+        connections: [], // Será calculado em uma estrutura diferente
         metadata: {
+          lastModified: new Date(file.updatedAt || file.createdAt),
+          wordCount: calculateWordCount(file.content || ''),
+          collaborators: extractCollaborators(file),
+          tags: extractTags(file),
           fileSize: file.content?.length || 0,
           language: detectLanguage(file.content || ''),
           isTemplate: file.name.toLowerCase().includes('template'),
@@ -97,7 +98,7 @@ export const useGraphData = (files: FileItem[], filters: GraphFilters): UseGraph
               strength: Math.min(0.7, sharedTags.length * 0.2),
               color: '#8b5cf6',
               width: Math.min(3, sharedTags.length),
-              bidirectional: true,
+              bidirectional: false,
             });
           }
         }
@@ -166,8 +167,8 @@ export const useGraphData = (files: FileItem[], filters: GraphFilters): UseGraph
       if (filters.searchQuery) {
         const query = filters.searchQuery.toLowerCase();
         filteredNodes = filteredNodes.filter(node =>
-          node.name.toLowerCase().includes(query) ||
-          node.tags.some(tag => tag.toLowerCase().includes(query))
+          node.title.toLowerCase().includes(query) ||
+          node.metadata.tags.some(tag => tag.toLowerCase().includes(query))
         );
       }
 

@@ -1,427 +1,470 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Filter, X, FileText, Hash, Calendar, SortAsc, SortDesc, Clock } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { Search, Filter, Calendar, Tag, FileText, Folder, Star, Clock, User, X, ArrowRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { useGlobalSearch, SearchResult } from '@/hooks/useGlobalSearch';
-import { useDebounceSearch } from '@/hooks/useDebounceSearch';
-import { useSearchCache } from '@/hooks/useAdvancedCache';
-import { useMicroInteractions, SmartSkeleton } from '@/components/ui/MicroInteractions';
-import { FileItem } from '@/types';
+import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { FileItem } from '@/types';
+
+interface SearchFilter {
+  type: 'all' | 'notes' | 'notebooks';
+  dateRange: {
+    from?: Date;
+    to?: Date;
+  };
+  tags: string[];
+  favorites: boolean;
+  recent: boolean;
+}
+
+interface SearchResult {
+  item: FileItem;
+  matchType: 'title' | 'content' | 'tag';
+  matchText: string;
+  relevanceScore: number;
+}
 
 interface GlobalSearchProps {
   files: FileItem[];
-  onFileSelect: (fileId: string) => void;
+  onSelectResult: (fileId: string) => void;
+  onClose?: () => void;
   placeholder?: string;
   className?: string;
 }
 
 export const GlobalSearch: React.FC<GlobalSearchProps> = ({
   files,
-  onFileSelect,
-  placeholder = "Buscar páginas, conteúdo, tags...",
+  onSelectResult,
+  onClose,
   className
 }) => {
+  const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
-  const [datePickerOpen, setDatePickerOpen] = useState(false);
-  
-  // Hook de micro-interactions
-  const { triggerInteractionFeedback, showToast } = useMicroInteractions();
-  
-  // Hook de cache avançado para resultados de busca
-  const searchCache = useSearchCache();
-  
-  // Hook de debounced search com analytics
-  const {
-    query,
-    setQuery: setDebouncedQuery,
-    debouncedQuery,
-    isSearching: isDebouncing,
-    trackSearchResult
-  } = useDebounceSearch('', {
-    delay: 300,
-    minQueryLength: 2,
-    enableAnalytics: true,
-    onAnalytics: (data) => {
-      console.log('Search Analytics:', data);
-      
-      // Cache resultados de busca para acesso rápido
-      if (data.hasResults) {
-        const cacheKey = `search:${data.query}:${JSON.stringify(filters)}`;
-        searchCache.set(cacheKey, {
-          results: searchResults,
-          timestamp: Date.now(),
-          query: data.query,
-          filters: filters
-        }, { priority: 'medium', ttl: 2 * 60 * 1000 }); // 2 minutos
-      }
-    }
+  const [filters, setFilters] = useState<SearchFilter>({
+    type: 'all',
+    dateRange: {},
+    tags: [],
+    favorites: false,
+    recent: false
   });
-  
-  const { 
-    filters, 
-    setFilters, 
-    searchResults, 
-    isSearching,
-    clearFilters,
-    addTagFilter,
-    removeTagFilter
-  } = useGlobalSearch(files);
+  const [selectedResultIndex, setSelectedResultIndex] = useState(0);
 
-  const allTags = Array.from(
-    new Set(files.flatMap(f => f.tags || []))
-  ).sort();
+  // Get all unique tags from files
+  const availableTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    files.forEach(file => {
+      file.tags?.forEach(tag => tagSet.add(tag));
+    });
+    return Array.from(tagSet).sort();
+  }, [files]);
 
-  const handleFileSelect = (fileId: string) => {
-    // Trigger haptic feedback
-    triggerInteractionFeedback('click');
-    
-    // Track search result
-    trackSearchResult(searchResults.length);
-    
-    onFileSelect(fileId);
-    setIsOpen(false);
-    setDebouncedQuery('');
-    
-    // Show success feedback
-    showToast('Arquivo aberto com sucesso', 'success', { duration: 2000 });
-  };
+  // Advanced search logic
+  const searchResults = useMemo(() => {
+    if (!query.trim()) return [];
 
-  const hasActiveFilters = filters.tags.length > 0 || filters.dateRange || filters.type !== 'all';
+    const results: SearchResult[] = [];
+    const searchTerm = query.toLowerCase();
 
-  // Keyboard shortcut
+    files.forEach(file => {
+      // Apply filters first
+      if (filters.type !== 'all') {
+        if (filters.type === 'notes' && file.type === 'folder') return;
+        if (filters.type === 'notebooks' && file.type === 'file') return;
+      }
+
+      if (filters.favorites && !file.isFavorite) return;
+
+      if (filters.recent) {
+        const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        if (new Date(file.updatedAt) < dayAgo) return;
+      }
+
+      if (filters.dateRange.from || filters.dateRange.to) {
+        const fileDate = new Date(file.updatedAt);
+        if (filters.dateRange.from && fileDate < filters.dateRange.from) return;
+        if (filters.dateRange.to && fileDate > filters.dateRange.to) return;
+      }
+
+      if (filters.tags.length > 0) {
+        const hasTag = filters.tags.some(tag => file.tags?.includes(tag));
+        if (!hasTag) return;
+      }
+
+      // Search in title
+      if (file.name.toLowerCase().includes(searchTerm)) {
+        results.push({
+          item: file,
+          matchType: 'title',
+          matchText: file.name,
+          relevanceScore: file.name.toLowerCase().indexOf(searchTerm) === 0 ? 100 : 80
+        });
+      }
+
+      // Search in content
+      if (file.content && file.content.toLowerCase().includes(searchTerm)) {
+        const contentIndex = file.content.toLowerCase().indexOf(searchTerm);
+        const startIndex = Math.max(0, contentIndex - 50);
+        const endIndex = Math.min(file.content.length, contentIndex + 50);
+        const matchText = file.content.substring(startIndex, endIndex);
+
+        results.push({
+          item: file,
+          matchType: 'content',
+          matchText: `...${matchText}...`,
+          relevanceScore: 60
+        });
+      }
+
+      // Search in tags
+      const matchingTags = file.tags?.filter(tag => 
+        tag.toLowerCase().includes(searchTerm)
+      );
+      if (matchingTags && matchingTags.length > 0) {
+        results.push({
+          item: file,
+          matchType: 'tag',
+          matchText: matchingTags.join(', '),
+          relevanceScore: 70
+        });
+      }
+    });
+
+    // Remove duplicates and sort by relevance
+    const uniqueResults = results.reduce((acc, result) => {
+      const existing = acc.find(r => r.item.id === result.item.id);
+      if (!existing || result.relevanceScore > existing.relevanceScore) {
+        return acc.filter(r => r.item.id !== result.item.id).concat(result);
+      }
+      return acc;
+    }, [] as SearchResult[]);
+
+    return uniqueResults.sort((a, b) => b.relevanceScore - a.relevanceScore);
+  }, [query, files, filters]);
+
+  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        setIsOpen(true);
-      }
-      if (e.key === 'Escape') {
-        setIsOpen(false);
+      if (!isOpen) return;
+
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          setSelectedResultIndex(prev => 
+            Math.min(prev + 1, searchResults.length - 1)
+          );
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          setSelectedResultIndex(prev => Math.max(prev - 1, 0));
+          break;
+        case 'Enter':
+          e.preventDefault();
+          if (searchResults[selectedResultIndex]) {
+            handleSelectResult(searchResults[selectedResultIndex].item.id);
+          }
+          break;
+        case 'Escape':
+          e.preventDefault();
+          handleClose();
+          break;
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [isOpen, searchResults, selectedResultIndex]);
 
-  // Convert our date range format to react-day-picker format
-  const selectedDateRange = filters.dateRange ? {
-    from: filters.dateRange.start,
-    to: filters.dateRange.end
-  } : undefined;
+  const handleSelectResult = useCallback((fileId: string) => {
+    onSelectResult(fileId);
+    setIsOpen(false);
+    setQuery('');
+    onClose?.();
+  }, [onSelectResult, onClose]);
+
+  const handleClose = useCallback(() => {
+    setIsOpen(false);
+    setQuery('');
+    onClose?.();
+  }, [onClose]);
+
+  const toggleFilter = (filterType: keyof SearchFilter, value: any) => {
+    setFilters(prev => ({
+      ...prev,
+      [filterType]: value
+    }));
+  };
+
+  const toggleTag = (tag: string) => {
+    setFilters(prev => ({
+      ...prev,
+      tags: prev.tags.includes(tag)
+        ? prev.tags.filter(t => t !== tag)
+        : [...prev.tags, tag]
+    }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      type: 'all',
+      dateRange: {},
+      tags: [],
+      favorites: false,
+      recent: false
+    });
+  };
+
+  const hasActiveFilters = filters.type !== 'all' || filters.favorites || filters.recent || 
+    filters.tags.length > 0 || filters.dateRange.from || filters.dateRange.to;
 
   return (
     <div className={cn("relative", className)}>
+      {/* Search Input */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
         <Input
           value={query}
-          onChange={(e) => setDebouncedQuery(e.target.value)}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setIsOpen(true);
+            setSelectedResultIndex(0);
+          }}
           onFocus={() => setIsOpen(true)}
-          placeholder={placeholder}
-          className="pl-10 pr-24 bg-notion-dark-hover border-notion-dark-border"
+          placeholder="Buscar em todas as notas e notebooks..."
+          className="pl-10 pr-10"
         />
-        <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "h-6 w-6 p-0",
-                  hasActiveFilters && "bg-notion-purple text-white"
-                )}
-              >
-                <Filter className="h-3 w-3" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80 bg-notion-dark border-notion-dark-border">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium text-white">Filtros Avançados</h4>
-                  {hasActiveFilters && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={clearFilters}
-                      className="text-gray-400 hover:text-white"
-                    >
-                      Limpar
-                    </Button>
-                  )}
-                </div>
-                
-                {/* Tags Filter */}
-                <div>
-                  <label className="text-sm font-medium text-gray-300 mb-2 block">Tags</label>
-                  <div className="flex flex-wrap gap-1 max-h-32 overflow-y-auto">
-                    {allTags.map(tag => (
-                      <Badge
-                        key={tag}
-                        variant={filters.tags.includes(tag) ? "default" : "outline"}
-                        className="cursor-pointer text-xs"
-                        onClick={() => {
-                          if (filters.tags.includes(tag)) {
-                            removeTagFilter(tag);
-                          } else {
-                            addTagFilter(tag);
-                          }
-                        }}
-                      >
-                        <Hash className="h-2 w-2 mr-1" />
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Date Range Filter */}
-                <div>
-                  <label className="text-sm font-medium text-gray-300 mb-2 block">Data</label>
-                  <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-start text-left">
-                        <Calendar className="h-4 w-4 mr-2" />
-                        {filters.dateRange ? (
-                          `${format(filters.dateRange.start, 'dd/MM/yyyy')} - ${format(filters.dateRange.end, 'dd/MM/yyyy')}`
-                        ) : (
-                          'Selecionar período'
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <CalendarComponent
-                        mode="range"
-                        selected={selectedDateRange}
-                        onSelect={(range) => {
-                          if (range?.from && range?.to) {
-                            setFilters(prev => ({
-                              ...prev,
-                              dateRange: { start: range.from!, end: range.to! }
-                            }));
-                          } else {
-                            setFilters(prev => ({
-                              ...prev,
-                              dateRange: null
-                            }));
-                          }
-                          setDatePickerOpen(false);
-                        }}
-                        numberOfMonths={2}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-
-                {/* Sort Options */}
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="text-sm font-medium text-gray-300 mb-1 block">Ordenar por</label>
-                    <Select 
-                      value={filters.sortBy} 
-                      onValueChange={(value) => setFilters(prev => ({ ...prev, sortBy: value as any }))}
-                    >
-                      <SelectTrigger className="h-8">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="relevance">Relevância</SelectItem>
-                        <SelectItem value="modified">Modificado</SelectItem>
-                        <SelectItem value="created">Criado</SelectItem>
-                        <SelectItem value="name">Nome</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-300 mb-1 block">Ordem</label>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8 w-full"
-                      onClick={() => setFilters(prev => ({ 
-                        ...prev, 
-                        sortOrder: prev.sortOrder === 'desc' ? 'asc' : 'desc' 
-                      }))}
-                    >
-                      {filters.sortOrder === 'desc' ? <SortDesc className="h-3 w-3" /> : <SortAsc className="h-3 w-3" />}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
-          
-          <kbd className="px-1.5 py-0.5 text-xs bg-notion-dark-hover border border-notion-dark-border rounded">
-            ⌘K
-          </kbd>
-        </div>
+        {query && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+            onClick={() => setQuery('')}
+          >
+            <X className="h-3 w-3" />
+          </Button>
+        )}
       </div>
 
-      {/* Active Filters Display */}
-      {hasActiveFilters && (
-        <div className="flex flex-wrap gap-1 mt-2">
-          {filters.tags.map(tag => (
-            <Badge key={tag} variant="secondary" className="text-xs">
-              <Hash className="h-2 w-2 mr-1" />
-              {tag}
-              <X 
-                className="h-2 w-2 ml-1 cursor-pointer" 
-                onClick={() => removeTagFilter(tag)}
-              />
-            </Badge>
-          ))}
-          {filters.dateRange && (
-            <Badge variant="secondary" className="text-xs">
-              <Calendar className="h-2 w-2 mr-1" />
-              {format(filters.dateRange.start, 'dd/MM')} - {format(filters.dateRange.end, 'dd/MM')}
-              <X 
-                className="h-2 w-2 ml-1 cursor-pointer" 
-                onClick={() => setFilters(prev => ({ ...prev, dateRange: null }))}
-              />
-            </Badge>
-          )}
-        </div>
-      )}
+      {/* Search Results Dropdown */}
+      {isOpen && (
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-xl z-50 max-h-96 overflow-hidden">
+          {/* Filters Bar */}
+          <div className="p-3 border-b border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={cn(
+                      "h-7 text-xs",
+                      hasActiveFilters && "border-blue-500 bg-blue-50 text-blue-700"
+                    )}
+                  >
+                    <Filter className="h-3 w-3 mr-1" />
+                    Filtros {hasActiveFilters && `(${
+                      [filters.type !== 'all', filters.favorites, filters.recent, 
+                       filters.tags.length > 0, filters.dateRange.from || filters.dateRange.to]
+                       .filter(Boolean).length
+                    })`}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 p-4" align="start">
+                  <div className="space-y-4">
+                    {/* Type Filter */}
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Tipo</label>
+                      <div className="flex gap-2">
+                        {[
+                          { value: 'all', label: 'Todos', icon: Search },
+                          { value: 'notes', label: 'Notas', icon: FileText },
+                          { value: 'notebooks', label: 'Notebooks', icon: Folder }
+                        ].map(({ value, label, icon: Icon }) => (
+                          <Button
+                            key={value}
+                            variant={filters.type === value ? 'default' : 'outline'}
+                            size="sm"
+                            className="h-8 text-xs"
+                            onClick={() => toggleFilter('type', value)}
+                          >
+                            <Icon className="h-3 w-3 mr-1" />
+                            {label}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
 
-      {/* Search Results */}
-      {isOpen && (query || hasActiveFilters) && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-notion-dark border border-notion-dark-border rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
-          <SmartSkeleton 
-            lines={4} 
-            isLoading={isSearching || isDebouncing}
-            className="p-4"
-          >
-            {searchResults.length === 0 ? (
-              <div className="p-4 text-center text-gray-400">
-                <Search className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p>Nenhum resultado encontrado</p>
-                {query && <p className="text-xs mt-1">Tente termos diferentes ou use filtros</p>}
+                    {/* Quick Filters */}
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Filtros Rápidos</label>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Checkbox
+                            checked={filters.favorites}
+                            onCheckedChange={(checked) => toggleFilter('favorites', checked)}
+                          />
+                          <Star className="h-3 w-3 text-yellow-500" />
+                          <span className="text-sm">Apenas favoritos</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Checkbox
+                            checked={filters.recent}
+                            onCheckedChange={(checked) => toggleFilter('recent', checked)}
+                          />
+                          <Clock className="h-3 w-3 text-blue-500" />
+                          <span className="text-sm">Modificados nas últimas 24h</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Tags Filter */}
+                    {availableTags.length > 0 && (
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Tags</label>
+                        <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto">
+                          {availableTags.map(tag => (
+                            <Badge
+                              key={tag}
+                              variant={filters.tags.includes(tag) ? 'default' : 'outline'}
+                              className="text-xs cursor-pointer"
+                              onClick={() => toggleTag(tag)}
+                            >
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex justify-between">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={clearFilters}
+                        disabled={!hasActiveFilters}
+                      >
+                        Limpar Filtros
+                      </Button>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+
+              {/* Active Filters Display */}
+              {filters.tags.map(tag => (
+                <Badge
+                  key={tag}
+                  variant="secondary"
+                  className="text-xs"
+                >
+                  <Tag className="h-2 w-2 mr-1" />
+                  {tag}
+                  <X
+                    className="h-2 w-2 ml-1 cursor-pointer"
+                    onClick={() => toggleTag(tag)}
+                  />
+                </Badge>
+              ))}
+            </div>
+          </div>
+
+          {/* Results */}
+          <div className="max-h-72 overflow-y-auto">
+            {query.trim() === '' ? (
+              <div className="p-4 text-center text-slate-500">
+                <Search className="h-8 w-8 mx-auto mb-2 text-slate-300" />
+                <p className="text-sm">Digite para buscar...</p>
+              </div>
+            ) : searchResults.length === 0 ? (
+              <div className="p-4 text-center text-slate-500">
+                <Search className="h-8 w-8 mx-auto mb-2 text-slate-300" />
+                <p className="text-sm">Nenhum resultado encontrado</p>
+                <p className="text-xs text-slate-400 mt-1">
+                  Tente ajustar os filtros ou termos de busca
+                </p>
               </div>
             ) : (
-              <div className="p-2">
-                <div className="text-xs text-gray-400 px-2 py-1 mb-2">
-                  {searchResults.length} resultado(s) encontrado(s)
-                </div>
-                {searchResults.map(result => (
-                  <SearchResultItem
-                    key={result.file.id}
-                    result={result}
-                    query={query}
-                    onSelect={() => handleFileSelect(result.file.id)}
-                  />
-                ))}
-              </div>
+              searchResults.map((result, index) => (
+                <button
+                  key={`${result.item.id}-${result.matchType}`}
+                  className={cn(
+                    "w-full flex items-start gap-3 p-3 text-left hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors border-b border-slate-100 dark:border-slate-600 last:border-b-0",
+                    index === selectedResultIndex && "bg-blue-50 dark:bg-blue-900/20"
+                  )}
+                  onClick={() => handleSelectResult(result.item.id)}
+                >
+                  <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                    {result.item.type === 'folder' ? (
+                      <Folder className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                    ) : (
+                      <FileText className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                    )}
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h4 className="font-medium text-sm text-slate-900 dark:text-slate-100 truncate">
+                        {result.item.name}
+                      </h4>
+                      {result.item.isFavorite && (
+                        <Star className="h-3 w-3 text-yellow-500 fill-current" />
+                      )}
+                      <Badge variant="outline" className="text-xs">
+                        {result.matchType === 'title' && 'Título'}
+                        {result.matchType === 'content' && 'Conteúdo'}
+                        {result.matchType === 'tag' && 'Tag'}
+                      </Badge>
+                    </div>
+                    
+                    <p className="text-xs text-slate-500 truncate">
+                      {result.matchText}
+                    </p>
+                    
+                    <div className="flex items-center gap-2 mt-1">
+                      <Clock className="h-2 w-2 text-slate-400" />
+                      <span className="text-xs text-slate-400">
+                        {new Date(result.item.updatedAt).toLocaleDateString('pt-BR')}
+                      </span>
+                      {result.item.tags && result.item.tags.length > 0 && (
+                        <>
+                          <span className="text-slate-300">•</span>
+                          <div className="flex gap-1">
+                            {result.item.tags.slice(0, 2).map(tag => (
+                              <Badge key={tag} variant="outline" className="text-xs h-4">
+                                {tag}
+                              </Badge>
+                            ))}
+                            {result.item.tags.length > 2 && (
+                              <span className="text-xs text-slate-400">
+                                +{result.item.tags.length - 2}
+                              </span>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <ArrowRight className="h-3 w-3 text-slate-400 flex-shrink-0" />
+                </button>
+              ))
             )}
-          </SmartSkeleton>
-        </div>
-      )}
+          </div>
 
-      {/* Click outside to close */}
-      {isOpen && (
-        <div 
-          className="fixed inset-0 z-40" 
-          onClick={() => setIsOpen(false)}
-        />
-      )}
-    </div>
-  );
-};
-
-interface SearchResultItemProps {
-  result: SearchResult;
-  query: string;
-  onSelect: () => void;
-}
-
-const SearchResultItem: React.FC<SearchResultItemProps> = ({
-  result,
-  query,
-  onSelect
-}) => {
-  const highlightText = (text: string, highlight: string, startIndex?: number, endIndex?: number) => {
-    if (!highlight.trim()) return text;
-    
-    if (startIndex !== undefined && endIndex !== undefined) {
-      return (
-        <>
-          {text.slice(0, startIndex)}
-          <mark className="bg-yellow-400 text-black px-0.5 rounded">
-            {text.slice(startIndex, endIndex)}
-          </mark>
-          {text.slice(endIndex)}
-        </>
-      );
-    }
-    
-    const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
-    return parts.map((part, index) => (
-      part.toLowerCase() === highlight.toLowerCase() ? (
-        <mark key={index} className="bg-yellow-400 text-black px-0.5 rounded">{part}</mark>
-      ) : part
-    ));
-  };
-
-  return (
-    <div
-      className="p-3 rounded-md hover:bg-notion-dark-hover cursor-pointer transition-colors border-l-2 border-transparent hover:border-notion-purple"
-      onClick={onSelect}
-    >
-      <div className="flex items-center gap-2 mb-2">
-        {result.file.emoji && <span className="text-sm">{result.file.emoji}</span>}
-        <FileText className="h-4 w-4 text-gray-400" />
-        <span className="font-medium text-white">
-          {highlightText(result.file.name, query)}
-        </span>
-        <div className="ml-auto flex items-center gap-2 text-xs text-gray-500">
-          <Clock className="h-3 w-3" />
-          {format(result.file.updatedAt, 'dd/MM')}
-        </div>
-      </div>
-      
-      {result.matches.map((match, index) => (
-        <div key={index} className="text-sm text-gray-300 ml-6 mb-1">
-          {match.type === 'content' && match.context && (
-            <p className="bg-notion-dark-hover px-2 py-1 rounded text-xs">
-              {match.startIndex !== undefined && match.endIndex !== undefined ? (
-                <>
-                  {match.context.slice(0, match.startIndex)}
-                  <mark className="bg-yellow-400 text-black px-0.5 rounded">
-                    {match.context.slice(match.startIndex, match.endIndex)}
-                  </mark>
-                  {match.context.slice(match.endIndex)}
-                </>
-              ) : (
-                highlightText(match.context, query)
-              )}
-            </p>
-          )}
-          {match.type === 'tag' && (
-            <div className="flex items-center gap-1">
-              <Hash className="h-3 w-3 text-notion-purple" />
-              <span className="text-notion-purple">
-                {highlightText(match.text, query)}
-              </span>
+          {/* Footer */}
+          {searchResults.length > 0 && (
+            <div className="p-2 border-t border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50">
+              <div className="flex items-center justify-between text-xs text-slate-500">
+                <span>
+                  {searchResults.length} resultado{searchResults.length !== 1 ? 's' : ''} encontrado{searchResults.length !== 1 ? 's' : ''}
+                </span>
+                <span>
+                  ↑↓ navegar • Enter selecionar • Esc fechar
+                </span>
+              </div>
             </div>
-          )}
-        </div>
-      ))}
-      
-      {result.file.tags && result.file.tags.length > 0 && (
-        <div className="flex items-center gap-1 mt-2 ml-6 flex-wrap">
-          {result.file.tags.slice(0, 4).map(tag => (
-            <Badge key={tag} variant="outline" className="text-xs">
-              <Hash className="h-2 w-2 mr-1" />
-              {tag}
-            </Badge>
-          ))}
-          {result.file.tags.length > 4 && (
-            <span className="text-xs text-gray-400">+{result.file.tags.length - 4}</span>
           )}
         </div>
       )}

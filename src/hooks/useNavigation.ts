@@ -1,9 +1,11 @@
 
 import { useState, useCallback } from 'react';
+import { ViewMode } from '@/components/ViewTabs';
 
 export const useNavigation = () => {
   const [history, setHistory] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
+  const [activeView, setActiveView] = useState<ViewMode>('dashboard');
 
   const navigateTo = useCallback((fileId: string) => {
     setHistory(prev => {
@@ -39,6 +41,8 @@ export const useNavigation = () => {
     canGoBack,
     canGoForward,
     history,
-    currentIndex
+    currentIndex,
+    activeView,
+    setActiveView
   };
 };

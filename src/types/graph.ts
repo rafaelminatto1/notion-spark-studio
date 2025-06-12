@@ -33,7 +33,7 @@ export interface GraphNode {
 export interface GraphLink {
   source: string | GraphNode;
   target: string | GraphNode;
-  type: 'link' | 'backlink' | 'tag' | 'parent';
+  type: 'link' | 'backlink' | 'tag' | 'parent' | 'reference';
   strength: number;
   bidirectional: boolean;
   weight?: number;

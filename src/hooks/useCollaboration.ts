@@ -3,6 +3,8 @@ import { CollaboratorCursor } from '@/components/collaboration/LiveCursors';
 import { Operation } from '@/components/collaboration/OperationalTransform';
 import { Comment } from '@/components/collaboration/CommentsSystem';
 import { v4 as uuidv4 } from 'uuid';
+import { useAuth } from './useAuth';
+import { useRealtime } from './useRealtime';
 
 export interface CollaborationState {
   cursors: CollaboratorCursor[];
@@ -11,6 +13,8 @@ export interface CollaborationState {
   isOnline: boolean;
   latency: number;
   conflictCount: number;
+  presences: Record<string, any>;
+  conflicts: any[];
 }
 
 interface UseCollaborationProps {
@@ -32,13 +36,17 @@ export const useCollaboration = ({
   onContentChange,
   onError
 }: UseCollaborationProps) => {
+  const { user } = useAuth();
+  const { subscribe, unsubscribe } = useRealtime();
   const [state, setState] = useState<CollaborationState>({
     cursors: [],
     operations: [],
     comments: [],
     isOnline: false,
     latency: 0,
-    conflictCount: 0
+    conflictCount: 0,
+    presences: {},
+    conflicts: [],
   });
 
   const wsRef = useRef<WebSocket | null>(null);
@@ -445,6 +453,344 @@ export const useCollaboration = ({
     return () => clearInterval(interval);
   }, []);
 
+  // Inscrever-se em comentários
+  useEffect(() => {
+    if (!user) return;
+
+    const commentsChannel = subscribe(`comments:${documentId}`, {
+      event: '*',
+      schema: 'public',
+      table: 'comments',
+      filter: `document_id=eq.${documentId}`,
+    }, (payload) => {
+      if (payload.eventType === 'INSERT') {
+        setState(prev => ({
+          ...prev,
+          comments: [...prev.comments, payload.new as Comment],
+        }));
+      } else if (payload.eventType === 'UPDATE') {
+        setState(prev => ({
+          ...prev,
+          comments: prev.comments.map(comment =>
+            comment.id === payload.new.id ? payload.new as Comment : comment
+          ),
+        }));
+      } else if (payload.eventType === 'DELETE') {
+        setState(prev => ({
+          ...prev,
+          comments: prev.comments.filter(comment => comment.id !== payload.old.id),
+        }));
+      }
+    });
+
+    return () => {
+      unsubscribe(commentsChannel);
+    };
+  }, [documentId, user, subscribe, unsubscribe]);
+
+  // Inscrever-se em cursores
+  useEffect(() => {
+    if (!user) return;
+
+    const cursorsChannel = subscribe(`cursors:${documentId}`, {
+      event: '*',
+      schema: 'public',
+      table: 'cursor_positions',
+      filter: `document_id=eq.${documentId}`,
+    }, (payload) => {
+      if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+        const cursor = payload.new;
+        setState(prev => ({
+          ...prev,
+          cursors: {
+            ...prev.cursors,
+            [cursor.userId]: cursor,
+          },
+        }));
+      } else if (payload.eventType === 'DELETE') {
+        const cursor = payload.old;
+        setState(prev => {
+          const newCursors = { ...prev.cursors };
+          delete newCursors[cursor.userId];
+          return {
+            ...prev,
+            cursors: newCursors,
+          };
+        });
+      }
+    });
+
+    return () => {
+      unsubscribe(cursorsChannel);
+    };
+  }, [documentId, user, subscribe, unsubscribe]);
+
+  // Inscrever-se em presenças
+  useEffect(() => {
+    if (!user) return;
+
+    const presencesChannel = subscribe(`presence:${documentId}`, {
+      event: '*',
+      schema: 'public',
+      table: 'presences',
+      filter: `document_id=eq.${documentId}`,
+    }, (payload) => {
+      if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+        const presence = payload.new;
+        setState(prev => ({
+          ...prev,
+          presences: {
+            ...prev.presences,
+            [presence.userId]: presence,
+          },
+        }));
+      } else if (payload.eventType === 'DELETE') {
+        const presence = payload.old;
+        setState(prev => {
+          const newPresences = { ...prev.presences };
+          delete newPresences[presence.userId];
+          return {
+            ...prev,
+            presences: newPresences,
+          };
+        });
+      }
+    });
+
+    return () => {
+      unsubscribe(presencesChannel);
+    };
+  }, [documentId, user, subscribe, unsubscribe]);
+
+  // Inscrever-se em conflitos
+  useEffect(() => {
+    if (!user) return;
+
+    const conflictsChannel = subscribe(`conflicts:${documentId}`, {
+      event: '*',
+      schema: 'public',
+      table: 'document_conflicts',
+      filter: `document_id=eq.${documentId}`,
+    }, (payload) => {
+      if (payload.eventType === 'INSERT') {
+        setState(prev => ({
+          ...prev,
+          conflicts: [...prev.conflicts, payload.new],
+        }));
+      } else if (payload.eventType === 'UPDATE') {
+        setState(prev => ({
+          ...prev,
+          conflicts: prev.conflicts.map(conflict =>
+            conflict.id === payload.new.id ? payload.new : conflict
+          ),
+        }));
+      } else if (payload.eventType === 'DELETE') {
+        setState(prev => ({
+          ...prev,
+          conflicts: prev.conflicts.filter(conflict => conflict.id !== payload.old.id),
+        }));
+      }
+    });
+
+    return () => {
+      unsubscribe(conflictsChannel);
+    };
+  }, [documentId, user, subscribe, unsubscribe]);
+
+  // Inscrever-se em operações
+  useEffect(() => {
+    if (!user) return;
+
+    const operationsChannel = subscribe(`operations:${documentId}`, {
+      event: '*',
+      schema: 'public',
+      table: 'document_operations',
+      filter: `document_id=eq.${documentId}`,
+    }, (payload) => {
+      if (payload.eventType === 'INSERT') {
+        setState(prev => ({
+          ...prev,
+          operations: [...prev.operations, payload.new],
+        }));
+      }
+    });
+
+    return () => {
+      unsubscribe(operationsChannel);
+    };
+  }, [documentId, user, subscribe, unsubscribe]);
+
+  const addCommentRealtime = useCallback(async (comment: Comment) => {
+    if (!user) return;
+
+    const channel = subscribe(`comments:${documentId}`, {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'comments',
+      filter: `document_id=eq.${documentId}`,
+    }, () => {});
+
+    try {
+      await channel.send({
+        type: 'broadcast',
+        event: 'comment_add',
+        payload: comment,
+      });
+    } finally {
+      unsubscribe(channel);
+    }
+  }, [documentId, user, subscribe, unsubscribe]);
+
+  const updateCommentRealtime = useCallback(async (comment: Comment) => {
+    if (!user) return;
+
+    const channel = subscribe(`comments:${documentId}`, {
+      event: 'UPDATE',
+      schema: 'public',
+      table: 'comments',
+      filter: `document_id=eq.${documentId}`,
+    }, () => {});
+
+    try {
+      await channel.send({
+        type: 'broadcast',
+        event: 'comment_update',
+        payload: comment,
+      });
+    } finally {
+      unsubscribe(channel);
+    }
+  }, [documentId, user, subscribe, unsubscribe]);
+
+  const deleteCommentRealtime = useCallback(async (commentId: string) => {
+    if (!user) return;
+
+    const channel = subscribe(`comments:${documentId}`, {
+      event: 'DELETE',
+      schema: 'public',
+      table: 'comments',
+      filter: `document_id=eq.${documentId}`,
+    }, () => {});
+
+    try {
+      await channel.send({
+        type: 'broadcast',
+        event: 'comment_delete',
+        payload: { commentId },
+      });
+    } finally {
+      unsubscribe(channel);
+    }
+  }, [documentId, user, subscribe, unsubscribe]);
+
+  const updateCursorRealtime = useCallback(async (x: number, y: number) => {
+    if (!user) return;
+
+    const channel = subscribe(`cursors:${documentId}`, {
+      event: '*',
+      schema: 'public',
+      table: 'cursor_positions',
+      filter: `document_id=eq.${documentId}`,
+    }, () => {});
+
+    try {
+      await channel.send({
+        type: 'broadcast',
+        event: 'cursor_move',
+        payload: {
+          userId: user.id,
+          userName: user.name,
+          userAvatar: user.avatar,
+          x,
+          y,
+          lastUpdate: Date.now(),
+        },
+      });
+    } finally {
+      unsubscribe(channel);
+    }
+  }, [documentId, user, subscribe, unsubscribe]);
+
+  const updatePresenceRealtime = useCallback(async (section?: string) => {
+    if (!user) return;
+
+    const channel = subscribe(`presence:${documentId}`, {
+      event: '*',
+      schema: 'public',
+      table: 'presences',
+      filter: `document_id=eq.${documentId}`,
+    }, () => {});
+
+    try {
+      await channel.send({
+        type: 'broadcast',
+        event: 'presence_update',
+        payload: {
+          userId: user.id,
+          userName: user.name,
+          userAvatar: user.avatar,
+          lastSeen: Date.now(),
+          status: 'online',
+          currentSection: section,
+        },
+      });
+    } finally {
+      unsubscribe(channel);
+    }
+  }, [documentId, user, subscribe, unsubscribe]);
+
+  const applyOperationRealtime = useCallback(async (operation: any) => {
+    if (!user) return;
+
+    const channel = subscribe(`operations:${documentId}`, {
+      event: '*',
+      schema: 'public',
+      table: 'document_operations',
+      filter: `document_id=eq.${documentId}`,
+    }, () => {});
+
+    try {
+      await channel.send({
+        type: 'broadcast',
+        event: 'operation_apply',
+        payload: {
+          ...operation,
+          userId: user.id,
+          userName: user.name,
+          timestamp: Date.now(),
+        },
+      });
+    } finally {
+      unsubscribe(channel);
+    }
+  }, [documentId, user, subscribe, unsubscribe]);
+
+  const resolveConflictRealtime = useCallback(async (conflictId: string, resolution: 'keep' | 'discard' | 'merge') => {
+    if (!user) return;
+
+    const channel = subscribe(`conflicts:${documentId}`, {
+      event: '*',
+      schema: 'public',
+      table: 'document_conflicts',
+      filter: `document_id=eq.${documentId}`,
+    }, () => {});
+
+    try {
+      await channel.send({
+        type: 'broadcast',
+        event: 'conflict_resolve',
+        payload: {
+          conflictId,
+          resolution,
+          resolvedBy: user.id,
+          resolvedAt: Date.now(),
+        },
+      });
+    } finally {
+      unsubscribe(channel);
+    }
+  }, [documentId, user, subscribe, unsubscribe]);
+
   return {
     // State
     ...state,
@@ -485,6 +831,15 @@ export const useCollaboration = ({
       activeUsers: state.cursors.length,
       latency: state.latency,
       conflicts: state.conflictCount
-    })
+    }),
+
+    // Realtime management
+    addCommentRealtime,
+    updateCommentRealtime,
+    deleteCommentRealtime,
+    updateCursorRealtime,
+    updatePresenceRealtime,
+    applyOperationRealtime,
+    resolveConflictRealtime,
   };
 }; 

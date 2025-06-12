@@ -86,7 +86,7 @@ export const GraphTooltip: React.FC<GraphTooltipProps> = ({
             </div>
             <div className="flex-1 min-w-0">
               <h4 className="font-semibold text-white text-sm truncate">
-                {node.name}
+                {node.title}
               </h4>
               <p className="text-xs text-gray-400 capitalize">
                 {node.type}
@@ -114,7 +114,7 @@ export const GraphTooltip: React.FC<GraphTooltipProps> = ({
           </motion.div>
 
           {/* Tags */}
-          {node.tags && node.tags.length > 0 && (
+          {node.metadata.tags && node.metadata.tags.length > 0 && (
             <motion.div 
               className="mb-3"
               initial={{ opacity: 0, y: 5 }}
@@ -122,7 +122,7 @@ export const GraphTooltip: React.FC<GraphTooltipProps> = ({
               transition={{ delay: 0.2 }}
             >
               <div className="flex flex-wrap gap-1">
-                {node.tags.slice(0, 3).map((tag, index) => (
+                {node.metadata.tags.slice(0, 3).map((tag, index) => (
                   <Badge 
                     key={tag} 
                     variant="secondary" 
@@ -131,9 +131,9 @@ export const GraphTooltip: React.FC<GraphTooltipProps> = ({
                     #{tag}
                   </Badge>
                 ))}
-                {node.tags.length > 3 && (
+                {node.metadata.tags.length > 3 && (
                   <Badge variant="secondary" className="text-xs bg-white/5 text-gray-400">
-                    +{node.tags.length - 3}
+                    +{node.metadata.tags.length - 3}
                   </Badge>
                 )}
               </div>
@@ -154,23 +154,23 @@ export const GraphTooltip: React.FC<GraphTooltipProps> = ({
               </div>
             )}
             
-            {node.updatedAt && (
+            {node.metadata.lastModified && (
               <div className="flex items-center gap-2 text-xs text-gray-500">
                 <Clock className="h-3 w-3" />
-                <span>Atualizado {formatDate(node.updatedAt)}</span>
+                <span>Atualizado {formatDate(node.metadata.lastModified)}</span>
               </div>
             )}
 
-            {node.fileCount && (
+            {node.metadata.collaborators && node.metadata.collaborators.length > 0 && (
               <div className="flex items-center gap-2 text-xs text-gray-500">
                 <Users className="h-3 w-3" />
-                <span>{node.fileCount} arquivos</span>
+                <span>{node.metadata.collaborators.length} colaboradores</span>
               </div>
             )}
           </motion.div>
 
           {/* Path/Location */}
-          {node.path && (
+          {node.metadata.path && (
             <motion.div 
               className="mt-3 pt-2 border-t border-white/10"
               initial={{ opacity: 0, y: 5 }}
@@ -178,7 +178,7 @@ export const GraphTooltip: React.FC<GraphTooltipProps> = ({
               transition={{ delay: 0.3 }}
             >
               <p className="text-xs text-gray-500 font-mono truncate">
-                {node.path}
+                {node.metadata.path}
               </p>
             </motion.div>
           )}

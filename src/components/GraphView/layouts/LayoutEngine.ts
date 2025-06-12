@@ -144,7 +144,7 @@ export class LayoutEngine {
   private static applyTimelineLayout(nodes: GraphNode[], config: LayoutConfig): GraphNode[] {
     // Ordenar por data de modificação
     const sortedNodes = [...nodes].sort((a, b) => 
-      new Date(a.lastModified).getTime() - new Date(b.lastModified).getTime()
+      new Date(a.metadata.lastModified).getTime() - new Date(b.metadata.lastModified).getTime()
     );
     
     const timelineWidth = config.width * 0.8;

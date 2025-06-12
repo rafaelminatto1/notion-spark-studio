@@ -69,7 +69,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
         <div className="flex-1 max-w-xs md:max-w-lg mx-2 md:mx-4">
           <GlobalSearch 
             files={files}
-            onFileSelect={onNavigateToFile}
+            onSelectResult={onNavigateToFile}
             placeholder="Buscar notas, templates..."
           />
         </div>

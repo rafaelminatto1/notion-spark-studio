@@ -17,6 +17,13 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { TextOperation, ConflictInfo } from './OperationalTransform';
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Avatar } from '@/components/ui/avatar';
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 // Tipos para resolução de conflitos
 export interface ConflictResolution {
@@ -40,13 +47,22 @@ export interface MergeStrategy {
   discards: string[];
 }
 
+interface Conflict {
+  id: string;
+  documentId: string;
+  userId: string;
+  userName: string;
+  userAvatar?: string;
+  content: string;
+  timestamp: number;
+  resolved: boolean;
+  resolvedBy?: string;
+  resolvedAt?: number;
+}
+
 interface ConflictResolverProps {
-  conflicts: ConflictInfo[];
-  originalContent: string;
-  currentUserId: string;
-  onResolveConflict: (resolution: ConflictResolution) => void;
-  onDismissConflict: (conflictId: string) => void;
-  className?: string;
+  conflicts: Conflict[];
+  onResolve: (conflictId: string, resolution: 'keep' | 'discard' | 'merge') => void;
 }
 
 // Hook para estratégias de merge
@@ -329,220 +345,111 @@ const StrategyPreview: React.FC<StrategyPreviewProps> = ({ strategy, isSelected,
 // Componente principal
 export const ConflictResolver: React.FC<ConflictResolverProps> = ({
   conflicts,
-  originalContent,
-  currentUserId,
-  onResolveConflict,
-  onDismissConflict,
-  className
+  onResolve,
 }) => {
-  const [selectedConflictId, setSelectedConflictId] = useState<string | null>(null);
-  const [selectedStrategyIndex, setSelectedStrategyIndex] = useState(0);
-  const [customContent, setCustomContent] = useState('');
-  const [isCustomEditing, setIsCustomEditing] = useState(false);
+  const { user } = useAuth();
+  const [selectedConflict, setSelectedConflict] = useState<Conflict | null>(null);
+  const [showDialog, setShowDialog] = useState(false);
 
-  const activeConflicts = conflicts.filter(c => !c.resolved);
-  const selectedConflict = activeConflicts.find(c => c.id === selectedConflictId) || activeConflicts[0];
-  
-  const strategies = useMergeStrategies(selectedConflict, originalContent);
+  const handleConflictClick = useCallback((conflict: Conflict) => {
+    setSelectedConflict(conflict);
+    setShowDialog(true);
+  }, []);
 
-  // Auto-selecionar primeiro conflito
-  useEffect(() => {
-    if (activeConflicts.length > 0 && !selectedConflictId) {
-      setSelectedConflictId(activeConflicts[0].id);
-    }
-  }, [activeConflicts, selectedConflictId]);
-
-  // Resetar estratégia selecionada quando mudar conflito
-  useEffect(() => {
-    setSelectedStrategyIndex(0);
-    setIsCustomEditing(false);
-    setCustomContent('');
-  }, [selectedConflictId]);
-
-  const handleResolveConflict = useCallback((strategy: 'auto' | 'custom') => {
+  const handleResolve = useCallback((resolution: 'keep' | 'discard' | 'merge') => {
     if (!selectedConflict) return;
+    onResolve(selectedConflict.id, resolution);
+    setShowDialog(false);
+    setSelectedConflict(null);
+  }, [selectedConflict, onResolve]);
 
-    const resolution: ConflictResolution = {
-      id: `res-${Date.now()}`,
-      conflictId: selectedConflict.id,
-      strategy: strategy === 'custom' ? 'manual' : 'auto_merge',
-      mergedContent: strategy === 'custom' ? customContent : strategies[selectedStrategyIndex]?.preview || originalContent,
-      confidence: strategy === 'custom' ? 1.0 : strategies[selectedStrategyIndex]?.confidence || 0.5,
-      preservedOperations: selectedConflict.operations,
-      discardedOperations: [],
-      timestamp: new Date(),
-      resolvedBy: currentUserId
-    };
+  const unresolvedConflicts = conflicts.filter(conflict => !conflict.resolved);
 
-    onResolveConflict(resolution);
-    
-    // Ir para próximo conflito ou fechar
-    const nextConflict = activeConflicts.find(c => c.id !== selectedConflictId);
-    if (nextConflict) {
-      setSelectedConflictId(nextConflict.id);
-    } else {
-      setSelectedConflictId(null);
-    }
-  }, [selectedConflict, strategies, selectedStrategyIndex, customContent, currentUserId, onResolveConflict, activeConflicts, selectedConflictId, originalContent]);
-
-  if (activeConflicts.length === 0) {
+  if (unresolvedConflicts.length === 0) {
     return null;
   }
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className={cn("fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4", className)}
-      >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
-            <div className="flex items-center gap-3">
-              <GitMerge className="h-6 w-6 text-orange-600" />
+    <>
+      <div className="space-y-4">
+        {unresolvedConflicts.map(conflict => (
+          <div
+            key={conflict.id}
+            className="p-4 border rounded-lg hover:bg-accent cursor-pointer"
+            onClick={() => handleConflictClick(conflict)}
+          >
+            <div className="flex items-center space-x-2 mb-2">
+              <Avatar src={conflict.userAvatar} alt={conflict.userName} size="sm" />
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">Resolver Conflitos</h2>
-                <p className="text-sm text-gray-600">
-                  {activeConflicts.length} conflito{activeConflicts.length > 1 ? 's' : ''} detectado{activeConflicts.length > 1 ? 's' : ''}
-                </p>
+                <span className="font-medium">{conflict.userName}</span>
+                <span className="text-sm text-muted-foreground ml-2">
+                  {formatDistanceToNow(conflict.timestamp, {
+                    addSuffix: true,
+                    locale: ptBR,
+                  })}
+                </span>
               </div>
             </div>
-            
-            <button
-              onClick={() => selectedConflictId && onDismissConflict(selectedConflictId)}
-              className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <X className="h-5 w-5" />
-            </button>
+            <p className="text-sm line-clamp-2">{conflict.content}</p>
           </div>
+        ))}
+      </div>
 
-          <div className="flex h-[calc(90vh-8rem)]">
-            {/* Sidebar - Lista de Conflitos */}
-            {activeConflicts.length > 1 && (
-              <div className="w-1/4 border-r border-gray-200 p-4 overflow-y-auto">
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">Conflitos Ativos</h3>
-                <div className="space-y-2">
-                  {activeConflicts.map((conflict, index) => (
-                    <button
-                      key={conflict.id}
-                      onClick={() => setSelectedConflictId(conflict.id)}
-                      className={cn(
-                        "w-full p-3 text-left border rounded-lg transition-colors",
-                        selectedConflictId === conflict.id
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-200 hover:border-gray-300"
-                      )}
-                    >
-                      <div className="flex items-center gap-2 mb-1">
-                        <GitBranch className="h-4 w-4 text-gray-500" />
-                        <span className="text-sm font-medium">Conflito #{index + 1}</span>
-                      </div>
-                      <p className="text-xs text-gray-600">
-                        {conflict.operations.length} operações envolvidas
-                      </p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Resolver Conflito</DialogTitle>
+          </DialogHeader>
 
-            {/* Main Content */}
-            <div className="flex-1 flex flex-col overflow-hidden">
-              {/* Estratégias */}
-              <div className="flex-1 p-6 overflow-y-auto">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Estratégias de Resolução</h3>
-                
-                <div className="grid gap-4 mb-6">
-                  {strategies.map((strategy, index) => (
-                    <StrategyPreview
-                      key={index}
-                      strategy={strategy}
-                      isSelected={selectedStrategyIndex === index && !isCustomEditing}
-                      onSelect={() => {
-                        setSelectedStrategyIndex(index);
-                        setIsCustomEditing(false);
-                      }}
-                    />
-                  ))}
-                  
-                  {/* Opção de edição manual */}
-                  <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    className={cn(
-                      "p-4 border-2 rounded-lg cursor-pointer transition-all",
-                      isCustomEditing 
-                        ? "border-purple-500 bg-purple-50" 
-                        : "border-gray-200 bg-white hover:border-gray-300"
-                    )}
-                    onClick={() => {
-                      setIsCustomEditing(true);
-                      if (!customContent) {
-                        setCustomContent(strategies[selectedStrategyIndex]?.preview || originalContent);
-                      }
-                    }}
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <Edit3 className="h-5 w-5 text-purple-600" />
-                      <h4 className="font-semibold text-gray-900">Edição Manual</h4>
-                      {isCustomEditing && <Check className="h-5 w-5 text-purple-500" />}
-                    </div>
-                    <p className="text-sm text-gray-600 mb-3">
-                      Edite o conteúdo manualmente para resolver o conflito
-                    </p>
-                    
-                    {isCustomEditing && (
-                      <textarea
-                        value={customContent}
-                        onChange={(e) => setCustomContent(e.target.value)}
-                        className="w-full h-32 p-3 border border-gray-300 rounded-lg text-sm font-mono resize-none focus:outline-none focus:border-purple-500"
-                        placeholder="Edite o conteúdo aqui..."
-                      />
-                    )}
-                  </motion.div>
+          {selectedConflict && (
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <Avatar
+                  src={selectedConflict.userAvatar}
+                  alt={selectedConflict.userName}
+                  size="sm"
+                />
+                <div>
+                  <span className="font-medium">{selectedConflict.userName}</span>
+                  <span className="text-sm text-muted-foreground ml-2">
+                    {formatDistanceToNow(selectedConflict.timestamp, {
+                      addSuffix: true,
+                      locale: ptBR,
+                    })}
+                  </span>
                 </div>
               </div>
 
-              {/* Footer - Ações */}
-              <div className="border-t border-gray-200 p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Clock className="h-4 w-4" />
-                    <span>
-                      {selectedConflict?.operations.length} operação(ões) em conflito
-                    </span>
-                  </div>
-                  
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => selectedConflictId && onDismissConflict(selectedConflictId)}
-                      className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
-                    >
-                      Ignorar
-                    </button>
-                    
-                    <button
-                      onClick={() => handleResolveConflict(isCustomEditing ? 'custom' : 'auto')}
-                      disabled={isCustomEditing && !customContent.trim()}
-                      className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                    >
-                      <Save className="h-4 w-4" />
-                      Resolver Conflito
-                    </button>
-                  </div>
-                </div>
+              <ScrollArea className="h-[200px] w-full rounded-md border p-4">
+                <pre className="text-sm whitespace-pre-wrap">
+                  {selectedConflict.content}
+                </pre>
+              </ScrollArea>
+
+              <div className="flex justify-end space-x-2">
+                <Button
+                  variant="outline"
+                  onClick={() => handleResolve('discard')}
+                >
+                  Descartar
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => handleResolve('merge')}
+                >
+                  Mesclar
+                </Button>
+                <Button
+                  onClick={() => handleResolve('keep')}
+                >
+                  Manter
+                </Button>
               </div>
             </div>
-          </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

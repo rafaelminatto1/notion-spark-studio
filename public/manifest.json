@@ -1,16 +1,17 @@
 {
   "name": "Notion Spark Studio",
   "short_name": "Spark Studio",
-  "description": "Plataforma avançada de notas estilo Notion com IA, colaboração em tempo real e sincronização offline",
+  "description": "Plataforma avançada de notas e produtividade com IA integrada",
   "version": "1.0.0",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "theme_color": "#3B82F6",
-  "background_color": "#F8FAFC",
+  "background_color": "#FFFFFF",
   "lang": "pt-BR",
+  "dir": "ltr",
   "scope": "/",
-  "categories": ["productivity", "education", "utilities"],
+  "categories": ["productivity", "office", "education"],
   "prefer_related_applications": false,
   "shortcuts": [
     {
@@ -20,7 +21,7 @@
       "url": "/new-note",
       "icons": [
         {
-          "src": "/icons/shortcut-new-note-96x96.png",
+          "src": "/icons/shortcut-new-note.png",
           "sizes": "96x96",
           "type": "image/png"
         }
@@ -33,20 +34,20 @@
       "url": "/search",
       "icons": [
         {
-          "src": "/icons/shortcut-search-96x96.png",
+          "src": "/icons/shortcut-search.png",
           "sizes": "96x96",
           "type": "image/png"
         }
       ]
     },
     {
-      "name": "IA Assistant",
-      "short_name": "IA",
-      "description": "Abrir assistente de IA",
-      "url": "/ai-assistant",
+      "name": "Analytics",
+      "short_name": "Analytics",
+      "description": "Ver suas estatísticas",
+      "url": "/analytics",
       "icons": [
         {
-          "src": "/icons/shortcut-ai-96x96.png",
+          "src": "/icons/shortcut-analytics.png",
           "sizes": "96x96",
           "type": "image/png"
         }
@@ -136,7 +137,7 @@
   "protocol_handlers": [
     {
       "protocol": "web+notionspark",
-      "url": "/?handler=%s"
+      "url": "/handle/%s"
     }
   ],
   "share_target": {
@@ -149,8 +150,12 @@
       "url": "url",
       "files": [
         {
-          "name": "files",
-          "accept": ["text/plain", "image/*", "application/pdf"]
+          "name": "file",
+          "accept": [
+            "text/plain",
+            "text/markdown",
+            "application/json"
+          ]
         }
       ]
     }
@@ -159,16 +164,24 @@
     {
       "action": "/open-file",
       "accept": {
-        "text/plain": [".txt", ".md"],
-        "application/json": [".json"],
-        "text/markdown": [".md", ".markdown"]
+        "text/plain": [".txt"],
+        "text/markdown": [".md", ".markdown"],
+        "application/json": [".json"]
       }
     }
   ],
+  "display_override": ["window-controls-overlay", "minimal-ui"],
   "edge_side_panel": {
     "preferred_width": 400
   },
   "launch_handler": {
     "client_mode": "focus-existing"
-  }
+  },
+  "permissions": [
+    "background-sync",
+    "notifications",
+    "persistent-storage"
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
 } 

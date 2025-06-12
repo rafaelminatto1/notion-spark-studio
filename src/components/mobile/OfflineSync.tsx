@@ -4,7 +4,7 @@ import {
   Wifi, 
   WifiOff, 
   CloudOff, 
-  CloudCheck,
+  Cloud,
   Download,
   Upload,
   RefreshCw,
@@ -284,7 +284,7 @@ const SyncStatusIndicator: React.FC<SyncStatusIndicatorProps> = ({ status, conne
     }
 
     return {
-      icon: CloudCheck,
+              icon: Cloud,
       color: 'text-green-500',
       bg: 'bg-green-50 border-green-200',
       message: 'Sincronizado',

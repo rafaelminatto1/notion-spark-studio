@@ -374,229 +374,61 @@ export const TemplatesManager: React.FC<TemplatesManagerProps> = ({
   };
 
   return (
-    <div className={className}>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-xl font-semibold text-white">Templates</h2>
-          <p className="text-sm text-gray-400 mt-1">
-            Crie e gerencie templates para estruturar suas notas
-          </p>
-        </div>
-        <Dialog open={isCreatingTemplate} onOpenChange={setIsCreatingTemplate}>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" />
-              Novo Template
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="bg-notion-dark border-notion-dark-border max-w-3xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="text-white">
-                {editingTemplate ? 'Editar Template' : 'Criar Novo Template'}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-300">Nome</label>
-                  <Input
-                    value={newTemplate.name || ''}
-                    onChange={(e) => setNewTemplate(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder="Nome do template"
-                    className="bg-notion-dark-hover border-notion-dark-border"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-300">Emoji</label>
-                  <Input
-                    value={newTemplate.emoji || ''}
-                    onChange={(e) => setNewTemplate(prev => ({ ...prev, emoji: e.target.value }))}
-                    placeholder="📄"
-                    className="bg-notion-dark-hover border-notion-dark-border"
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium text-gray-300">Descrição</label>
-                <Input
-                  value={newTemplate.description || ''}
-                  onChange={(e) => setNewTemplate(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Descrição do template"
-                  className="bg-notion-dark-hover border-notion-dark-border"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-300">Categoria</label>
-                <select
-                  value={newTemplate.category || 'Pessoal'}
-                  onChange={(e) => setNewTemplate(prev => ({ ...prev, category: e.target.value }))}
-                  className="w-full bg-notion-dark-hover border border-notion-dark-border rounded-md px-3 py-2 text-white"
-                >
-                  <option value="Pessoal">Pessoal</option>
-                  <option value="Trabalho">Trabalho</option>
-                  <option value="Educação">Educação</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-300">Conteúdo</label>
-                <p className="text-xs text-gray-500 mb-2">
-                  Use variáveis: {'{{'}`date`{'}}' }, {'{{'}`time`{'}}' }, {'{{'}`title`{'}}' }, {'{{'}`subject`{'}}' }, {'{{'}`topic`{'}}' }
-                </p>
-                <Textarea
-                  value={newTemplate.content || ''}
-                  onChange={(e) => setNewTemplate(prev => ({ ...prev, content: e.target.value }))}
-                  placeholder="Conteúdo do template..."
-                  className="bg-notion-dark-hover border-notion-dark-border h-60 font-mono text-sm"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setIsCreatingTemplate(false);
-                    setEditingTemplate(null);
-                    setNewTemplate({
-                      name: '',
-                      description: '',
-                      content: '',
-                      emoji: '📄',
-                      category: 'Pessoal'
-                    });
-                  }}
-                >
-                  Cancelar
-                </Button>
-                <Button onClick={editingTemplate ? handleUpdateTemplate : handleCreateTemplate}>
-                  {editingTemplate ? 'Atualizar' : 'Criar'} Template
-                </Button>
-              </div>
+    <div className={cn("flex min-h-screen w-full bg-[#f7faff] dark:bg-[#181f2a]", className)}>
+      {/* Sidebar fixa à esquerda */}
+      <aside className="hidden md:flex w-64 flex-shrink-0 h-screen sticky top-0 z-40 border-r border-[#e3e8f0] dark:border-[#232b3b] bg-white dark:bg-[#1a2233]">
+        {/* Sidebar pode ser reutilizada aqui se necessário */}
+      </aside>
+      {/* Conteúdo principal */}
+      <main className="flex-1 flex flex-col min-w-0">
+        {/* Header fixo no topo */}
+        <div className="sticky top-0 z-30 bg-white/95 dark:bg-[#181f2a]/95 backdrop-blur-xl border-b border-[#e3e8f0] dark:border-[#232b3b]">
+          <div className="flex items-center justify-between px-6 py-4">
+            <div className="flex items-center gap-3">
+              <BookOpen className="h-7 w-7 text-[#2563eb] dark:text-[#60a5fa]" />
+              <h1 className="text-2xl font-bold text-[#1a2233] dark:text-white">Templates</h1>
             </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {/* Category Filter */}
-      <div className="flex gap-2 mb-6 flex-wrap">
-        <Button
-          variant={selectedCategory === 'all' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setSelectedCategory('all')}
-        >
-          Todos ({templates.length})
-        </Button>
-        {categories.map(category => {
-          const Icon = getCategoryIcon(category);
-          const count = templates.filter(t => t.category === category).length;
-          return (
-            <Button
-              key={category}
-              variant={selectedCategory === category ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setSelectedCategory(category)}
-              className="gap-2"
-            >
-              <Icon className="h-3 w-3" />
-              {category} ({count})
+            <Button size="lg" className="bg-[#22c55e] hover:bg-[#16a34a] text-white font-semibold rounded-xl shadow">
+              <Plus className="h-5 w-5 mr-2" /> Novo Template
             </Button>
-          );
-        })}
-      </div>
-
-      {/* Templates Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredTemplates.map(template => (
-          <Card key={template.id} className="bg-notion-dark-hover border-notion-dark-border hover:border-notion-purple transition-all duration-200 group">
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <CardTitle className="flex items-center gap-2 text-white text-sm">
-                  <span className="text-lg">{template.emoji}</span>
-                  <div className="flex-1 min-w-0">
-                    <div className="truncate">{template.name}</div>
-                    <Badge className={cn("text-xs mt-1", getCategoryColor(template.category))}>
-                      {template.category}
-                    </Badge>
-                  </div>
-                </CardTitle>
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleEditTemplate(template)}
-                    className="h-6 w-6 p-0"
-                  >
-                    <Edit className="h-3 w-3" />
-                  </Button>
-                  {!defaultTemplates.find(t => t.id === template.id) && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteTemplate(template.id)}
-                      className="h-6 w-6 p-0 text-red-400 hover:text-red-300"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-              <p className="text-xs text-gray-400 leading-relaxed">{template.description}</p>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {template.variables && template.variables.length > 0 && (
-                    <div className="flex gap-1">
-                      {template.variables.slice(0, 2).map(variable => (
-                        <Badge key={variable} variant="outline" className="text-xs px-1 py-0">
-                          {variable}
-                        </Badge>
-                      ))}
-                      {template.variables.length > 2 && (
-                        <Badge variant="outline" className="text-xs px-1 py-0">
-                          +{template.variables.length - 2}
-                        </Badge>
-                      )}
-                    </div>
-                  )}
-                </div>
-                <Button
-                  size="sm"
-                  onClick={() => handleUseTemplate(template)}
-                  className="gap-2 bg-notion-purple hover:bg-notion-purple/80"
-                >
-                  <Copy className="h-3 w-3" />
-                  Usar
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {filteredTemplates.length === 0 && (
-        <div className="text-center py-12">
-          <FileText className="h-12 w-12 mx-auto text-gray-500 mb-4" />
-          <h3 className="text-lg font-medium text-gray-300 mb-2">
-            Nenhum template encontrado
-          </h3>
-          <p className="text-gray-500 mb-4">
-            {selectedCategory === 'all' 
-              ? 'Crie seu primeiro template personalizado'
-              : `Nenhum template na categoria "${selectedCategory}"`
-            }
-          </p>
-          <Button
-            onClick={() => setIsCreatingTemplate(true)}
-            className="gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Criar Template
-          </Button>
+          </div>
         </div>
-      )}
+        {/* Lista de Templates */}
+        <div className="flex-1 flex flex-col items-center justify-start px-4 md:px-12 py-8 gap-8 w-full max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
+            {defaultTemplates.map(template => (
+              <Card key={template.id} className="shadow-md border-0 bg-white dark:bg-[#232b3b] flex flex-col">
+                <CardHeader className="flex flex-row items-center gap-3 pb-2">
+                  <span className="text-3xl">{template.emoji}</span>
+                  <div>
+                    <CardTitle className="text-lg font-bold text-[#1a2233] dark:text-white">{template.name}</CardTitle>
+                    <span className="text-xs text-[#64748b] dark:text-[#cbd5e1]">{template.category}</span>
+                  </div>
+                </CardHeader>
+                <CardContent className="flex-1 flex flex-col gap-2">
+                  <p className="text-[#4b5563] dark:text-[#cbd5e1] text-sm mb-2">{template.description}</p>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {template.variables?.map(v => (
+                      <Badge key={v} className="bg-[#2563eb]/10 text-[#2563eb] dark:bg-[#60a5fa]/10 dark:text-[#60a5fa]">{v}</Badge>
+                    ))}
+                  </div>
+                  <div className="flex gap-2 mt-auto">
+                    <Button size="sm" className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white rounded-lg" onClick={() => onCreateFromTemplate(template)}>
+                      <Copy className="h-4 w-4 mr-1" /> Usar
+                    </Button>
+                    <Button size="sm" variant="outline" className="border-[#22c55e] text-[#22c55e] dark:border-[#4ade80] dark:text-[#4ade80]">
+                      <Edit className="h-4 w-4 mr-1" /> Editar
+                    </Button>
+                    <Button size="sm" variant="outline" className="border-[#ef4444] text-[#ef4444] dark:border-[#f87171] dark:text-[#f87171]">
+                      <Trash2 className="h-4 w-4 mr-1" /> Excluir
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </main>
     </div>
   );
 };
