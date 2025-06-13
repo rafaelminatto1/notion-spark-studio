@@ -140,7 +140,16 @@ export const NotebooksPanel: React.FC<NotebooksPanelProps> = ({
             </p>
             {canCreateFile && (
               <button
-                onClick={onCreateNotebook}
+                onClick={() => {
+                  console.log('[NotebooksPanel] Criar Primeiro Notebook clicked');
+                  console.log('[NotebooksPanel] onCreateNotebook function:', typeof onCreateNotebook);
+                  try {
+                    onCreateNotebook();
+                    console.log('[NotebooksPanel] onCreateNotebook called successfully');
+                  } catch (error) {
+                    console.error('[NotebooksPanel] Error calling onCreateNotebook:', error);
+                  }
+                }}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-emerald-500/25"
               >
                 <Plus className="h-4 w-4" />

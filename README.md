@@ -1,38 +1,69 @@
-# Welcome to your Lovable project
+# 🚀 Notion Spark Studio
 
-## Project info
+Uma aplicação revolucionária de anotações e colaboração em tempo real que combina inteligência artificial, performance otimizada e arquitetura moderna.
 
-**URL**: https://lovable.dev/projects/108aa64f-692f-4e36-9812-0e2173b8db97
+## ✨ Funcionalidades Principais
 
-## How can I edit this code?
+- **🤖 Inteligência Artificial**: Sistema de auto-tagging e sugestões inteligentes
+- **👥 Colaboração em Tempo Real**: Live cursors e edição simultânea
+- **🎨 Templates Inteligentes**: Templates com lógica condicional avançada
+- **📊 Analytics Avançado**: Dashboard com múltiplas visualizações
+- **⚡ PWA Completo**: Suporte offline e instalação no dispositivo
+- **🔐 Sistema RBAC**: Controle granular de permissões
+- **📈 Performance Monitor**: Monitoramento em tempo real de FPS e memory
+- **🌐 WebSocket Server**: Servidor dedicado para colaboração
 
-There are several ways of editing your application.
+## 🛠️ Tecnologias
 
-**Use Lovable**
+### Frontend
+- **React 18** + **TypeScript**
+- **Tailwind CSS** + **Framer Motion**
+- **Vite** + **PWA**
+- **shadcn-ui** para componentes
+- **Service Worker** para offline
+- **Web Workers** para performance
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/108aa64f-692f-4e36-9812-0e2173b8db97) and start prompting.
+### Backend (WebSocket Server)
+- **Node.js** + **Express**
+- **Socket.IO** para real-time
+- **JWT** para autenticação
+- **Docker** para containerização
 
-Changes made via Lovable will be committed automatically to this repo.
+### Ferramentas
+- **Jest** + **Testing Library** (20 testes passando)
+- **ESLint** + **TypeScript** para qualidade
+- **GitHub Actions** para CI/CD
+- **Docker Compose** para produção
 
-**Use your preferred IDE**
+## 🚀 Quick Start
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Desenvolvimento
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+```bash
+# Clonar repositório
+git clone https://github.com/seu-usuario/notion-spark-studio.git
+cd notion-spark-studio
 
-Follow these steps:
+# Instalar dependências
+npm install
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Iniciar desenvolvimento
+npm run dev
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Executar testes
+npm test
+```
 
-# Step 3: Install the necessary dependencies.
-npm i
+### WebSocket Server
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```bash
+# Ir para o diretório do servidor
+cd ws-server
+
+# Instalar dependências
+npm install
+
+# Iniciar servidor
 npm run dev
 ```
 

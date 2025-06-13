@@ -121,17 +121,22 @@ afterEach(() => {
 global.fetch = jest.fn();
 
 // Mock do WebSocket
-global.WebSocket = jest.fn().mockImplementation(() => ({
-  close: jest.fn(),
-  send: jest.fn(),
-  addEventListener: jest.fn(),
-  removeEventListener: jest.fn(),
-  readyState: 1, // OPEN
-  CONNECTING: 0,
-  OPEN: 1,
-  CLOSING: 2,
-  CLOSED: 3,
-}));
+(global as any).WebSocket = class MockWebSocket {
+  static CONNECTING = 0;
+  static OPEN = 1;
+  static CLOSING = 2;
+  static CLOSED = 3;
+
+  readyState = 1; // OPEN
+  close = jest.fn();
+  send = jest.fn();
+  addEventListener = jest.fn();
+  removeEventListener = jest.fn();
+
+  constructor(url: string, protocols?: string | string[]) {
+    // Mock constructor
+  }
+};
 
 // Mock das Web APIs que podem não estar disponíveis no ambiente de teste
 Object.defineProperty(window, 'crypto', {

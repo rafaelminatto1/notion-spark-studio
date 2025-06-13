@@ -6,6 +6,7 @@ import { GraphMinimap } from './GraphMinimap';
 import { GraphAnalytics } from './GraphAnalytics';
 import { GraphHelpOverlay } from './GraphHelpOverlay';
 import { PerformanceDashboard } from './PerformanceDashboard';
+import { PerformanceMonitor } from '../PerformanceMonitor';
 import { GraphViewRevolutionary } from '../GraphViewRevolutionary';
 import { useGraphData } from '@/hooks/useGraphData';
 import { useNetworkAnalysis } from '@/hooks/useNetworkAnalysis';
@@ -629,6 +630,9 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
           </div>
         </div>
       </main>
+
+      {/* Performance Monitor - sempre disponível */}
+      <PerformanceMonitor />
     </div>
   );
 }; 

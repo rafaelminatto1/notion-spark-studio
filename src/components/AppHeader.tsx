@@ -38,7 +38,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 
   return (
     <>
-      <header className="glass-effect border-b border-border/40 px-3 md:px-6 py-3 md:py-4 flex items-center justify-between gap-3 md:gap-6 sticky top-0 z-50 animate-slide-up">
+      <header className="glass-effect border-b border-border/40 px-3 md:px-6 py-3 md:py-4 flex items-center justify-between gap-3 md:gap-6 sticky top-0 z-40 animate-slide-up">
         {/* Left Section - Brand & Workspace */}
         <div className="flex items-center gap-3 md:gap-4 min-w-0">
           {/* Brand */}

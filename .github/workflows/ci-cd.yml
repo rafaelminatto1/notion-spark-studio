@@ -1,0 +1,335 @@
+name: CI/CD Pipeline - Notion Spark Studio
+# FASE 3: Produção & Deploy - Pipeline completo
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [published]
+
+env:
+  NODE_VERSION: '18'
+  CACHE_VERSION: v1
+
+jobs:
+  # Job 1: Análise de código e testes
+  test:
+    name: Tests & Code Quality
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ env.CACHE_VERSION }}-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-${{ env.CACHE_VERSION }}-
+          
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run linting
+      run: npm run lint
+      
+    - name: Run type checking
+      run: npm run type-check || true
+      
+    - name: Run tests with coverage
+      run: npm test -- --coverage --watchAll=false
+      
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: ./coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+        
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  # Job 2: Build e validação
+  build:
+    name: Build & Validate
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build application
+      env:
+        VITE_APP_VERSION: ${{ github.sha }}
+        VITE_BUILD_TIME: ${{ github.event.head_commit.timestamp }}
+        VITE_COMMIT_HASH: ${{ github.sha }}
+      run: npm run build
+      
+    - name: Test build
+      run: |
+        npm install -g serve
+        serve -s dist -p 3000 &
+        sleep 5
+        curl -f http://localhost:3000 || exit 1
+        
+    - name: Analyze bundle size
+      run: |
+        npm install -g bundlesize
+        bundlesize || true
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-${{ github.sha }}
+        path: dist/
+        retention-days: 30
+
+  # Job 3: Security scanning
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Run npm audit
+      run: npm audit --audit-level moderate
+      continue-on-error: true
+      
+    - name: Run Snyk to check for vulnerabilities
+      uses: snyk/actions/node@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --severity-threshold=high
+      continue-on-error: true
+
+  # Job 4: Deploy para staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [test, build, security]
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: build-${{ github.sha }}
+        path: dist/
+        
+    - name: Deploy to Vercel (Staging)
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        vercel-args: '--prod'
+        alias-domains: staging.notion-spark.com
+        
+    - name: Run E2E tests on staging
+      run: |
+        npm install -g playwright
+        npx playwright install
+        npm run test:e2e:staging || true
+
+  # Job 5: Build WebSocket Server
+  build-websocket:
+    name: Build WebSocket Server
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+      
+    - name: Build and push WebSocket server
+      uses: docker/build-push-action@v5
+      with:
+        context: ./ws-server
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: |
+          notionspark/websocket-server:latest
+          notionspark/websocket-server:${{ github.sha }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  # Job 6: Deploy para produção
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [test, build, security, build-websocket]
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: build-${{ github.sha }}
+        path: dist/
+        
+    - name: Deploy to Vercel (Production)
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        vercel-args: '--prod'
+        alias-domains: notion-spark.com
+        
+    - name: Update deployment status
+      run: |
+        curl -X POST \
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Content-Type: application/json" \
+          -d '{"state": "success", "description": "Deployment successful", "context": "vercel"}' \
+          "https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}"
+          
+    - name: Notify deployment
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        channel: '#deployments'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        text: |
+          🚀 Notion Spark Studio deployed to production!
+          Version: ${{ github.sha }}
+          URL: https://notion-spark.com
+
+  # Job 6: Release automático
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [deploy-production]
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        
+    - name: Generate changelog
+      run: |
+        npm install -g conventional-changelog-cli
+        conventional-changelog -p angular -i CHANGELOG.md -s
+        
+    - name: Create GitHub Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ github.run_number }}
+        release_name: Release v${{ github.run_number }}
+        body_path: CHANGELOG.md
+        draft: false
+        prerelease: false
+
+  # Job 7: Monitoramento pós-deploy
+  monitoring:
+    name: Post-Deploy Monitoring
+    runs-on: ubuntu-latest
+    needs: [deploy-production]
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Health check
+      run: |
+        sleep 30
+        curl -f https://notion-spark.com/health || exit 1
+        
+    - name: Performance test
+      run: |
+        npm install -g lighthouse-ci
+        lhci autorun --upload.target=temporary-public-storage
+        
+    - name: Setup monitoring alerts
+      run: |
+        curl -X POST \
+          -H "Content-Type: application/json" \
+          -d '{"version": "${{ github.sha }}", "environment": "production", "status": "deployed"}' \
+          "${{ secrets.MONITORING_WEBHOOK_URL }}" || true
+
+  # Job 8: Limpeza e otimização
+  cleanup:
+    name: Cleanup & Optimization
+    runs-on: ubuntu-latest
+    needs: [deploy-production]
+    if: always()
+    
+    steps:
+    - name: Clean old artifacts
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const artifacts = await github.rest.actions.listArtifactsForRepo({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+          });
+          
+          const oldArtifacts = artifacts.data.artifacts
+            .filter(artifact => {
+              const date = new Date(artifact.created_at);
+              const thirtyDaysAgo = new Date();
+              thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+              return date < thirtyDaysAgo;
+            });
+            
+          for (const artifact of oldArtifacts) {
+            await github.rest.actions.deleteArtifact({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              artifact_id: artifact.id,
+            });
+          } 

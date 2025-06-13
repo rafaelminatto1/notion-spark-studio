@@ -130,15 +130,28 @@ export const EvernoteLayout: React.FC<EvernoteLayoutProps> = ({
   };
 
   const handleCreateNotebook = async () => {
+    console.log('[EvernoteLayout] handleCreateNotebook called');
+    console.log('[EvernoteLayout] currentUserId:', currentUserId);
+    console.log('[EvernoteLayout] checkPermission function:', typeof checkPermission);
+    
     // Verificar se tem permissão para criar notebooks
     if (!checkPermission(currentUserId, 'workspace', 'create')) {
-      console.warn('Permissão negada para criar notebooks');
+      console.warn('[EvernoteLayout] Permissão negada para criar notebooks');
       return;
     }
     
-    const newNotebookId = await createFile('Novo Notebook', undefined, 'folder');
-    if (newNotebookId) {
-      setSelectedNotebook(newNotebookId);
+    console.log('[EvernoteLayout] Permissions check passed, calling createFile');
+    
+    try {
+      const newNotebookId = await createFile('Novo Notebook', undefined, 'folder');
+      console.log('[EvernoteLayout] Notebook created with ID:', newNotebookId);
+      
+      if (newNotebookId) {
+        setSelectedNotebook(newNotebookId);
+        console.log('[EvernoteLayout] Selected notebook set to:', newNotebookId);
+      }
+    } catch (error) {
+      console.error('[EvernoteLayout] Error creating notebook:', error);
     }
   };
 
@@ -323,7 +336,7 @@ export const EvernoteLayout: React.FC<EvernoteLayoutProps> = ({
   return (
     <div className="h-full w-full bg-[#f7faff] dark:bg-[#181f2a] flex flex-row">
       {/* Sidebar esquerda - Notebooks */}
-      <div className="hidden md:flex w-64 flex-shrink-0 h-full sticky top-0 z-40 border-r border-[#e3e8f0] dark:border-[#232b3b] bg-white dark:bg-[#1a2233]">
+      <div className="hidden md:flex w-64 flex-shrink-0 h-full sticky top-0 z-20 border-r border-[#e3e8f0] dark:border-[#232b3b] bg-white dark:bg-[#1a2233]">
         <NotebooksPanel
           notebooks={notebooks}
           selectedNotebook={selectedNotebook}
@@ -336,7 +349,7 @@ export const EvernoteLayout: React.FC<EvernoteLayoutProps> = ({
       {/* Painel central - Lista de Notas */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header do Editor */}
-        <div className="sticky top-0 z-30 bg-white/95 dark:bg-[#181f2a]/95 backdrop-blur-xl border-b border-[#e3e8f0] dark:border-[#232b3b]">
+        <div className="sticky top-0 z-10 bg-white/95 dark:bg-[#181f2a]/95 backdrop-blur-xl border-b border-[#e3e8f0] dark:border-[#232b3b]">
           {/* Aqui pode entrar o AppHeader se desejar header global */}
         </div>
         <div className="flex flex-row h-full">

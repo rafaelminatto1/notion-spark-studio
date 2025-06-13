@@ -6,13 +6,31 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:prod": "NODE_ENV=production npm run build",
     "preview": "vite preview",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "type-check": "tsc --noEmit",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:ci": "jest --ci --coverage --watchAll=false",
-    "install-all": "npm install && npm run setup-hooks"
+    "test:e2e": "playwright test",
+    "test:e2e:staging": "STAGING=true playwright test",
+    "install-all": "npm install && npm run setup-hooks",
+    "ws:install": "cd ws-server && npm install",
+    "ws:dev": "cd ws-server && npm run dev",
+    "ws:start": "cd ws-server && npm start",
+    "ws:build": "cd ws-server && docker build -t notion-spark-websocket .",
+    "deploy:staging": "vercel --target staging",
+    "deploy:prod": "vercel --prod",
+    "docker:build": "docker build -f Dockerfile.prod -t notion-spark-studio .",
+    "docker:run": "docker run -p 3000:80 notion-spark-studio",
+    "docker:compose": "docker-compose -f docker-compose.prod.yml up",
+    "analyze": "npx vite-bundle-analyzer",
+    "clean": "rm -rf dist coverage .vercel",
+    "preinstall": "npx only-allow npm",
+    "postinstall": "npm run type-check"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",
@@ -126,8 +144,20 @@
     "setupFilesAfterEnv": [
       "<rootDir>/src/setupTests.ts"
     ],
-    "moduleNameMapping": {
+    "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/src/$1"
+    },
+    "transformIgnorePatterns": [
+      "node_modules/(?!(@supabase|@hello-pangea)/)"
+    ],
+    "globals": {
+      "ts-jest": {
+        "tsconfig": {
+          "jsx": "react-jsx",
+          "esModuleInterop": true,
+          "allowSyntheticDefaultImports": true
+        }
+      }
     },
     "testMatch": [
       "<rootDir>/src/**/__tests__/**/*.{js,jsx,ts,tsx}",

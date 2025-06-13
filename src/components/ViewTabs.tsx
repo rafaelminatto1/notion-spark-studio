@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { FileText, GitBranch, LayoutDashboard, File, Notebook } from 'lucide-react';
@@ -52,9 +51,19 @@ export const ViewTabs: React.FC<ViewTabsProps> = ({
     }
   ];
 
-  const handleTabClick = (tabId: ViewMode) => {
+  const handleTabClick = (tabId: ViewMode, event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
     console.log('[ViewTabs] Changing view to:', tabId);
-    onViewChange(tabId);
+    console.log('[ViewTabs] Current activeView:', activeView);
+    console.log('[ViewTabs] onViewChange function:', typeof onViewChange);
+    
+    try {
+      onViewChange(tabId);
+      console.log('[ViewTabs] View change called successfully');
+    } catch (error) {
+      console.error('[ViewTabs] Error calling onViewChange:', error);
+    }
   };
 
   return (
@@ -72,16 +81,18 @@ export const ViewTabs: React.FC<ViewTabsProps> = ({
             key={tab.id}
             variant="ghost"
             size={isMobile ? "sm" : "sm"}
-            onClick={() => handleTabClick(tab.id)}
+            onClick={(event) => handleTabClick(tab.id, event)}
             className={cn(
               "relative gap-2 transition-all duration-300 text-xs md:text-sm px-3 md:px-4 py-2 md:py-2.5 rounded-lg",
               "hover:bg-accent/80 hover:text-accent-foreground",
               "focus-visible:ring-2 focus-visible:ring-primary/50",
+              "cursor-pointer select-none",
               isActive
                 ? "bg-primary text-primary-foreground shadow-sm scale-105"
                 : "text-muted-foreground hover:text-foreground"
             )}
             title={tab.description}
+            type="button"
           >
             <Icon className={cn(
               "transition-all duration-300",

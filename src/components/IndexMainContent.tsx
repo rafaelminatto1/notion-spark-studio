@@ -1,25 +1,22 @@
 import React, { useCallback } from 'react';
+import { cn } from '@/lib/utils';
 import { ViewMode } from '@/components/ViewTabs';
-import { QuickSwitcher } from '@/components/QuickSwitcher';
-import { CommandPalette } from '@/components/CommandPalette';
-import { ThemeProvider } from '@/components/ThemeProvider';
-import { WorkspaceProvider } from '@/components/WorkspaceProvider';
-import { EvernoteLayout } from '@/components/EvernoteLayout';
+import { FileItem } from '@/types';
 import { DashboardEnhanced } from '@/components/DashboardEnhanced';
+import { EvernoteLayout } from '@/components/EvernoteLayout';
 import { AppHeader } from '@/components/AppHeader';
 import { MobileHeader } from '@/components/MobileHeader';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { BreadcrumbsNav } from '@/components/BreadcrumbsNav';
 import { KeyboardShortcuts } from '@/components/KeyboardShortcuts';
-import { FocusModeProvider, FocusModeToggle, useFocusModeClasses } from '@/components/FocusMode';
-import { PerformanceMonitor } from '@/components/system/PerformanceMonitor';
-import { Sparkles } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { PerformanceMonitor } from '@/components/PerformanceMonitor';
 import { useAutoCloseToast } from '@/hooks/useAutoCloseToast';
 import { useIndexMainContent } from '@/hooks/useIndexMainContent';
-import { QuickSwitcherCommand } from '@/hooks/useQuickSwitcher';
+import { Sparkles } from 'lucide-react';
 import SmartContentSuggestions from '@/components/ai/SmartContentSuggestions';
 import { useSystemIntegration } from '@/hooks/useSystemIntegration';
+import { GraphContainer } from '@/components/GraphView/GraphContainer';
+import { TemplatesManager } from '@/components/TemplatesManager';
 
 interface IndexMainContentProps {
   activeView: ViewMode;
@@ -31,7 +28,7 @@ interface IndexMainContentProps {
   isQuickSwitcherOpen: boolean;
   openQuickSwitcher: () => void;
   closeQuickSwitcher: () => void;
-  filteredCommands: QuickSwitcherCommand[];
+  filteredCommands: any[];
   quickSwitcherQuery: string;
   setQuickSwitcherQuery: (query: string) => void;
   isCommandPaletteOpen: boolean;
@@ -39,19 +36,7 @@ interface IndexMainContentProps {
   onNavigateToFile: (fileId: string) => void;
 }
 
-export const IndexMainContent: React.FC<IndexMainContentProps> = (props) => {
-  return (
-    <ThemeProvider>
-      <WorkspaceProvider>
-        <FocusModeProvider>
-          <IndexMainContentInner {...props} />
-        </FocusModeProvider>
-      </WorkspaceProvider>
-    </ThemeProvider>
-  );
-};
-
-const IndexMainContentInner: React.FC<IndexMainContentProps> = ({
+export const IndexMainContent: React.FC<IndexMainContentProps> = ({
   activeView,
   isMobile,
   isMobileSidebarOpen,
@@ -93,8 +78,6 @@ const IndexMainContentInner: React.FC<IndexMainContentProps> = ({
     onToggleMobileSidebar,
   });
 
-  const { getLayoutClasses, getSidebarClasses, getHeaderClasses, isFocusMode } = useFocusModeClasses();
-
   useAutoCloseToast({
     message: "Login realizado com sucesso! Bem-vindo de volta.",
     type: "success",
@@ -104,8 +87,7 @@ const IndexMainContentInner: React.FC<IndexMainContentProps> = ({
 
   return (
     <div className={cn(
-      "min-h-screen bg-gradient-to-br from-background via-background/98 to-background flex w-full relative overflow-hidden",
-      getLayoutClasses()
+      "min-h-screen bg-gradient-to-br from-background via-background/98 to-background flex w-full relative overflow-hidden"
     )}>
       {/* Keyboard Shortcuts Handler */}
       <KeyboardShortcuts
@@ -128,8 +110,8 @@ const IndexMainContentInner: React.FC<IndexMainContentProps> = ({
       )}
       
       <div className="flex-1 flex flex-col min-w-0 relative"> 
-        {/* Header com focus mode classes */}
-        <div className={getHeaderClasses()}>
+        {/* Header */}
+        <div className="sticky top-0 z-40">
           {isMobile ? (
             <MobileHeader
               files={convertedFiles}
@@ -152,15 +134,13 @@ const IndexMainContentInner: React.FC<IndexMainContentProps> = ({
                 onShowSettings={onShowSettings}
               />
               
-              {/* Breadcrumbs - oculto em focus mode */}
-              {!isFocusMode && (
-                <BreadcrumbsNav
-                  activeView={activeView}
-                  currentNoteId={currentFileId}
-                  currentNotebookId={getCurrentNotebookId}
-                  onNavigate={handleBreadcrumbNavigate}
-                />
-              )}
+              {/* Breadcrumbs */}
+              <BreadcrumbsNav
+                activeView={activeView}
+                currentNoteId={currentFileId}
+                currentNotebookId={getCurrentNotebookId}
+                onNavigate={handleBreadcrumbNavigate}
+              />
             </>
           )}
         </div>
@@ -169,7 +149,8 @@ const IndexMainContentInner: React.FC<IndexMainContentProps> = ({
           "flex-1 min-h-0 relative",
           isMobile ? "pt-16 pb-24" : ""
         )}>
-          {activeView === 'dashboard' ? (
+          {/* Renderizar view baseada no activeView */}
+          {activeView === 'dashboard' && (
             <DashboardEnhanced 
               files={convertedFiles}
               onNavigateToFile={handleFileSelect}
@@ -178,16 +159,48 @@ const IndexMainContentInner: React.FC<IndexMainContentProps> = ({
               timeRange={dashboardTimeRange}
               onTimeRangeChange={setDashboardTimeRange}
             />
-          ) : (
+          )}
+          
+          {activeView === 'evernote' && (
+            <EvernoteLayout />
+          )}
+          
+          {activeView === 'graph' && (
+            <div className="h-full">
+              <GraphContainer
+                files={convertedFiles}
+                currentFileId={currentFileId}
+                onFileSelect={handleFileSelect}
+              />
+            </div>
+          )}
+          
+          {activeView === 'templates' && (
+            <div className="h-full">
+              <TemplatesManager
+                onCreateFromTemplate={(template) => {
+                  console.log('[IndexMainContent] Creating from template:', template.name);
+                  handleCreateFile(template.name, undefined, 'file').then((fileId) => {
+                    if (fileId) {
+                      console.log('[IndexMainContent] File created, updating content');
+                      // TODO: Implementar atualização do conteúdo do arquivo
+                    }
+                  }).catch(error => {
+                    console.error('[IndexMainContent] Error creating file from template:', error);
+                  });
+                }}
+              />
+            </div>
+          )}
+          
+          {activeView === 'editor' && (
             <EvernoteLayout />
           )}
         </div>
 
         {/* System Controls - posicionado no canto */}
         {!isMobile && (
-          <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
-            <FocusModeToggle variant="icon" showLabel={false} />
-            
+          <div className="fixed top-4 right-4 z-30 flex flex-col gap-2">
             {/* AI Status Indicator */}
             {systemIntegration.status.ai.isEnabled && (
               <div className={cn(
@@ -229,21 +242,6 @@ const IndexMainContentInner: React.FC<IndexMainContentProps> = ({
         />
       </div>
       
-      <QuickSwitcher
-        isOpen={isQuickSwitcherOpen}
-        onClose={closeQuickSwitcher}
-        commands={filteredCommands}
-        query={quickSwitcherQuery}
-        onQueryChange={setQuickSwitcherQuery}
-      />
-      
-      <CommandPalette
-        open={isCommandPaletteOpen}
-        onOpenChange={setIsCommandPaletteOpen}
-        onNavigateToFile={handleFileSelect}
-        onCreateFile={(name, type) => handleCreateFile(name, undefined, type)}
-      />
-
       {/* Smart Content Suggestions Panel - Aparece quando há sugestões */}
       {systemIntegration.status.ai.suggestionsCount > 0 && !isMobile && (
         <div className="fixed bottom-4 right-4 z-40 w-80">
