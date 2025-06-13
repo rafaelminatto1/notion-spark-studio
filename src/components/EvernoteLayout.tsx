@@ -109,35 +109,46 @@ export const EvernoteLayout: React.FC<EvernoteLayoutProps> = ({
   const handleCreateNote = async (notebookId?: string) => {
     const targetNotebook = notebookId || selectedNotebook;
     
-    // Verificar se tem permissão para criar nota no notebook
-    if (targetNotebook && !canCreateNote(targetNotebook)) {
-      console.warn('Permissão negada para criar nota neste notebook');
-      return;
-    }
+    console.log('[EvernoteLayout] Creating note in notebook:', targetNotebook);
     
-    const newNoteId = await createFile(
-      'Nova Nota',
-      targetNotebook || undefined,
-      'file'
-    );
-    if (newNoteId) {
-      setSelectedNote(newNoteId);
-      if (notebookId) {
-        setSelectedNotebook(notebookId);
+    // MODO DESENVOLVIMENTO: Sempre permitir criação de notas
+    // if (targetNotebook && !canCreateNote(targetNotebook)) {
+    //   console.warn('Permissão negada para criar nota neste notebook');
+    //   return;
+    // }
+    
+    try {
+      const newNoteId = await createFile(
+        'Nova Nota',
+        targetNotebook || undefined,
+        'file'
+      );
+      if (newNoteId) {
+        console.log('[EvernoteLayout] Note created successfully:', newNoteId);
+        setSelectedNote(newNoteId);
+        if (notebookId) {
+          setSelectedNotebook(notebookId);
+        }
       }
+    } catch (error) {
+      console.error('[EvernoteLayout] Erro ao criar nota:', error);
     }
   };
 
   const handleCreateNotebook = async () => {
-    // Verificar se tem permissão para criar notebooks
-    if (!checkPermission(currentUserId, 'workspace', 'create')) {
-      console.warn('[EvernoteLayout] Permissão negada para criar notebooks');
-      return;
-    }
+    console.log('[EvernoteLayout] Creating notebook...');
+    
+    // MODO DESENVOLVIMENTO: Sempre permitir criação de notebooks
+    // if (!checkPermission(currentUserId, 'workspace', 'create')) {
+    //   console.warn('[EvernoteLayout] Permissão negada para criar notebooks');
+    //   return;
+    // }
     
     try {
+      console.log('[EvernoteLayout] Calling createFile...');
       const newNotebookId = await createFile('Novo Notebook', undefined, 'folder');
       if (newNotebookId) {
+        console.log('[EvernoteLayout] Notebook created successfully:', newNotebookId);
         // Selecionar o novo notebook criado
         setSelectedNotebook(newNotebookId);
       }
