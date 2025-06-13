@@ -49,21 +49,22 @@ export const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
   const handleAnnotationAdd = useCallback(async (content: string) => {
     if (!user || !selectedText) return;
 
-    const comment: Comment = {
-      id: crypto.randomUUID(),
-      content,
-      authorId: user.id,
-      authorName: user.name || '',
-      authorAvatar: user.avatar,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      documentId,
-      parentId: undefined,
+    const newComment: Comment = {
+      id: `comment-${Date.now()}`,
+      content: '',
+      authorId: user?.id || 'anonymous',
+      authorName: user?.name || 'Usuário Anônimo',
+      authorAvatar: user?.avatar || '',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+      resolved: false,
     };
 
-    onAnnotationAdd?.(comment);
+    onAnnotationAdd?.(newComment);
     setSelectedText('');
-  }, [user, selectedText, documentId, onAnnotationAdd]);
+  }, [user, selectedText, onAnnotationAdd]);
 
   useEffect(() => {
     const container = containerRef.current;

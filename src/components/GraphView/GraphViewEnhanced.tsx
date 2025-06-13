@@ -467,14 +467,10 @@ export const GraphViewEnhanced: React.FC<GraphViewEnhancedProps> = ({
   // Layouts diferentes
   const createForceLayout = (nodes: GraphNode[], links: GraphLink[], width: number, height: number, layoutSettings: any) => {
     return d3.forceSimulation(nodes)
-      .force('link', d3.forceLink(links)
-        .id((d: any) => d.id)
-        .distance(layoutSettings.linkDistance)
-        .strength(d => d.strength || 0.5)
-      )
+      .force('link', d3.forceLink(links).id((d: any) => d.id).distance(layoutSettings.linkDistance))
       .force('charge', d3.forceManyBody().strength(layoutSettings.forceStrength))
       .force('center', d3.forceCenter(width / 2, height / 2))
-      .force('collision', d3.forceCollide().radius(d => d.size + layoutSettings.collisionRadius));
+      .force('collision', d3.forceCollide().radius((d: any) => (d as GraphNode).size + layoutSettings.collisionRadius));
   };
 
   const createHierarchicalLayout = (nodes: GraphNode[], links: GraphLink[], width: number, height: number) => {

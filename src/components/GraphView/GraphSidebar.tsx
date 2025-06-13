@@ -10,6 +10,8 @@ import { cn } from '@/lib/utils';
 interface GraphSidebarProps {
   selectedNode: string | null;
   nodeData?: GraphNode;
+  centralityScore: number;
+  community: string;
   onClose: () => void;
   onPathFinding: (targetId: string) => void;
 }
@@ -17,6 +19,8 @@ interface GraphSidebarProps {
 export const GraphSidebar: React.FC<GraphSidebarProps> = ({
   selectedNode,
   nodeData,
+  centralityScore,
+  community,
   onClose,
   onPathFinding
 }) => {

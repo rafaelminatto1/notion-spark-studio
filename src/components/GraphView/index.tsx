@@ -201,19 +201,19 @@ export const GraphViewEnhanced: React.FC<GraphViewEnhancedProps> = ({
       selectedCircle
         .transition()
         .duration(1000)
-        .attr('r', (d: any) => (d.size || 15) * 1.3)
+        .attr('r', (d: any) => ((d as any).size || 15) * 1.3)
         .transition()
         .duration(1000)
-        .attr('r', d => d.size || 15)
+        .attr('r', (d: any) => (d as any).size || 15)
         .on('end', function repeat() {
           if (selectedNode) {
             d3.select(this)
               .transition()
               .duration(1000)
-              .attr('r', (d: any) => (d.size || 15) * 1.3)
+              .attr('r', (d: any) => ((d as any).size || 15) * 1.3)
               .transition()
               .duration(1000)
-              .attr('r', d => d.size || 15)
+              .attr('r', (d: any) => (d as any).size || 15)
               .on('end', repeat);
           }
         });

@@ -24,6 +24,7 @@ interface PerformanceMetrics {
   memory: MemoryUsage;
   network: NetworkMetrics;
   rendering: RenderingMetrics;
+  loadTime?: number;
 }
 
 interface MemoryUsage {
@@ -137,6 +138,13 @@ class PerformanceMonitor {
       network,
       rendering
     };
+
+    // Corrigindo o acesso ao navigationStart
+    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+    if (navigation) {
+      const loadTime = navigation.loadEventEnd - (navigation.navigationStart || navigation.fetchStart || 0);
+      this.metrics.loadTime = loadTime;
+    }
   }
 
   private static getMemoryMetrics(): MemoryUsage {
@@ -420,6 +428,14 @@ class OptimizationEngine {
       this.optimizeNetwork(),
       this.cleanStorage()
     ]);
+  }
+
+  public static async cleanMemoryPublic() {
+    return this.cleanMemory();
+  }
+
+  public static async cleanStoragePublic() {
+    return this.cleanStorage();
   }
 }
 
@@ -973,7 +989,7 @@ export const PerformanceOptimizer: React.FC<PerformanceOptimizerProps> = ({
                   variant="outline"
                   size="sm"
                   className="w-full justify-start"
-                  onClick={() => OptimizationEngine.cleanMemory()}
+                  onClick={() => OptimizationEngine.cleanMemoryPublic()}
                 >
                   <HardDrive className="h-4 w-4 mr-2" />
                   Limpar memória
@@ -983,7 +999,7 @@ export const PerformanceOptimizer: React.FC<PerformanceOptimizerProps> = ({
                   variant="outline"
                   size="sm"
                   className="w-full justify-start"
-                  onClick={() => OptimizationEngine.cleanStorage()}
+                  onClick={() => OptimizationEngine.cleanStoragePublic()}
                 >
                   <Database className="h-4 w-4 mr-2" />
                   Limpar cache

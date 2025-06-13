@@ -354,7 +354,7 @@ export const GraphExporter: React.FC<GraphExporterProps> = ({
                         ? 'border-blue-500 bg-blue-50 dark:bg-blue-950'
                         : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
                     }`}
-                    onClick={() => handleOptionChange('format', format.value)}
+                    onClick={() => handleOptionChange('format', format.value as ExportFormat)}
                   >
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">

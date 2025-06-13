@@ -578,7 +578,7 @@ export const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = (
                           {notification.actions.map((action) => (
                             <Button
                               key={action.id}
-                              variant={action.type}
+                              variant={action.type === 'primary' ? 'default' : action.type === 'secondary' ? 'secondary' : 'destructive'}
                               size="sm"
                               onClick={(e) => {
                                 e.stopPropagation();

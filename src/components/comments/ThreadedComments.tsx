@@ -36,10 +36,12 @@ export const ThreadedComments: React.FC<ThreadedCommentsProps> = ({
       authorId: user.id,
       authorName: user.name,
       authorAvatar: user.avatar,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      x: 0,
+      y: 0,
+      resolved: false,
       parentId: replyingTo,
-      documentId,
     };
 
     await addComment(comment);

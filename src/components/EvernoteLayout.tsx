@@ -7,7 +7,7 @@ import { useFileSystemContext } from '@/contexts/FileSystemContext';
 import { cn } from '@/lib/utils';
 import { FileItem } from '@/types';
 import { usePermissions } from './permissions/PermissionsEngine';
-import LiveCursors from './collaboration/LiveCursors';
+import { LiveCursors } from './collaboration/LiveCursors';
 import PresenceAwareness from './collaboration/PresenceAwareness';
 import OperationalTransform, { type ConflictInfo } from './collaboration/OperationalTransform';
 import ConflictResolver, { type ConflictResolution } from './collaboration/ConflictResolver';

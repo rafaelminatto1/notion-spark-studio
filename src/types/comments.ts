@@ -16,6 +16,7 @@ export interface Comment {
 export interface CommentReaction {
   id: string;
   userId: string;
+  emoji: string;
   type: 'like' | 'love' | 'laugh' | 'angry' | 'sad';
   createdAt: Date;
 }

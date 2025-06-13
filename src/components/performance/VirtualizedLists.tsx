@@ -342,7 +342,7 @@ interface ListControlsProps {
   activeFilters: Set<string>;
   onFilterChange: (filters: Set<string>) => void;
   sortBy: string;
-  onSortChange: (sort: string) => void;
+  onSortChange: (sort: string | ((prev: string) => string)) => void;
   sortOrder: 'asc' | 'desc';
   onSortOrderChange: (order: 'asc' | 'desc') => void;
   viewMode: 'list' | 'grid';

@@ -22,7 +22,10 @@ import { useGraphAnalytics } from '@/hooks/useGraphAnalytics';
 interface GraphAnalyticsProps {
   nodes: GraphNode[];
   links: GraphLink[];
+  communities: Map<string, string[]>;
+  centralityScores: Map<string, number>;
   selectedNode?: string | null;
+  onClose: () => void;
   onNodeSelect: (nodeId: string) => void;
   onPathFind: (sourceId: string, targetId: string) => void;
 }
@@ -30,7 +33,10 @@ interface GraphAnalyticsProps {
 export const GraphAnalytics: React.FC<GraphAnalyticsProps> = ({
   nodes,
   links,
+  communities,
+  centralityScores,
   selectedNode,
+  onClose,
   onNodeSelect,
   onPathFind
 }) => {

@@ -22,6 +22,7 @@ import { useAutoSave } from '@/hooks/useAutoSave';
 import { parseLinks } from '@/utils/linkParser';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { v4 as uuidv4 } from 'uuid';
+import { nanoid } from 'nanoid';
 
 interface EditorProps {
   file: FileItem | undefined;
@@ -73,13 +74,9 @@ const EditorInner: React.FC<EditorProps> = ({
 
   // Auto-save functionality
   const { forceSave } = useAutoSave({
-    content: localContent,
-    onSave: (content) => {
-      if (file) {
-        onUpdateFile(file.id, { content });
-      }
-    },
-    delay: 1000
+    file: file,
+    onUpdateFile: onUpdateFile,
+    enabled: true
   });
 
   // Update local content when file changes
@@ -121,6 +118,18 @@ const EditorInner: React.FC<EditorProps> = ({
   }, [onCreateFile]);
 
   // Blocks conversion utilities
+  const parseText = (text: string): Block[] => {
+    const lines = text.split('\n').filter(line => line.trim() !== '');
+    
+    return lines.map((line, index) => ({
+      id: nanoid(),
+      type: line.startsWith('# ') ? 'heading' as const : 
+            line.startsWith('- ') ? 'list' as const : 
+            'text' as const, // Usando valores válidos do BlockType
+      content: line.replace(/^(# |-)/, '').trim(),
+    }));
+  };
+
   const contentToBlocks = (content: string, existingBlocks?: Block[]): Block[] => {
     if (existingBlocks && existingBlocks.length > 0) {
       return existingBlocks;
@@ -129,17 +138,15 @@ const EditorInner: React.FC<EditorProps> = ({
     const lines = content.split('\n');
     return lines.map((line, index) => ({
       id: uuidv4(),
-      type: line.startsWith('#') ? 'heading' : 
-            line.startsWith('-') || line.startsWith('*') ? 'list' :
-            line.trim() === '' ? 'paragraph' : 'text',
+      type: line.startsWith('#') ? 'heading1' : 
+            line.startsWith('-') || line.startsWith('*') ? 'bullet-list' :
+            line.trim() === '' ? 'paragraph' : 'paragraph',
       content: line,
-      order: index
     }));
   };
 
   const handleBlocksChange = useCallback((blocks: Block[]) => {
     const content = blocks
-      .sort((a, b) => a.order - b.order)
       .map(block => block.content)
       .join('\n');
     handleContentChange(content);

@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRealtime } from '@/hooks/useRealtime';
 import { Avatar } from '@/components/ui/avatar';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface CursorPosition {
   x: number;
@@ -12,15 +13,38 @@ interface CursorPosition {
   lastUpdate: number;
 }
 
-interface LiveCursorsProps {
-  documentId: string;
+export interface CollaboratorCursor {
+  userId: string;
+  userName: string;
+  userAvatar?: string;
+  x: number;
+  y: number;
+  color: string;
+  lastSeen: Date;
 }
 
-export const LiveCursors: React.FC<LiveCursorsProps> = ({ documentId }) => {
+export interface LiveCursorsProps {
+  collaborators: CollaboratorCursor[];
+  currentUserId: string;
+  documentId: string;
+  containerRef: React.RefObject<HTMLElement>;
+  onCursorUpdate: (position: { x: number; y: number; line: number; column: number }) => void;
+  onSelectionUpdate: (selection: { start: number; end: number; text: string }) => void;
+  className?: string;
+}
+
+export const LiveCursors: React.FC<LiveCursorsProps> = ({
+  collaborators,
+  currentUserId,
+  documentId,
+  containerRef,
+  onCursorUpdate,
+  onSelectionUpdate,
+  className = ''
+}) => {
   const { user } = useAuth();
   const { subscribe, unsubscribe } = useRealtime();
   const cursorsRef = useRef<Record<string, CursorPosition>>({});
-  const containerRef = useRef<HTMLDivElement>(null);
   const animationFrameRef = useRef<number>();
 
   useEffect(() => {
@@ -112,24 +136,35 @@ export const LiveCursors: React.FC<LiveCursorsProps> = ({ documentId }) => {
   }, [documentId, user, subscribe, unsubscribe]);
 
   return (
-    <div ref={containerRef} className="relative w-full h-full">
-      {Object.entries(cursorsRef.current).map(([userId, cursor]) => (
-        <div
-          key={userId}
-          id={`cursor-${userId}`}
-          className="absolute pointer-events-none transition-transform duration-100"
-          style={{
-            transform: `translate(${cursor.x}px, ${cursor.y}px)`,
-          }}
-        >
-          <div className="flex items-center space-x-2">
-            <Avatar src={cursor.userAvatar} alt={cursor.userName} size="sm" />
-            <div className="bg-primary text-primary-foreground px-2 py-1 rounded-md text-sm">
-              {cursor.userName}
-            </div>
-          </div>
-        </div>
-      ))}
+    <div className={className}>
+      <AnimatePresence>
+        {collaborators
+          .filter(cursor => cursor.userId !== currentUserId)
+          .map(cursor => (
+            <motion.div
+              key={cursor.userId}
+              className="absolute pointer-events-none z-50"
+              style={{
+                left: cursor.x,
+                top: cursor.y,
+                color: cursor.color
+              }}
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.5 }}
+            >
+              <div className="flex items-center gap-1">
+                <div 
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: cursor.color }}
+                />
+                <span className="text-xs bg-black text-white px-1 py-0.5 rounded">
+                  {cursor.userName}
+                </span>
+              </div>
+            </motion.div>
+          ))}
+      </AnimatePresence>
     </div>
   );
 }; 

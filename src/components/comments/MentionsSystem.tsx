@@ -63,6 +63,7 @@ export const MentionsSystem: React.FC<MentionsSystemProps> = ({
         userName: match[1],
         startIndex: match.index,
         endIndex: match.index + match[0].length,
+        createdAt: new Date(),
       });
     }
 

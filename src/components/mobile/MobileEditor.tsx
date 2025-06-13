@@ -263,7 +263,17 @@ const MobileToolbar: React.FC<MobileToolbarProps> = ({ onFormat, keyboardVisible
           {currentTools.map((tool) => (
             <button
               key={tool.id}
-              onClick={tool.action}
+              onClick={() => {
+                if (textareaRef.current) {
+                  const selection = textareaRef.current.selectionStart;
+                  const endSelection = textareaRef.current.selectionEnd;
+                  const currentSelection = {
+                    start: selection,
+                    end: endSelection
+                  } as Selection;
+                  tool.action(currentSelection, textareaRef.current);
+                }
+              }}
               className="flex items-center justify-center w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors flex-shrink-0"
               title={tool.label}
             >

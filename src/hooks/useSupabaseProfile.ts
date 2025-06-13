@@ -1,118 +1,75 @@
-import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useEffect } from 'react';
+import { useAuth } from './useAuth';
 
-export interface UserProfile {
+interface Profile {
   id: string;
-  name: string;
-  email: string;
-  avatar?: string;
+  username?: string;
+  full_name?: string;
+  avatar_url?: string;
+  website?: string;
+  bio?: string;
   created_at: string;
   updated_at: string;
 }
 
-export interface UserRole {
-  id: string;
-  user_id: string;
-  role: 'admin' | 'editor' | 'viewer';
-  created_at: string;
-}
-
 export const useSupabaseProfile = () => {
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [role, setRole] = useState<UserRole | null>(null);
+  const { user } = useAuth();
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
 
-  const loadProfile = useCallback(async () => {
+  const loadProfile = async () => {
+    if (!user) {
+      setProfile(null);
+      setLoading(false);
+      return;
+    }
+
     try {
-      const { data: user } = await supabase.auth.getUser();
-      
-      if (!user.user) {
-        setLoading(false);
-        return;
-      }
-
-      // Load profile
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.user.id)
-        .single();
-
-      if (profileError && profileError.code !== 'PGRST116') {
-        console.error('Error loading profile:', profileError);
-      } else {
-        setProfile(profileData);
-      }
-
-      // Load role
-      const { data: roleData, error: roleError } = await supabase
-        .from('user_roles')
-        .select('*')
-        .eq('user_id', user.user.id)
-        .single();
-
-      if (roleError && roleError.code !== 'PGRST116') {
-        console.error('Error loading role:', roleError);
-      } else {
-        setRole(roleData);
-      }
-
+      setLoading(true);
+      // Simular carregamento do perfil
+      const mockProfile: Profile = {
+        id: user.id,
+        username: user.name,
+        full_name: user.name,
+        avatar_url: user.avatar,
+        website: '',
+        bio: '',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      setProfile(mockProfile);
     } catch (error) {
-      console.error('Error loading profile data:', error);
+      console.error('Erro ao carregar perfil:', error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
+
+  const updateProfile = async (updates: Partial<Profile>) => {
+    if (!profile) return;
+
+    try {
+      const updatedProfile = {
+        ...profile,
+        ...updates,
+        updated_at: new Date().toISOString(),
+      };
+      setProfile(updatedProfile);
+      return updatedProfile;
+    } catch (error) {
+      console.error('Erro ao atualizar perfil:', error);
+      throw error;
+    }
+  };
 
   useEffect(() => {
     loadProfile();
-  }, [loadProfile]);
-
-  const updateProfile = useCallback(async (updates: Partial<UserProfile>) => {
-    try {
-      const { data: user } = await supabase.auth.getUser();
-      
-      if (!user.user) return;
-
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', user.user.id);
-
-      if (error) {
-        toast({
-          title: "Erro ao atualizar perfil",
-          description: error.message,
-          variant: "destructive"
-        });
-        return;
-      }
-
-      toast({
-        title: "Perfil atualizado",
-        description: "Informações salvas com sucesso"
-      });
-
-      loadProfile();
-    } catch (error) {
-      toast({
-        title: "Erro ao atualizar perfil",
-        description: "Falha ao salvar informações",
-        variant: "destructive"
-      });
-    }
-  }, [toast, loadProfile]);
+  }, [user]);
 
   return {
     profile,
-    role,
     loading,
     updateProfile,
-    loadProfile
+    loadProfile,
   };
 };

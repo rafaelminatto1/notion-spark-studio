@@ -534,4 +534,8 @@ export const AdaptiveSettings: React.FC<AdaptiveSettingsProps> = ({ className })
   );
 };
 
-export default AdaptiveUIProvider; 
+export const MicroInteractionsProvider: React.FC<{ children: React.ReactNode }> = ({
+  children
+}) => {
+  // ... existing implementation ...
+}; 

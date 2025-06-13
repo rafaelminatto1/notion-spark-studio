@@ -15,7 +15,8 @@ import {
   TrendingUp,
   ArrowRight,
   Lightbulb,
-  Zap
+  Zap,
+  MessageCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useFileSystemContext } from '@/contexts/FileSystemContext';

@@ -6,6 +6,26 @@ export interface SearchConfig {
   algorithm: 'fuzzy' | 'exact' | 'semantic' | 'regex';
   threshold: number;
   maxResults: number;
+  type?: string;
+  sorting?: string;
+  filters?: {
+    fileType?: string[];
+    dateRange?: { from: Date; to: Date };
+  };
+  highlighting?: boolean;
+  suggestions?: boolean;
+  facets?: boolean;
+}
+
+export interface SemanticSearchConfig extends SearchConfig {
+  // Adicional configs específicas para busca semântica
+}
+
+export interface SemanticSearchFilters {
+  fileType?: string[];
+  dateRange?: { from: Date; to: Date };
+  tags?: string[];
+  authors?: string[];
 }
 
 export interface SearchResult {
@@ -277,12 +297,29 @@ export const useSemanticSearch = (files: FileItem[]) => {
     query,
     setQuery,
     config,
+    setConfig: updateConfig,
     updateConfig,
     filters,
     updateFilters,
     clearSearch,
     results: searchResults,
     stats: searchStats,
-    isSearching: query.trim().length > 0
+    isSearching: query.trim().length > 0,
+    facets: [],
+    suggestions: [],
+    search: () => searchResults,
+    totalResults: searchResults.length,
+    searchTime: 0,
+    addFilter: (type: string, value: string) => {
+      // Implementação básica
+    },
+    removeFilter: (type: string, value: string) => {
+      // Implementação básica
+    },
+    recentSearches: [],
+    saveSearch: (name: string) => {
+      // Implementação básica
+    },
+    savedSearches: []
   };
 }; 

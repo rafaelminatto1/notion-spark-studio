@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Eye, Edit, MessageCircle, Cursor, Activity, Share2, Clock, Settings } from 'lucide-react';
+import { Users, Eye, Edit, MessageCircle, MousePointer, Activity, Share2, Clock, Settings } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -170,7 +170,7 @@ export const RealtimeCollaboration: React.FC<RealtimeCollaborationProps> = ({
         transition={{ duration: 0.2 }}
       >
         <div className="flex items-center space-x-1">
-          <Cursor className="h-4 w-4 text-blue-500" />
+          <MousePointer className="h-4 w-4 text-blue-500" />
           <div className="bg-blue-500 text-white px-2 py-1 rounded text-xs whitespace-nowrap">
             {collaborator.name}
           </div>

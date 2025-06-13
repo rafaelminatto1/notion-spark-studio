@@ -10,6 +10,12 @@ import { GraphFilters } from './types';
 import { cn } from '@/lib/utils';
 
 interface GraphControlsProps {
+  className?: string;
+  onTogglePathFinding: () => void;
+  pathFindingMode: boolean;
+  onToggleAnalytics: () => void;
+  onToggleLiveUpdates: () => void;
+  liveUpdates: boolean;
   filters: GraphFilters;
   onFiltersChange: (filters: GraphFilters) => void;
   viewMode: string;

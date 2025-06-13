@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { motion, AnimatePresence, useSpring, useAnimation } from 'framer-motion';
+import React, { createContext, useContext, useEffect, useRef, useState, ReactNode } from 'react';
+import { motion, AnimatePresence, useSpring, useTransform, useMotionValue } from 'framer-motion';
 import { AlertCircle, CheckCircle, Info, X, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useMicroInteractions } from '@/hooks/useMicroInteractions';
 
 // Context para micro-interactions globais
 interface MicroInteractionsContextType {

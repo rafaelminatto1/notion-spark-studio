@@ -20,12 +20,16 @@ import {
   LineChart,
   Calendar,
   Filter,
-  Refresh,
+  RefreshCw,
   Settings,
   AlertCircle,
   CheckCircle,
   Star,
-  Award
+  Award,
+  AlertTriangle,
+  Circle,
+  MoreHorizontal,
+  MessageSquare
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -417,7 +421,7 @@ export const AdvancedMetricsDashboard: React.FC<AdvancedMetricsDashboardProps> =
                 onClick={() => setAutoRefresh(!autoRefresh)}
                 className={autoRefresh ? 'bg-green-50 border-green-200' : ''}
               >
-                <Refresh className={`h-4 w-4 ${autoRefresh ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`h-4 w-4 ${autoRefresh ? 'animate-spin' : ''}`} />
               </Button>
             </div>
           </div>
@@ -548,7 +552,7 @@ export const AdvancedMetricsDashboard: React.FC<AdvancedMetricsDashboardProps> =
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center space-x-2">
                         {insight.type === 'trend' && <TrendingUp className="h-4 w-4" />}
-                        {insight.type === 'anomaly' && <AlertCircle className="h-4 w-4" />}
+                        {insight.type === 'anomaly' && <AlertTriangle className="h-4 w-4" />}
                         {insight.type === 'recommendation' && <Star className="h-4 w-4" />}
                         {insight.type === 'prediction' && <Eye className="h-4 w-4" />}
                         <span>{insight.title}</span>

@@ -10,7 +10,7 @@ import {
   Zap, 
   Play, 
   Pause, 
-  Stop, 
+  Square,
   Settings, 
   Clock, 
   Target, 
@@ -29,7 +29,17 @@ import {
   Bell,
   Filter,
   ArrowRight,
-  Sparkles
+  Sparkles,
+  ChevronRight,
+  Trash2,
+  Edit,
+  Save,
+  X,
+  Plus,
+  Copy,
+  Download,
+  Upload,
+  AlertTriangle
 } from 'lucide-react';
 import { FileItem } from '@/types';
 import { cn } from '@/lib/utils';
@@ -393,7 +403,7 @@ export const SmartWorkflowEngine: React.FC<SmartWorkflowEngineProps> = ({
       case 'running': return <RefreshCw className="h-4 w-4 animate-spin text-blue-500" />;
       case 'completed': return <CheckCircle className="h-4 w-4 text-green-500" />;
       case 'failed': return <AlertCircle className="h-4 w-4 text-red-500" />;
-      case 'cancelled': return <Stop className="h-4 w-4 text-gray-500" />;
+      case 'cancelled': return <Square className="h-4 w-4 text-gray-500" />;
     }
   };
 
@@ -510,7 +520,6 @@ export const SmartWorkflowEngine: React.FC<SmartWorkflowEngineProps> = ({
                         <Switch
                           checked={workflow.enabled}
                           onCheckedChange={() => toggleWorkflow(workflow.id)}
-                          size="sm"
                         />
                         <Badge variant={workflow.enabled ? 'default' : 'secondary'}>
                           {workflow.enabled ? 'Ativo' : 'Inativo'}

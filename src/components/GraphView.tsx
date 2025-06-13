@@ -32,10 +32,19 @@ interface GraphViewProps {
   className?: string;
 }
 
-// Adicionar tipagem para permitir acesso a fx/fy
+interface GraphLinkWithForce {
+  source: GraphNodeWithForce;
+  target: GraphNodeWithForce;
+}
+
 interface GraphNodeWithForce extends GraphNode {
+  x?: number;
+  y?: number;
+  vx?: number;
+  vy?: number;
   fx?: number | null;
   fy?: number | null;
+  index?: number;
 }
 
 export const GraphView: React.FC<GraphViewProps> = ({
@@ -307,12 +316,12 @@ export const GraphView: React.FC<GraphViewProps> = ({
 
     simulation.on('tick', () => {
       link
-        .attr('x1', (d: any) => (d as GraphNodeWithForce).source.x)
-        .attr('y1', (d: any) => (d as GraphNodeWithForce).source.y)
-        .attr('x2', (d: any) => (d as GraphNodeWithForce).target.x)
-        .attr('y2', (d: any) => (d as GraphNodeWithForce).target.y);
+        .attr('x1', (d: any) => d.source.x)
+        .attr('y1', (d: any) => d.source.y)
+        .attr('x2', (d: any) => d.target.x)
+        .attr('y2', (d: any) => d.target.y);
 
-      nodeGroup.attr('transform', (d: any) => `translate(${(d as GraphNodeWithForce).x},${(d as GraphNodeWithForce).y})`);
+      nodeGroup.attr('transform', (d: any) => `translate(${d.x},${d.y})`);
     });
 
     const resetZoom = () => {

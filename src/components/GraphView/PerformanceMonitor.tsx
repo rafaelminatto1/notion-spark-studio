@@ -32,17 +32,23 @@ interface PerformanceMetrics {
 }
 
 interface PerformanceMonitorProps {
-  metrics: PerformanceMetrics;
+  className?: string;
+  nodeCount: number;
+  linkCount: number;
+  visibleNodes: number;
+  metrics?: PerformanceMetrics;
   isVisible?: boolean;
   onToggleVisibility?: () => void;
-  className?: string;
 }
 
 export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
   metrics,
   isVisible = false,
   onToggleVisibility,
-  className = ''
+  className = '',
+  nodeCount,
+  linkCount,
+  visibleNodes
 }) => {
   const [history, setHistory] = useState<PerformanceMetrics[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -197,10 +203,10 @@ export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
             <span className="text-gray-400">Nós Renderizados</span>
             <div className="flex items-center gap-2">
               <span className="text-white font-mono">
-                {metrics.visibleNodes.toLocaleString()}
+                {visibleNodes.toLocaleString()}
               </span>
               <span className="text-gray-500">
-                / {metrics.nodeCount.toLocaleString()}
+                / {nodeCount.toLocaleString()}
               </span>
             </div>
           </div>
@@ -208,12 +214,12 @@ export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
             <div 
               className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
               style={{ 
-                width: `${Math.min(100, (metrics.visibleNodes / Math.max(metrics.nodeCount, 1)) * 100)}%` 
+                width: `${Math.min(100, (visibleNodes / Math.max(nodeCount, 1)) * 100)}%` 
               }}
             />
           </div>
           <div className="text-xs text-gray-500">
-            Otimização: {Math.round(100 - (metrics.visibleNodes / Math.max(metrics.nodeCount, 1)) * 100)}% dos nós culled
+            Otimização: {Math.round(100 - (visibleNodes / Math.max(nodeCount, 1)) * 100)}% dos nós culled
           </div>
         </div>
 
