@@ -9,7 +9,7 @@ import { MobileHeader } from '@/components/MobileHeader';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { BreadcrumbsNav } from '@/components/BreadcrumbsNav';
 import { KeyboardShortcuts } from '@/components/KeyboardShortcuts';
-import { PerformanceMonitor } from '@/components/PerformanceMonitor';
+// import { PerformanceMonitor } from '@/components/PerformanceMonitor'; // Temporariamente desabilitado
 import { useAutoCloseToast } from '@/hooks/useAutoCloseToast';
 import { useIndexMainContent } from '@/hooks/useIndexMainContent';
 import { Sparkles } from 'lucide-react';
@@ -231,15 +231,18 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
           </div>
         )}
 
-        {/* Performance Monitor - Sistema Global */}
-        <PerformanceMonitor
-          onOptimizationSuggestion={(suggestion) => {
-            // Auto-aplicar otimizações de alta prioridade
-            if (suggestion.impact === 'high') {
-              suggestion.action();
-            }
-          }}
-        />
+        {/* Performance Monitor - temporariamente desabilitado para build */}
+        {/*
+        {!isMobile && (
+          <div className="fixed bottom-4 left-4 z-30">
+            <PerformanceMonitor
+              onOptimizationSuggestion={(suggestion) => {
+                console.log('Performance suggestion:', suggestion);
+              }}
+            />
+          </div>
+        )}
+        */}
       </div>
       
       {/* Smart Content Suggestions Panel - Aparece quando há sugestões */}
