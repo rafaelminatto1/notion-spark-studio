@@ -1,4 +1,54 @@
-import { EventEmitter } from 'events';
+// Browser-compatible EventEmitter implementation
+class EventEmitter {
+  private events: { [key: string]: Function[] } = {};
+
+  on(event: string, callback: Function): this {
+    if (!this.events[event]) {
+      this.events[event] = [];
+    }
+    this.events[event].push(callback);
+    return this;
+  }
+
+  emit(event: string, ...args: any[]): boolean {
+    if (!this.events[event]) {
+      return false;
+    }
+    
+    this.events[event].forEach(callback => {
+      try {
+        callback(...args);
+      } catch (error) {
+        console.error(`Error in event handler for ${event}:`, error);
+      }
+    });
+    
+    return true;
+  }
+
+  off(event: string, callback?: Function): this {
+    if (!this.events[event]) {
+      return this;
+    }
+    
+    if (!callback) {
+      delete this.events[event];
+    } else {
+      this.events[event] = this.events[event].filter(cb => cb !== callback);
+    }
+    
+    return this;
+  }
+
+  removeAllListeners(event?: string): this {
+    if (event) {
+      delete this.events[event];
+    } else {
+      this.events = {};
+    }
+    return this;
+  }
+}
 
 // Tipos para colaboração em tempo real
 export interface WebSocketMessage {
@@ -38,8 +88,8 @@ export class WebSocketService extends EventEmitter {
   private maxReconnectAttempts = 5;
   private reconnectInterval = 3000;
   private heartbeatInterval = 30000;
-  private heartbeatTimer: NodeJS.Timeout | null = null;
-  private reconnectTimer: NodeJS.Timeout | null = null;
+  private heartbeatTimer: number | null = null;
+  private reconnectTimer: number | null = null;
   private connectionTimeout = 10000;
   private messageQueue: WebSocketMessage[] = [];
   private lastPing = 0;
