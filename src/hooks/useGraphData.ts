@@ -137,7 +137,7 @@ export const useGraphData = (files: FileItem[], filters: GraphFilters): UseGraph
             links.push({
               source: file.id,
               target: targetFile.id,
-              type: 'reference',
+              type: 'link',
               strength: 0.6,
               color: '#f59e0b',
               width: 2,

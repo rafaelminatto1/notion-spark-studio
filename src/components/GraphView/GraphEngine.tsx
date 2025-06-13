@@ -160,6 +160,17 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [liveUpdates, setLiveUpdates] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [aiInsights, setAiInsights] = useState<{
+    recommendations: Array<{ type: string, message: string, nodeIds: string[], priority: 'high' | 'medium' | 'low' }>;
+    anomalies: Array<{ nodeId: string, reason: string, severity: 'high' | 'medium' | 'low' }>;
+    suggestions: Array<{ action: string, description: string, impact: string }>;
+  }>({
+    recommendations: [],
+    anomalies: [],
+    suggestions: []
+  });
+  const [lastAnalysisTime, setLastAnalysisTime] = useState<Date | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Converter arquivos em nós e links do grafo
   const { nodes, links } = useMemo(() => {
@@ -176,13 +187,13 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
       metadata: {
         lastModified: file.updatedAt || new Date(),
         wordCount: file.content?.split(' ').length || 0,
-        collaborators: file.collaborators || [],
+        collaborators: [],
         tags: file.tags || [],
         fileSize: file.content?.length || 0,
         language: 'markdown',
         isTemplate: false,
         isShared: false,
-        accessLevel: 'private',
+        accessLevel: 'private' as const,
       },
     }));
 
@@ -249,7 +260,11 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
     graphNodes.forEach(node => {
       node.connections = graphLinks.filter(link => 
         link.source === node.id || link.target === node.id
-      ).length;
+      ).map(link => ({
+        to: link.source === node.id ? link.target as string : link.source as string,
+        type: link.type,
+        strength: link.strength
+      }));
     });
 
     return { nodes: graphNodes, links: graphLinks };
@@ -259,12 +274,12 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
   const filteredData = useMemo(() => {
     let filteredNodes = nodes.filter(node => {
       if (!filters.nodeTypes.includes(node.type)) return false;
-      if (node.connections < filters.minConnections) return false;
+      if (node.connections.length < filters.minConnections) return false;
       if (filters.tags.length > 0 && !filters.tags.some(tag => node.metadata.tags.includes(tag))) return false;
       
       if (filters.dateRange) {
         const nodeDate = new Date(node.metadata.lastModified);
-        if (nodeDate < filters.dateRange.start || nodeDate > filters.dateRange.end) return false;
+        if (nodeDate < filters.dateRange.from || nodeDate > filters.dateRange.to) return false;
       }
       
       return true;
@@ -300,7 +315,7 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
       nodeLabel: (node: GraphNode) => `
         <div style="background: rgba(0,0,0,0.8); color: white; padding: 8px; border-radius: 4px; font-size: 12px;">
           <strong>${node.title}</strong><br/>
-          Conexões: ${node.connections}<br/>
+          Conexões: ${node.connections.length}<br/>
           Palavras: ${node.metadata.wordCount}<br/>
           Tags: ${node.metadata.tags.join(', ') || 'Nenhuma'}
         </div>
@@ -339,9 +354,9 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
       },
       linkDirectionalArrowLength: 6,
       linkDirectionalArrowRelPos: 1,
-      cooldownTicks: viewMode === 'force' ? 100 : 0,
-      warmupTicks: viewMode === 'force' ? 100 : 0,
-      d3AlphaDecay: layoutSettings.strength / 100,
+      cooldownTicks: layoutSettings.physics ? 100 : 0,
+      warmupTicks: layoutSettings.physics ? 100 : 0,
+      d3AlphaDecay: layoutSettings.forceStrength / 100,
       d3VelocityDecay: 0.3,
       onNodeClick: handleNodeClick,
       onNodeHover: handleNodeHover,
@@ -351,23 +366,23 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
 
     // Configurações específicas por modo
     switch (viewMode) {
-      case 'hierarchical':
+      case 'force':
         return {
           ...baseConfig,
           dagMode: 'td',
-          dagLevelDistance: layoutSettings.distance,
+          dagLevelDistance: layoutSettings.linkDistance,
         };
-      case 'circular':
+      case 'hierarchical':
         return {
           ...baseConfig,
           dagMode: 'radialout',
-          dagLevelDistance: layoutSettings.distance,
+          dagLevelDistance: layoutSettings.linkDistance,
         };
       case 'timeline':
         return {
           ...baseConfig,
           dagMode: 'lr',
-          dagLevelDistance: layoutSettings.distance,
+          dagLevelDistance: layoutSettings.linkDistance,
           nodeAutoColorBy: (node: GraphNode) => {
             const date = new Date(node.metadata.lastModified);
             const now = new Date();

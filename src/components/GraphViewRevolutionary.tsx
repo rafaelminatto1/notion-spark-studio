@@ -661,12 +661,145 @@ export const GraphViewRevolutionary: React.FC<GraphViewRevolutionaryProps> = ({
               <div className="p-4 space-y-4">
                 <Card className="bg-notion-dark border-notion-dark-border">
                   <CardHeader>
-                    <CardTitle className="text-sm">Configurações Avançadas</CardTitle>
+                    <CardTitle className="text-sm">Configurações de Layout</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-3">
+                      <div className="space-y-2">
+                        <label className="text-sm text-gray-300">Distância entre Links: {linkDistance[0]}</label>
+                        <Slider 
+                          value={linkDistance} 
+                          onValueChange={setLinkDistance} 
+                          max={300} 
+                          min={50} 
+                          step={10} 
+                          className="w-full"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm text-gray-300">Força de Repulsão: {chargeStrength[0]}</label>
+                        <Slider 
+                          value={chargeStrength} 
+                          onValueChange={setChargeStrength} 
+                          max={800} 
+                          min={100} 
+                          step={50} 
+                          className="w-full"
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-notion-dark border-notion-dark-border">
+                  <CardHeader>
+                    <CardTitle className="text-sm">Configurações Visuais</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm text-gray-300">Mostrar Labels</label>
+                      <Switch checked={showLabels} onCheckedChange={setShowLabels} />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm text-gray-300">Mostrar Órfãos</label>
+                      <Switch checked={showOrphans} onCheckedChange={setShowOrphans} />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm text-gray-300">Modo Foco</label>
+                      <Switch checked={focusMode} onCheckedChange={setFocusMode} />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-notion-dark border-notion-dark-border">
+                  <CardHeader>
+                    <CardTitle className="text-sm">Performance</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="text-sm text-gray-400">
-                      Layout, performance e outras configurações em breve...
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <span className="text-gray-500">Nós visíveis:</span>
+                          <div className="text-white font-medium">{filteredData.nodes.length}</div>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Links visíveis:</span>
+                          <div className="text-white font-medium">{filteredData.links.length}</div>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Worker ativo:</span>
+                          <div className={`font-medium ${workerReady ? 'text-green-400' : 'text-red-400'}`}>
+                            {workerReady ? 'Sim' : 'Não'}
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Calculando:</span>
+                          <div className={`font-medium ${isCalculating ? 'text-yellow-400' : 'text-green-400'}`}>
+                            {isCalculating ? 'Sim' : 'Não'}
+                          </div>
+                        </div>
+                      </div>
                     </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-notion-dark border-notion-dark-border">
+                  <CardHeader>
+                    <CardTitle className="text-sm">Exportar Dados</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full"
+                      onClick={() => {
+                        const data = {
+                          nodes: filteredData.nodes,
+                          links: filteredData.links,
+                          metadata: {
+                            exportDate: new Date().toISOString(),
+                            nodeCount: filteredData.nodes.length,
+                            linkCount: filteredData.links.length
+                          }
+                        };
+                        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `graph-data-${Date.now()}.json`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                      }}
+                    >
+                      📁 Exportar JSON
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full"
+                      onClick={() => {
+                        // CSV Export
+                        const csvContent = [
+                          ['ID', 'Nome', 'Tipo', 'Conexões'].join(','),
+                          ...filteredData.nodes.map(node => [
+                            node.id,
+                            `"${node.name}"`,
+                            node.type,
+                            filteredData.links.filter(l => l.source === node.id || l.target === node.id).length
+                          ].join(','))
+                        ].join('\n');
+                        
+                        const blob = new Blob([csvContent], { type: 'text/csv' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `graph-nodes-${Date.now()}.csv`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                      }}
+                    >
+                      📊 Exportar CSV
+                    </Button>
                   </CardContent>
                 </Card>
               </div>

@@ -35,7 +35,7 @@ export interface GraphLink {
   target: string | GraphNode;
   type: 'link' | 'backlink' | 'tag' | 'parent' | 'reference';
   strength: number;
-  bidirectional: boolean;
+  bidirectional?: boolean;
   weight?: number;
   distance?: number;
 }
