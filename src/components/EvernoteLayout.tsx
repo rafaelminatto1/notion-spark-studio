@@ -31,11 +31,10 @@ export const EvernoteLayout: React.FC<EvernoteLayoutProps> = ({
   
   const {
     files = [],
-    getCurrentFile,
-    updateFile,
     createFile,
+    updateFile,
     deleteFile,
-    favorites = [],
+    shareFile,
     toggleFavorite,
     navigateTo,
     loading = false
@@ -130,28 +129,20 @@ export const EvernoteLayout: React.FC<EvernoteLayoutProps> = ({
   };
 
   const handleCreateNotebook = async () => {
-    console.log('[EvernoteLayout] handleCreateNotebook called');
-    console.log('[EvernoteLayout] currentUserId:', currentUserId);
-    console.log('[EvernoteLayout] checkPermission function:', typeof checkPermission);
-    
     // Verificar se tem permissão para criar notebooks
     if (!checkPermission(currentUserId, 'workspace', 'create')) {
       console.warn('[EvernoteLayout] Permissão negada para criar notebooks');
       return;
     }
     
-    console.log('[EvernoteLayout] Permissions check passed, calling createFile');
-    
     try {
       const newNotebookId = await createFile('Novo Notebook', undefined, 'folder');
-      console.log('[EvernoteLayout] Notebook created with ID:', newNotebookId);
-      
       if (newNotebookId) {
+        // Selecionar o novo notebook criado
         setSelectedNotebook(newNotebookId);
-        console.log('[EvernoteLayout] Selected notebook set to:', newNotebookId);
       }
     } catch (error) {
-      console.error('[EvernoteLayout] Error creating notebook:', error);
+      console.error('[EvernoteLayout] Erro ao criar notebook:', error);
     }
   };
 
