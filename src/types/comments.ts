@@ -1,28 +1,32 @@
 export interface Comment {
   id: string;
-  documentId: string;
-  userId: string;
-  userName: string;
-  userAvatar?: string;
   content: string;
-  position: {
-    x: number;
-    y: number;
-  };
-  reactions: Reaction[];
-  replies: Comment[];
-  createdAt: string;
-  updatedAt: string;
+  authorId: string;
+  authorName: string;
+  authorAvatar: string;
+  createdAt: Date;
+  updatedAt: Date;
+  x: number;
+  y: number;
+  resolved: boolean;
+  parentId?: string;
+  reactions?: CommentReaction[];
 }
 
-export interface Reaction {
+export interface CommentReaction {
   id: string;
-  commentId: string;
+  userId: string;
+  type: 'like' | 'love' | 'laugh' | 'angry' | 'sad';
+  createdAt: Date;
+}
+
+export interface CommentMention {
+  id: string;
   userId: string;
   userName: string;
-  userAvatar?: string;
-  emoji: string;
-  createdAt: string;
+  startIndex: number;
+  endIndex: number;
+  createdAt: Date;
 }
 
 export interface CommentThread {
@@ -31,13 +35,6 @@ export interface CommentThread {
   comments: Comment[];
   createdAt: string;
   updatedAt: string;
-}
-
-export interface CommentMention {
-  id: string;
-  userId: string;
-  userName: string;
-  userAvatar?: string;
 }
 
 export interface CommentAnnotation {
