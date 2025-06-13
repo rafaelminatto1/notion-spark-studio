@@ -123,8 +123,10 @@ export const GraphAnalyticsAdvanced: React.FC<GraphAnalyticsAdvancedProps> = ({
 
     // Calcular grau
     links.forEach(link => {
-      degrees.set(link.source, (degrees.get(link.source) || 0) + 1);
-      degrees.set(link.target, (degrees.get(link.target) || 0) + 1);
+      const sourceId = typeof link.source === 'string' ? link.source : link.source.id;
+      const targetId = typeof link.target === 'string' ? link.target : link.target.id;
+      degrees.set(sourceId, (degrees.get(sourceId) || 0) + 1);
+      degrees.set(targetId, (degrees.get(targetId) || 0) + 1);
     });
 
     // Simular outras centralidades (simplificado)

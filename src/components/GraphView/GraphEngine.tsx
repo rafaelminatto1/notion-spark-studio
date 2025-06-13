@@ -369,19 +369,19 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
       case 'force':
         return {
           ...baseConfig,
-          dagMode: 'td',
+          dagMode: 'td' as const,
           dagLevelDistance: layoutSettings.linkDistance,
         };
       case 'hierarchical':
         return {
           ...baseConfig,
-          dagMode: 'radialout',
+                      dagMode: 'radialout' as const,
           dagLevelDistance: layoutSettings.linkDistance,
         };
       case 'timeline':
         return {
           ...baseConfig,
-          dagMode: 'lr',
+                      dagMode: 'lr' as const,
           dagLevelDistance: layoutSettings.linkDistance,
           nodeAutoColorBy: (node: GraphNode) => {
             const date = new Date(node.metadata.lastModified);
@@ -463,22 +463,18 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
     }
   }, [pathFindingMode]);
 
-  // Gestos mobile
-  const bind = useGesture({
-    onPinch: ({ offset: [scale] }) => {
-      if (graphRef.current) {
-        graphRef.current.zoom(scale);
-      }
+  // Gestos mobile (simplificado)
+  const gestureHandlers = {
+    onTouchStart: (e: React.TouchEvent) => {
+      // Handle touch start
     },
-    onDrag: ({ offset: [x, y], first, last }) => {
-      if (first) {
-        // Início do arrasto
-      }
-      if (last) {
-        // Fim do arrasto
-      }
+    onTouchMove: (e: React.TouchEvent) => {
+      // Handle touch move
     },
-  });
+    onTouchEnd: (e: React.TouchEvent) => {
+      // Handle touch end
+    }
+  };
 
   // Live updates
   useEffect(() => {
@@ -513,7 +509,7 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
     <div 
       ref={containerRef}
       className={cn("relative w-full h-full overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900", className)}
-      {...bind()}
+      {...gestureHandlers}
     >
       {/* Graph principal */}
       <ForceGraph2D
