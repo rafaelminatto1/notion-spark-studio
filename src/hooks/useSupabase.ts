@@ -1,27 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
-import { useMemo } from 'react';
+import { env } from '../lib/env';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Supabase URL e Anon Key são necessários');
-}
+// Só criar cliente se as variáveis estiverem definidas
+const supabase = env.SUPABASE_URL && env.SUPABASE_ANON_KEY 
+  ? createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY)
+  : null;
 
 export const useSupabase = () => {
-  const supabase = useMemo(() => {
-    return createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-      },
-      realtime: {
-        params: {
-          eventsPerSecond: 10,
-        },
-      },
-    });
-  }, []);
-
-  return { supabase };
+  return {
+    supabase,
+    isEnabled: Boolean(env.SUPABASE_URL && env.SUPABASE_ANON_KEY)
+  };
 }; 

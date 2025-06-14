@@ -1,10 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
+import { env } from './env';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Só criar cliente se as variáveis estiverem definidas
+export const supabase = env.SUPABASE_URL && env.SUPABASE_ANON_KEY 
+  ? createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY)
+  : null;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
-}
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey); 
+export const isSupabaseEnabled = Boolean(env.SUPABASE_URL && env.SUPABASE_ANON_KEY); 

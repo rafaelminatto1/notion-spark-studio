@@ -1,20 +1,18 @@
+import React, { Suspense, lazy } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthGuard } from "@/components/AuthGuard";
 import { useTokenCleanup } from "@/hooks/useTokenCleanup";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import ConnectionStatus from "@/components/ConnectionStatus";
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import ResetPassword from "./pages/ResetPassword";
-import NotFound from "./pages/NotFound";
 import { FileSystemProvider } from "@/contexts/FileSystemContext";
 import { UserPreferencesProvider } from "@/contexts/UserPreferencesContext";
 import { PermissionsProvider } from "@/components/permissions/PermissionsEngine";
+import { CollaborationProvider } from './components/collaboration/CollaborationProvider';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -33,12 +31,18 @@ const queryClient = new QueryClient({
   },
 });
 
+// Lazy loading das páginas
+const Index = lazy(() => import('./legacy-pages/Index'));
+const Auth = lazy(() => import('./legacy-pages/Auth'));
+const ResetPassword = lazy(() => import('./legacy-pages/ResetPassword'));
+const NotFound = lazy(() => import('./legacy-pages/NotFound'));
+
 const AppContent = () => {
   // Hook para limpeza automática de tokens expirados
   useTokenCleanup();
 
   return (
-    <BrowserRouter>
+    <Router>
       <Routes>
         <Route path="/auth" element={<Auth />} />
         <Route path="/reset-password" element={<ResetPassword />} />
@@ -49,7 +53,7 @@ const AppContent = () => {
         } />
         <Route path="*" element={<NotFound />} />
       </Routes>
-    </BrowserRouter>
+    </Router>
   );
 };
 
@@ -64,7 +68,9 @@ const App = () => (
           <UserPreferencesProvider>
             <FileSystemProvider>
               <PermissionsProvider>
-                <AppContent />
+                <CollaborationProvider>
+                  <AppContent />
+                </CollaborationProvider>
               </PermissionsProvider>
             </FileSystemProvider>
           </UserPreferencesProvider>
