@@ -1,0 +1,47 @@
+name: Testes E2E
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Start WebSocket server
+      run: |
+        cd websocket-server
+        npm install
+        npm start &
+      env:
+        WS_PORT: 8080
+        WS_HOST: localhost
+        WS_JWT_SECRET: ${{ secrets.WS_JWT_SECRET }}
+    
+    - name: Run E2E tests
+      run: npm run test:e2e
+      env:
+        TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+        TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: cypress-results
+        path: cypress/videos
+        if-no-files-found: ignore 

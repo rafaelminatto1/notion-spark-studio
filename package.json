@@ -15,7 +15,8 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:ci": "jest --ci --coverage --watchAll=false",
-    "test:e2e": "playwright test",
+    "test:e2e": "start-server-and-test dev http://localhost:5173 cypress:run",
+    "test:e2e:open": "start-server-and-test dev http://localhost:5173 cypress:open",
     "test:e2e:staging": "STAGING=true playwright test",
     "install-all": "npm install && npm run setup-hooks",
     "ws:install": "cd ws-server && npm install",
@@ -29,7 +30,9 @@
     "docker:compose": "docker-compose -f docker-compose.prod.yml up",
     "analyze": "npx vite-bundle-analyzer",
     "clean": "rm -rf dist coverage .vercel",
-    "verify-env": "node scripts/verify-env.js"
+    "verify-env": "node scripts/verify-env.js",
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",
@@ -107,6 +110,7 @@
   "devDependencies": {
     "@eslint/js": "^9.13.0",
     "@tailwindcss/typography": "^0.5.15",
+    "@testing-library/cypress": "^10.0.3",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^14.3.1",
     "@testing-library/user-event": "^14.6.1",
@@ -117,6 +121,7 @@
     "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react": "^4.3.3",
     "autoprefixer": "^10.4.20",
+    "cypress": "^14.4.1",
     "eslint": "^9.13.0",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.14",
@@ -125,6 +130,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "lovable-tagger": "^1.1.7",
     "postcss": "^8.4.47",
+    "start-server-and-test": "^2.0.12",
     "tailwindcss": "^3.4.14",
     "ts-jest": "^29.4.0",
     "typescript": "~5.6.2",
@@ -135,10 +141,10 @@
     "workbox-window": "^7.3.0"
   },
   "optionalDependencies": {
-    "@rollup/rollup-win32-x64-msvc": "^4.42.0",
-    "@rollup/rollup-linux-x64-gnu": "^4.42.0",
+    "@rollup/rollup-darwin-arm64": "^4.42.0",
     "@rollup/rollup-darwin-x64": "^4.42.0",
-    "@rollup/rollup-darwin-arm64": "^4.42.0"
+    "@rollup/rollup-linux-x64-gnu": "^4.42.0",
+    "@rollup/rollup-win32-x64-msvc": "^4.42.0"
   },
   "jest": {
     "preset": "ts-jest",
