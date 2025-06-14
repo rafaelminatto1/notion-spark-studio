@@ -6,7 +6,31 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
+      manifest: {
+        name: 'Notion Spark Studio',
+        short_name: 'NotionSpark',
+        description: 'Notion Spark Studio - Plataforma de Templates',
+        theme_color: '#ffffff',
+        icons: [
+          {
+            src: 'pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: 'pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          }
+        ]
+      }
+    })
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -18,9 +42,9 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom'],
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tooltip'],
-          utils: ['date-fns', 'uuid', 'zod'],
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
+          utils: ['date-fns', 'lodash']
         },
       },
     },
@@ -30,7 +54,7 @@ export default defineConfig({
     assetsInlineLimit: 4096,
   },
   server: {
-    host: "::",
+    host: "0.0.0.0",
     port: 8080,
   },
   optimizeDeps: {
@@ -39,5 +63,11 @@ export default defineConfig({
   },
   define: {
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+  },
+  esbuild: {
+    target: 'esnext',
+    supported: {
+      'top-level-await': true
+    }
   }
 });

@@ -3,25 +3,26 @@
   "builds": [
     {
       "src": "package.json",
-      "use": "@vercel/static-build",
+      "use": "@vercel/node",
       "config": {
-        "distDir": "dist"
+        "buildCommand": "npm run build",
+        "installCommand": "npm install",
+        "outputDirectory": "dist"
       }
     }
   ],
-  "env": {
-    "NODE_ENV": "production"
-  },
-  "build": {
-    "env": {
-      "VITE_APP_NAME": "Notion Spark Studio",
-      "VITE_APP_VERSION": "2.0.0",
-      "VITE_BUILD_TIME": "$VERCEL_BUILD_TIMESTAMP",
-      "ENABLE_TYPESCRIPT_CHECK": "false"
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
+  ],
+  "env": {
+    "VITE_APP_NAME": "Notion Spark Studio",
+    "VITE_APP_VERSION": "2.0.0",
+    "VITE_API_BASE_URL": "https://api.notion-spark.com",
+    "VITE_WS_URL": "wss://ws.notion-spark.com"
   },
-  "installCommand": "npm ci",
-  "buildCommand": "npm run build",
   "headers": [
     {
       "source": "/(.*)",
