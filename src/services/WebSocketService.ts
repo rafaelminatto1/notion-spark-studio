@@ -303,14 +303,10 @@ export class WebSocketService extends EventEmitter {
 
   // Handlers privados
   private getWebSocketUrl(): string {
-    // Para desenvolvimento, usar servidor mock ou local
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.MODE === 'development') {
       return 'ws://localhost:3001/collaboration';
     }
-    
-    // Para produção, usar Supabase Realtime ou servidor próprio
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    return `${protocol}//${window.location.host}/api/collaboration/ws`;
+    return import.meta.env.VITE_WS_URL || 'wss://ws.notion-spark.com/collaboration';
   }
 
   private handleMessage(event: MessageEvent): void {

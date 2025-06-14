@@ -128,7 +128,9 @@ class CollaborationService {
       await this.createCollaborationSession(roomId);
 
       // WebSocket URL (will fallback to mock in dev)
-      const wsUrl = config.WS_URL || 'ws://localhost:8080';
+      const wsUrl = import.meta.env.MODE === 'development' 
+        ? 'ws://localhost:8080' 
+        : import.meta.env.VITE_WS_URL || 'wss://ws.notion-spark.com';
       this.ws = new WebSocket(`${wsUrl}/collaboration/${roomId}`);
 
       this.ws.onopen = () => {

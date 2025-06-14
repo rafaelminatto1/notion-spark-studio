@@ -116,7 +116,7 @@ export const useCommandPalette = (options: UseCommandPaletteOptions = {}) => {
 
   // Log de debug (pode ser removido em produção)
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.MODE === 'development') {
       console.log(`Command Palette: ${isOpen ? 'opened' : 'closed'} in context: ${currentContext}`);
     }
   }, [isOpen, currentContext]);

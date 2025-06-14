@@ -1,283 +1,236 @@
-# 🚀 Guia de Deploy - Notion Spark Studio
+# Guia de Deploy - Notion Spark Studio
 
-**FASE 3: PRODUÇÃO & DEPLOY** - Documentação completa para deploy em produção
+Este documento fornece instruções detalhadas para deploy do Notion Spark Studio em diferentes ambientes.
 
-## 📋 Sumário
+## Índice
+1. [Requisitos do Sistema](#requisitos-do-sistema)
+2. [Preparação do Ambiente](#preparação-do-ambiente)
+3. [Configuração do Vercel](#configuração-do-vercel)
+4. [Configuração do Supabase](#configuração-do-supabase)
+5. [Configuração do WebSocket](#configuração-do-websocket)
+6. [Monitoramento e Logs](#monitoramento-e-logs)
+7. [Troubleshooting](#troubleshooting)
+8. [Manutenção](#manutenção)
 
-- [Pré-requisitos](#pré-requisitos)
-- [Ambientes](#ambientes)
-- [Deploy Local](#deploy-local)
-- [Deploy Staging](#deploy-staging)
-- [Deploy Produção](#deploy-produção)
-- [Monitoramento](#monitoramento)
-- [Troubleshooting](#troubleshooting)
+## Requisitos do Sistema
 
-## 🔧 Pré-requisitos
+### Frontend
+- Node.js 18+
+- NPM 8+
+- 2GB RAM mínimo
+- 1GB espaço em disco
 
-### Dependências de Sistema
-- **Node.js** >= 18.x
-- **npm** >= 9.x
-- **Docker** >= 24.x (para containerização)
-- **Git** para versionamento
+### Backend (WebSocket)
+- Node.js 18+
+- 4GB RAM mínimo
+- 2GB espaço em disco
+- Porta 8080 disponível
 
-### Variáveis de Ambiente Necessárias
+### Banco de Dados (Supabase)
+- Plano Pro ou superior recomendado
+- 10GB espaço em disco
+- Backup diário configurado
 
-#### Desenvolvimento
+## Preparação do Ambiente
+
+### 1. Clone do Repositório
 ```bash
-NODE_ENV=development
-VITE_APP_NAME="Notion Spark Studio"
-VITE_APP_VERSION="2.0.0"
+git clone https://github.com/seu-usuario/notion-spark-studio.git
+cd notion-spark-studio
 ```
 
-#### Staging
+### 2. Instalação de Dependências
 ```bash
-NODE_ENV=staging
-VITE_APP_NAME="Notion Spark Studio [STAGING]"
-VITE_APP_VERSION="2.0.0-staging"
-VITE_API_BASE_URL="https://api-staging.notion-spark.com"
-VITE_WS_URL="wss://ws-staging.notion-spark.com"
-```
-
-#### Produção
-```bash
-NODE_ENV=production
-VITE_APP_NAME="Notion Spark Studio"
-VITE_APP_VERSION="2.0.0"
-VITE_API_BASE_URL="https://api.notion-spark.com"
-VITE_WS_URL="wss://ws.notion-spark.com"
-VITE_ANALYTICS_ID="GA-XXXXXXXXX"
-```
-
-## 🌍 Ambientes
-
-### 1. Desenvolvimento (Local)
-- **URL**: `http://localhost:5173`
-- **Debug**: Habilitado
-- **Hot Reload**: Habilitado
-- **Performance Monitor**: Habilitado
-
-### 2. Staging
-- **URL**: `https://staging.notion-spark.com`
-- **Finalidade**: Testes finais antes da produção
-- **Deploy**: Automático via branch `develop`
-
-### 3. Produção
-- **URL**: `https://notion-spark.com`
-- **Deploy**: Automático via branch `main`
-- **Monitoramento**: Habilitado
-- **Analytics**: Habilitado
-
-## 💻 Deploy Local
-
-### Usando npm
-```bash
-# Instalar dependências
 npm install
-
-# Executar em modo desenvolvimento
-npm run dev
-
-# Build para produção
-npm run build
-
-# Preview do build
-npm run preview
 ```
 
-### Usando Docker
+### 3. Configuração de Variáveis
 ```bash
-# Build da imagem
-npm run docker:build
+# Copiar arquivo de exemplo
+cp .env.example .env
 
-# Executar container
-npm run docker:run
-
-# Ou usar docker-compose
-npm run docker:compose
+# Editar variáveis
+nano .env
 ```
 
-## 🧪 Deploy Staging
+## Configuração do Vercel
 
-### Manual (Vercel CLI)
+### 1. Instalação do CLI
 ```bash
-# Login no Vercel
+npm i -g vercel
+```
+
+### 2. Login
+```bash
 vercel login
-
-# Deploy para staging
-npm run deploy:staging
 ```
 
-### Automático (GitHub Actions)
-1. Push para branch `develop`
-2. CI/CD pipeline é executado automaticamente
-3. Deploy para staging após testes passarem
-
-### Verificação
+### 3. Configuração do Projeto
 ```bash
-# Health check
-curl -f https://staging.notion-spark.com/health
-
-# Performance test
-lighthouse https://staging.notion-spark.com
+vercel
 ```
 
-## 🚀 Deploy Produção
+### 4. Variáveis de Ambiente no Vercel
+Configure as seguintes variáveis no dashboard do Vercel:
 
-### ⚠️ Checklist Pré-Deploy
-- [ ] Todos os testes passando (20/20)
-- [ ] Coverage > 70%
-- [ ] Security scan limpo
-- [ ] Performance benchmarks OK
-- [ ] Backup de dados realizado
-- [ ] Rollback plan definido
+```env
+VITE_APP_NAME=Notion Spark Studio
+VITE_APP_VERSION=2.0.0
+VITE_API_BASE_URL=https://api.notion-spark.com
+VITE_WS_URL=wss://ws.notion-spark.com
+VITE_SUPABASE_URL=seu-url-supabase
+VITE_SUPABASE_ANON_KEY=sua-chave-supabase
+VITE_ENABLE_PERFORMANCE_MONITOR=true
+VITE_ENABLE_COLLABORATION=true
+```
 
-### Deploy Automático
-1. **Merge** para branch `main`
-2. **CI/CD Pipeline** executado:
-   - ✅ Testes e lint
-   - ✅ Build e validação
-   - ✅ Security scan
-   - ✅ Deploy para produção
-   - ✅ Health checks
-   - ✅ Monitoramento
+### 5. Configuração de Domínio
+1. Acesse o dashboard do Vercel
+2. Vá para Settings > Domains
+3. Adicione seu domínio personalizado
+4. Configure os registros DNS conforme instruções
 
-### Deploy Manual (Emergência)
+## Configuração do Supabase
+
+### 1. Criação do Projeto
+1. Acesse [Supabase](https://supabase.com)
+2. Crie novo projeto
+3. Anote URL e chave anônima
+
+### 2. Configuração do Banco
+```sql
+-- Executar no SQL Editor do Supabase
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  email TEXT UNIQUE NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Adicionar outras tabelas conforme necessário
+```
+
+### 3. Políticas de Segurança
+Configure as seguintes políticas:
+
+```sql
+-- Exemplo de política para users
+CREATE POLICY "Users can view own data" ON users
+  FOR SELECT USING (auth.uid() = id);
+```
+
+## Configuração do WebSocket
+
+### 1. Deploy do Servidor
 ```bash
-# Build de produção
-npm run build:prod
-
-# Deploy direto para produção
-npm run deploy:prod
-
-# Verificar deploy
-curl -f https://notion-spark.com/health
+# Na pasta do servidor WebSocket
+cd websocket-server
+npm install
+vercel
 ```
 
-## 📊 Monitoramento
+### 2. Configuração de Variáveis
+```env
+WS_PORT=8080
+WS_MAX_CONNECTIONS=1000
+WS_HEARTBEAT_INTERVAL=30000
+```
 
-### Health Checks Automáticos
+### 3. Monitoramento
 ```bash
-# Verificar saúde da aplicação
-GET /health
-# Response: { "status": "healthy", "version": "2.0.0", "timestamp": "..." }
+# Instalar PM2
+npm i -g pm2
 
-# Métricas de sistema
-GET /api/monitoring/metrics
-# Response: { "errorRate": 0.01, "avgPerformance": 250, ... }
+# Iniciar servidor
+pm2 start server.js --name notion-spark-ws
 ```
 
-### Logs e Alertas
-- **Console Logs**: CloudWatch / Vercel Analytics
-- **Error Tracking**: Sentry (futuro)
-- **Performance**: Lighthouse CI
-- **Uptime**: StatusPage (futuro)
+## Monitoramento e Logs
 
-### Dashboards
-- **Vercel Dashboard**: Build & deploy status
-- **Analytics**: User behavior & performance
-- **Monitoring**: System health & alerts
+### 1. Performance Monitor
+Acesse `/metrics` para visualizar:
+- Tempo de carregamento
+- Uso de memória
+- Erros
+- Métricas de WebSocket
 
-## 🐛 Troubleshooting
-
-### Problemas Comuns
-
-#### Build Falhando
+### 2. Logs do Vercel
 ```bash
-# Limpar cache e reinstalar
-npm run clean
-npm ci
-npm run build
+# Visualizar logs
+vercel logs
+
+# Logs específicos
+vercel logs --filter "error"
 ```
 
-#### Performance Issues
+### 3. Logs do WebSocket
 ```bash
-# Analisar bundle
-npm run analyze
+# Via PM2
+pm2 logs notion-spark-ws
 
-# Verificar métricas
-npm run test:e2e
+# Logs de erro
+pm2 logs notion-spark-ws --err
 ```
 
-#### Deploy Failing
-1. Verificar variáveis de ambiente
-2. Verificar limites de Vercel
-3. Verificar logs do build
-4. Verificar dependências
+## Troubleshooting
 
-### Rollback de Emergência
-
-#### Via Vercel Dashboard
-1. Acessar [Vercel Dashboard](https://vercel.com/dashboard)
-2. Selecionar projeto
-3. Ir para "Deployments"
-4. Clicar em "Promote to Production" na versão anterior
-
-#### Via CLI
+### 1. Erro de Build
 ```bash
-# Listar deployments
-vercel ls
+# Limpar cache
+vercel deploy --force
 
-# Promover deployment anterior
-vercel promote [deployment-url]
+# Verificar logs
+vercel logs
 ```
 
-### Contacts de Emergência
-- **DevOps Lead**: [emergência apenas]
-- **Tech Lead**: [questões técnicas]
-- **Product Owner**: [decisões de produto]
+### 2. Erro de Conexão WebSocket
+1. Verificar status do servidor:
+```bash
+pm2 status
+```
 
-## 🔐 Segurança
+2. Verificar logs:
+```bash
+pm2 logs notion-spark-ws
+```
 
-### Headers de Segurança (Configurados)
-- `X-Frame-Options: DENY`
-- `X-Content-Type-Options: nosniff`
-- `Referrer-Policy: strict-origin-when-cross-origin`
-- `Permissions-Policy: camera=(), microphone=(), geolocation=()`
+3. Testar conexão:
+```bash
+curl -v wss://ws.notion-spark.com
+```
 
-### SSL/TLS
-- **Certificados**: Automáticos via Vercel/Let's Encrypt
-- **Protocolo**: TLS 1.3
-- **HSTS**: Habilitado
+### 3. Erro de Autenticação
+1. Verificar credenciais Supabase
+2. Confirmar políticas de segurança
+3. Verificar tokens JWT
 
-## 📈 Performance
+## Manutenção
 
-### Métricas Alvo
-- **FCP** (First Contentful Paint): < 1.5s
-- **LCP** (Largest Contentful Paint): < 2.5s
-- **FID** (First Input Delay): < 100ms
-- **CLS** (Cumulative Layout Shift): < 0.1
-- **TTI** (Time to Interactive): < 3.5s
+### 1. Atualizações
+```bash
+# Atualizar dependências
+npm update
 
-### Otimizações Implementadas
-- **Code Splitting**: Automático via Vite
-- **Lazy Loading**: Para componentes pesados
-- **Caching**: Assets com cache de 1 ano
-- **Compression**: Gzip/Brotli habilitado
-- **CDN**: Via Vercel Edge Network
+# Verificar vulnerabilidades
+npm audit
 
-## 🔄 CI/CD Pipeline
+# Atualizar servidor WebSocket
+cd websocket-server
+npm update
+```
 
-### Etapas do Pipeline
-1. **Lint & Tests** (3-5 min)
-2. **Security Scan** (2-3 min)  
-3. **Build & Validate** (2-4 min)
-4. **Deploy** (1-2 min)
-5. **Health Checks** (1 min)
-6. **Monitoring Setup** (30s)
+### 2. Backup
+1. Configurar backup automático no Supabase
+2. Manter cópias dos arquivos de configuração
+3. Documentar alterações importantes
 
-### Status Badges
-- ![Tests](https://github.com/user/notion-spark-studio/workflows/Tests/badge.svg)
-- ![Build](https://github.com/user/notion-spark-studio/workflows/Build/badge.svg)
-- ![Deploy](https://github.com/user/notion-spark-studio/workflows/Deploy/badge.svg)
+### 3. Monitoramento
+1. Configurar alertas no Vercel
+2. Monitorar uso de recursos
+3. Acompanhar métricas de performance
 
----
+## Suporte
 
-**🎉 FASE 3 IMPLEMENTADA COM SUCESSO!**
-
-O sistema está pronto para produção com:
-- ✅ Pipeline CI/CD completo
-- ✅ Deploy automático multi-ambiente  
-- ✅ Monitoramento avançado
-- ✅ Segurança em produção
-- ✅ Performance otimizada
-- ✅ Troubleshooting documentado 
+Para suporte adicional:
+- Abra uma issue no GitHub
+- Entre em contato com a equipe de suporte
+- Consulte a documentação em `/docs` 

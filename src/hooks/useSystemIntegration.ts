@@ -146,10 +146,12 @@ export const useSystemIntegration = (): SystemIntegrationAPI => {
       // 2. Inicializar WebSocket para colaboração
       if (features.collaborativeEditing) {
         try {
+          const websocketUrl = import.meta.env.MODE === 'development'
+            ? 'ws://localhost:3001/collaboration'
+            : import.meta.env.VITE_WS_URL || 'wss://ws.notion-spark.com/collaboration';
+
           wsService.current = createWebSocketService({
-            url: process.env.NODE_ENV === 'development' 
-              ? 'ws://localhost:3001/collaboration'
-              : `wss://${window.location.host}/api/collaboration/ws`,
+            url: websocketUrl,
             userId: auth.getCurrentUserId(),
             userName: auth.getCurrentUser()?.name || 'Usuário Atual',
             autoReconnect: true,

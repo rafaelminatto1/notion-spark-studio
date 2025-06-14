@@ -250,7 +250,7 @@ export const CollaborationProvider: React.FC<CollaborationProviderProps> = ({
       )}
 
       {/* Collaboration Stats (Development only) */}
-      {process.env.NODE_ENV === 'development' && enabled && (
+      {import.meta.env.MODE === 'development' && enabled && (
         <div className="fixed top-4 left-4 bg-black/80 text-white text-xs p-3 rounded-lg font-mono z-50">
           <div className="font-bold mb-2">📊 Collaboration Stats</div>
           <div>Status: {connectionStatus}</div>
@@ -262,6 +262,12 @@ export const CollaborationProvider: React.FC<CollaborationProviderProps> = ({
           {lastSyncTime && (
             <div>Last Sync: {lastSyncTime.toLocaleTimeString()}</div>
           )}
+        </div>
+      )}
+
+      {import.meta.env.MODE === 'development' && enabled && (
+        <div className="fixed bottom-4 right-4 bg-yellow-100 p-2 rounded shadow">
+          <p className="text-xs">Modo de colaboração: {enabled ? 'Ativo' : 'Inativo'}</p>
         </div>
       )}
     </CollaborationContext.Provider>

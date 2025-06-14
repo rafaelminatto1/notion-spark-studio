@@ -143,7 +143,7 @@ export function useViewportNodes(
 
   // Debug logging em desenvolvimento
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.MODE === 'development') {
       console.log(`🎯 Viewport Optimization: ${renderingStats.visibleCount}/${nodes.length} nodes visible (${renderingStats.performanceGain}% performance gain)`);
     }
   }, [renderingStats, nodes.length]);

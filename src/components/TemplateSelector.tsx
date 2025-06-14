@@ -112,7 +112,7 @@ npm run dev
 
 ## Variáveis de Ambiente
 \`\`\`env
-API_URL=http://localhost:3000
+API_URL=${import.meta.env.VITE_API_BASE_URL || 'https://api.notion-spark.com'}
 DATABASE_URL=postgresql://...
 \`\`\`
 

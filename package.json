@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/verify-env.js",
     "build:prod": "NODE_ENV=production npm run build",
     "preview": "vite preview",
     "lint": "eslint .",
@@ -29,8 +29,7 @@
     "docker:compose": "docker-compose -f docker-compose.prod.yml up",
     "analyze": "npx vite-bundle-analyzer",
     "clean": "rm -rf dist coverage .vercel",
-    "//preinstall": "npx only-allow npm",
-    "//postinstall": "npm run type-check"
+    "verify-env": "node scripts/verify-env.js"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",

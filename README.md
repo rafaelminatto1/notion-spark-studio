@@ -102,3 +102,79 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+## Deploy
+
+### Pré-requisitos
+- Node.js 18+
+- Vercel CLI (opcional)
+- Conta no Vercel
+- Conta no Supabase
+
+### Variáveis de Ambiente
+Copie o arquivo `.env.example` para `.env` e preencha as variáveis necessárias:
+
+```bash
+cp .env.example .env
+```
+
+### Deploy no Vercel
+
+1. **Configuração Inicial**
+   ```bash
+   # Instalar Vercel CLI (opcional)
+   npm i -g vercel
+   
+   # Login no Vercel
+   vercel login
+   ```
+
+2. **Deploy Automático**
+   - Conecte seu repositório GitHub ao Vercel
+   - Configure as variáveis de ambiente no dashboard do Vercel
+   - O deploy será automático a cada push para a branch main
+
+3. **Deploy Manual**
+   ```bash
+   # Deploy para produção
+   vercel --prod
+   
+   # Deploy para preview
+   vercel
+   ```
+
+### Configuração do Supabase
+
+1. Crie um novo projeto no Supabase
+2. Configure as políticas de segurança
+3. Adicione as variáveis de ambiente no Vercel:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+
+### Monitoramento
+
+O projeto inclui monitoramento automático de performance através do `PerformanceMonitor`. Para habilitar:
+
+1. Configure `VITE_ENABLE_PERFORMANCE_MONITOR=true` no ambiente
+2. Acesse o dashboard de métricas em `/metrics`
+
+### Troubleshooting
+
+1. **Erro de Build**
+   - Verifique se todas as variáveis de ambiente estão configuradas
+   - Limpe o cache do Vercel: `vercel deploy --force`
+
+2. **Erro de Conexão WebSocket**
+   - Verifique se o servidor WebSocket está rodando
+   - Confirme se `VITE_WS_URL` está configurado corretamente
+
+3. **Erro de Autenticação**
+   - Verifique as credenciais do Supabase
+   - Confirme se as políticas de segurança estão configuradas
+
+### Suporte
+
+Para suporte adicional:
+- Abra uma issue no GitHub
+- Entre em contato com a equipe de suporte
+- Consulte a documentação completa em `/docs`
