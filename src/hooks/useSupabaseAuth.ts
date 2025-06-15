@@ -9,20 +9,59 @@ export const useSupabaseAuth = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
+  // Função para inicializar o estado de autenticação
+  const initializeAuth = useCallback(async () => {
+    try {
+      console.log('[useSupabaseAuth] Inicializando autenticação...');
+      
+      // Verificar sessão atual
+      const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error('[useSupabaseAuth] Erro ao obter sessão:', sessionError);
+        throw sessionError;
+      }
+
+      if (currentSession) {
+        console.log('[useSupabaseAuth] Sessão encontrada:', currentSession.user?.email);
+        setSession(currentSession);
+        setUser(currentSession.user);
+      } else {
+        console.log('[useSupabaseAuth] Nenhuma sessão encontrada');
+        setSession(null);
+        setUser(null);
+      }
+    } catch (error) {
+      console.error('[useSupabaseAuth] Erro na inicialização:', error);
+      setSession(null);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     let mounted = true;
 
-    // Set up auth state listener
+    // Inicializar autenticação
+    initializeAuth();
+
+    // Configurar listener de mudanças de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         if (!mounted) return;
         
-        console.log('Auth state changed:', event, session?.user?.email);
+        console.log('[useSupabaseAuth] Estado de autenticação alterado:', {
+          event,
+          userEmail: session?.user?.email,
+          hasSession: !!session
+        });
+
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
 
-        // Handle specific auth events
+        // Tratar eventos específicos
         if (event === 'SIGNED_IN' && session?.user) {
           toast({
             title: "Login realizado",
@@ -35,50 +74,16 @@ export const useSupabaseAuth = () => {
             description: "Até a próxima!"
           });
         } else if (event === 'TOKEN_REFRESHED') {
-          console.log('Token refreshed successfully');
+          console.log('[useSupabaseAuth] Token atualizado com sucesso');
         }
       }
     );
-
-    // Get initial session with better error handling
-    const initializeAuth = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Erro ao obter sessão:', error);
-          toast({
-            title: "Erro de autenticação",
-            description: "Problemas ao verificar sua sessão",
-            variant: "destructive"
-          });
-        }
-        
-        if (mounted) {
-          setSession(session);
-          setUser(session?.user ?? null);
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error('Erro inesperado na autenticação:', error);
-        if (mounted) {
-          setLoading(false);
-          toast({
-            title: "Erro inesperado",
-            description: "Problemas na inicialização da autenticação",
-            variant: "destructive"
-          });
-        }
-      }
-    };
-
-    initializeAuth();
 
     return () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [toast]);
+  }, [initializeAuth, toast]);
 
   const signInWithGoogle = useCallback(async () => {
     try {
@@ -318,11 +323,19 @@ export const useSupabaseAuth = () => {
     user,
     session,
     loading,
+    isAuthenticated: !!user,
+    signIn: async (email: string, password: string) => {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+    },
+    signOut: async () => {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+    },
     signInWithGoogle,
     signInWithEmail,
     signUpWithEmail,
     resetPassword,
-    updatePassword,
-    signOut
+    updatePassword
   };
 };
