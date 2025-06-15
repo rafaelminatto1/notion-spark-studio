@@ -73,7 +73,7 @@ export const ViewTabs: React.FC<ViewTabsProps> = ({
 
   return (
     <div className={cn(
-      "flex gap-0.5 p-0.5 bg-background/80 backdrop-blur-sm rounded-lg border border-border/40 overflow-hidden",
+      "flex gap-0.5 p-0.5 bg-background/95 backdrop-blur-sm rounded-lg border border-border/60 overflow-hidden shadow-sm",
       isMobile ? "w-auto" : "w-auto",
       className
     )}>
@@ -89,13 +89,13 @@ export const ViewTabs: React.FC<ViewTabsProps> = ({
             onClick={(event) => handleTabClick(tab.id, event)}
             className={cn(
               "relative gap-1.5 transition-all duration-200 text-xs font-medium rounded-md",
-              "hover:bg-accent/80 hover:text-accent-foreground",
+              "hover:bg-accent hover:text-accent-foreground",
               "focus-visible:ring-1 focus-visible:ring-primary/50",
               "cursor-pointer select-none whitespace-nowrap",
               isMobile ? "px-2 py-1.5 h-8" : "px-3 py-2 h-9",
               isActive
                 ? "bg-primary text-primary-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
+                : "text-foreground/90 hover:text-foreground border-transparent hover:border-accent/30"
             )}
             title={tab.description}
             type="button"
