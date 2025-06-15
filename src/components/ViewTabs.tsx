@@ -22,30 +22,35 @@ export const ViewTabs: React.FC<ViewTabsProps> = ({
     {
       id: 'evernote' as ViewMode,
       label: 'Notebooks',
+      shortLabel: 'Notes',
       icon: Notebook,
       description: 'Layout estilo Evernote'
     },
     {
       id: 'dashboard' as ViewMode,
       label: 'Dashboard',
+      shortLabel: 'Home',
       icon: LayoutDashboard,
       description: 'Visão geral dos arquivos'
     },
     {
       id: 'editor' as ViewMode,
       label: 'Editor',
+      shortLabel: 'Edit',
       icon: FileText,
       description: 'Editor de notas'
     },
     {
       id: 'templates' as ViewMode,
       label: 'Templates',
+      shortLabel: 'Temp',
       icon: File,
       description: 'Modelos de notas'
     },
     {
       id: 'graph' as ViewMode,
       label: 'Graph',
+      shortLabel: 'Graf',
       icon: GitBranch,
       description: 'Visualização em grafo'
     }
@@ -68,8 +73,8 @@ export const ViewTabs: React.FC<ViewTabsProps> = ({
 
   return (
     <div className={cn(
-      "flex gap-1 p-1 bg-background/80 backdrop-blur-sm rounded-xl border border-border/40",
-      isMobile ? "w-full overflow-x-auto" : "",
+      "flex gap-0.5 p-0.5 bg-background/80 backdrop-blur-sm rounded-lg border border-border/40 overflow-hidden",
+      isMobile ? "w-auto" : "w-auto",
       className
     )}>
       {tabs.map(tab => {
@@ -80,36 +85,37 @@ export const ViewTabs: React.FC<ViewTabsProps> = ({
           <Button
             key={tab.id}
             variant="ghost"
-            size={isMobile ? "sm" : "sm"}
+            size="sm"
             onClick={(event) => handleTabClick(tab.id, event)}
             className={cn(
-              "relative gap-2 transition-all duration-300 text-xs md:text-sm px-3 md:px-4 py-2 md:py-2.5 rounded-lg",
+              "relative gap-1.5 transition-all duration-200 text-xs font-medium rounded-md",
               "hover:bg-accent/80 hover:text-accent-foreground",
-              "focus-visible:ring-2 focus-visible:ring-primary/50",
-              "cursor-pointer select-none",
+              "focus-visible:ring-1 focus-visible:ring-primary/50",
+              "cursor-pointer select-none whitespace-nowrap",
+              isMobile ? "px-2 py-1.5 h-8" : "px-3 py-2 h-9",
               isActive
-                ? "bg-primary text-primary-foreground shadow-sm scale-105"
+                ? "bg-primary text-primary-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
             )}
             title={tab.description}
             type="button"
           >
             <Icon className={cn(
-              "transition-all duration-300",
-              isMobile ? "h-4 w-4" : "h-4 w-4",
-              isActive ? "scale-110" : ""
+              "transition-all duration-200 flex-shrink-0",
+              "h-3.5 w-3.5",
+              isActive ? "scale-105" : ""
             )} />
             <span className={cn(
-              "font-medium transition-all duration-300",
-              isMobile ? "hidden xs:inline" : "inline",
+              "font-medium transition-all duration-200 truncate",
+              isMobile ? "text-xs" : "text-xs lg:text-sm",
               isActive ? "font-semibold" : ""
             )}>
-              {tab.label}
+              {isMobile ? tab.shortLabel : tab.label}
             </span>
             
             {/* Active indicator */}
             {isActive && (
-              <div className="absolute inset-0 bg-primary/10 rounded-lg animate-pulse-glow" />
+              <div className="absolute inset-0 bg-primary/5 rounded-md pointer-events-none" />
             )}
           </Button>
         );

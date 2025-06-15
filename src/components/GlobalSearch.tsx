@@ -233,7 +233,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
           }}
           onFocus={() => setIsOpen(true)}
           placeholder="Buscar em todas as notas e notebooks..."
-          className="pl-10 pr-10"
+          className="pl-10 pr-10 h-9 text-sm"
         />
         {query && (
           <Button
@@ -249,7 +249,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
 
       {/* Search Results Dropdown */}
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-xl z-50 max-h-96 overflow-hidden">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg shadow-xl z-[100] max-h-96 overflow-hidden">
           {/* Filters Bar */}
           <div className="p-3 border-b border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50">
             <div className="flex items-center gap-2 flex-wrap">
@@ -271,7 +271,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
                     })`}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-80 p-4" align="start">
+                <PopoverContent className="w-80 p-4 z-[110]" align="start">
                   <div className="space-y-4">
                     {/* Type Filter */}
                     <div>
