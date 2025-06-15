@@ -199,6 +199,24 @@ Object.defineProperty(navigator, 'language', {
   configurable: true,
 });
 
+// Mock do import.meta.env para Jest
+Object.defineProperty(globalThis, 'import', {
+  value: {
+    meta: {
+      env: {
+        MODE: 'test',
+        VITE_WS_URL: 'ws://localhost:3001/collaboration',
+        VITE_SUPABASE_URL: 'http://localhost:54321',
+        VITE_SUPABASE_ANON_KEY: 'test-key',
+        DEV: false,
+        PROD: false,
+        SSR: false
+      }
+    }
+  },
+  configurable: true,
+});
+
 // Mock do navigator.onLine
 Object.defineProperty(navigator, 'onLine', {
   value: true,

@@ -5,6 +5,7 @@ import { WebSocketService, createWebSocketService } from '@/services/WebSocketSe
 import { useServiceWorker } from './useServiceWorker';
 import { useAuth } from './useAuth';
 import { useToast } from '@/components/ui/use-toast';
+import { getEnv } from '@/utils/env';
 
 // Tipos para integração do sistema
 export interface SystemStatus {
@@ -146,9 +147,10 @@ export const useSystemIntegration = (): SystemIntegrationAPI => {
       // 2. Inicializar WebSocket para colaboração
       if (features.collaborativeEditing) {
         try {
-          const websocketUrl = import.meta.env.MODE === 'development'
+          const env = getEnv();
+          const websocketUrl = env.MODE === 'development'
             ? 'ws://localhost:3001/collaboration'
-            : import.meta.env.VITE_WS_URL || 'wss://ws.notion-spark.com/collaboration';
+            : env.VITE_WS_URL || 'wss://ws.notion-spark.com/collaboration';
 
           wsService.current = createWebSocketService({
             url: websocketUrl,

@@ -153,15 +153,18 @@
     "transformIgnorePatterns": [
       "node_modules/(?!(@supabase|@hello-pangea)/)"
     ],
-    "globals": {
-      "ts-jest": {
+    "transform": {
+      "^.+\\.(ts|tsx)$": ["ts-jest", {
         "tsconfig": {
           "jsx": "react-jsx",
           "esModuleInterop": true,
-          "allowSyntheticDefaultImports": true
+          "allowSyntheticDefaultImports": true,
+          "target": "es2020",
+          "module": "commonjs"
         }
-      }
+      }]
     },
+    "extensionsToTreatAsEsm": [".ts", ".tsx"],
     "testMatch": [
       "<rootDir>/src/**/__tests__/**/*.{js,jsx,ts,tsx}",
       "<rootDir>/src/**/*.(test|spec).{js,jsx,ts,tsx}"

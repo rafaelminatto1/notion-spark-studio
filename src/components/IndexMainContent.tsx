@@ -17,6 +17,7 @@ import SmartContentSuggestions from '@/components/ai/SmartContentSuggestions';
 import { useSystemIntegration } from '@/hooks/useSystemIntegration';
 import { GraphContainer } from '@/components/GraphView/GraphContainer';
 import { TemplatesManager } from '@/components/TemplatesManager';
+import { SystemOptimizer } from '@/components/performance/SystemOptimizer';
 
 interface IndexMainContentProps {
   activeView: ViewMode;
@@ -190,6 +191,13 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
                   });
                 }}
               />
+            </div>
+          )}
+
+          {/* Painel de Otimização de Performance - Acessível via comando */}
+          {activeView === 'optimizer' && (
+            <div className="h-full p-6">
+              <SystemOptimizer />
             </div>
           )}
           
