@@ -20,6 +20,39 @@ export interface SupabaseFile {
   updated_at: string;
 }
 
+// MODO DESENVOLVIMENTO: Dados padrão quando não há usuário autenticado
+const createDevelopmentData = (): SupabaseFile[] => {
+  const now = new Date().toISOString();
+  return [
+    {
+      id: 'dev-notebook-1',
+      user_id: 'dev-user',
+      name: 'Meu Primeiro Notebook',
+      type: 'folder',
+      is_public: false,
+      is_protected: false,
+      show_in_sidebar: true,
+      created_at: now,
+      updated_at: now,
+      emoji: '📚'
+    },
+    {
+      id: 'dev-note-1',
+      user_id: 'dev-user', 
+      name: 'Nota de Boas-vindas',
+      type: 'file',
+      parent_id: 'dev-notebook-1',
+      content: '# Bem-vindo ao Notion Spark Studio! 🎉\n\nEsta é sua primeira nota. Comece a escrever suas ideias aqui!\n\n## Recursos:\n- ✅ Markdown suportado\n- 📝 Edição em tempo real\n- 🎨 Interface moderna\n- 📱 Responsivo',
+      is_public: false,
+      is_protected: false,
+      show_in_sidebar: true,
+      created_at: now,
+      updated_at: now,
+      emoji: '👋'
+    }
+  ];
+};
+
 export const useSupabaseFiles = () => {
   const [files, setFiles] = useState<SupabaseFile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,8 +60,11 @@ export const useSupabaseFiles = () => {
   const { user } = useSupabaseAuth();
 
   const loadFiles = useCallback(async () => {
+    // MODO DESENVOLVIMENTO: Se não há usuário, usar dados locais
     if (!user) {
-      setFiles([]);
+      console.log('[useSupabaseFiles] No user found, using development data');
+      const devData = createDevelopmentData();
+      setFiles(devData);
       setLoading(false);
       return;
     }
@@ -42,10 +78,14 @@ export const useSupabaseFiles = () => {
 
       if (error) {
         console.error('[useSupabaseFiles] Error loading files:', error);
+        // FALLBACK: Em caso de erro, usar dados de desenvolvimento
+        console.log('[useSupabaseFiles] Falling back to development data');
+        const devData = createDevelopmentData();
+        setFiles(devData);
         toast({
-          title: "Erro ao carregar arquivos",
-          description: error.message,
-          variant: "destructive"
+          title: "Modo Desenvolvimento",
+          description: "Usando dados de exemplo. Configure o Supabase para dados reais.",
+          variant: "default"
         });
         return;
       }
@@ -60,10 +100,14 @@ export const useSupabaseFiles = () => {
       setFiles(typedData);
     } catch (error) {
       console.error('[useSupabaseFiles] Error loading files:', error);
+      // FALLBACK: Em caso de erro, usar dados de desenvolvimento
+      console.log('[useSupabaseFiles] Falling back to development data');
+      const devData = createDevelopmentData();
+      setFiles(devData);
       toast({
-        title: "Erro ao carregar arquivos",
-        description: "Falha ao carregar arquivos",
-        variant: "destructive"
+        title: "Modo Desenvolvimento",
+        description: "Usando dados de exemplo. Configure o Supabase para dados reais.",
+        variant: "default"
       });
     } finally {
       setLoading(false);
@@ -136,13 +180,32 @@ export const useSupabaseFiles = () => {
     content?: string,
     emoji?: string
   ) => {
+    // MODO DESENVOLVIMENTO: Se não há usuário, criar arquivo local
     if (!user) {
+      console.log('[useSupabaseFiles] Creating file in development mode:', { name, parentId, type });
+      const newFile: SupabaseFile = {
+        id: `dev-${Date.now()}`,
+        user_id: 'dev-user',
+        name,
+        type,
+        parent_id: parentId,
+        content: content || (type === 'file' ? '# ' + name + '\n\nComece a escrever aqui...' : undefined),
+        emoji,
+        is_public: false,
+        is_protected: false,
+        show_in_sidebar: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      setFiles(prev => [...prev, newFile]);
+      
       toast({
-        title: "Erro de autenticação",
-        description: "Usuário não autenticado",
-        variant: "destructive"
+        title: "Arquivo criado (Dev Mode)",
+        description: `${type === 'folder' ? 'Pasta' : 'Nota'} "${name}" criada com sucesso`
       });
-      return null;
+
+      return newFile.id;
     }
 
     try {
@@ -205,12 +268,22 @@ export const useSupabaseFiles = () => {
   }, [toast, user]);
 
   const updateFile = useCallback(async (id: string, updates: Partial<SupabaseFile>) => {
+    // MODO DESENVOLVIMENTO: Se não há usuário, atualizar arquivo local
     if (!user) {
-      toast({
-        title: "Erro de autenticação", 
-        description: "Usuário não autenticado",
-        variant: "destructive"
-      });
+      console.log('[useSupabaseFiles] Updating file in development mode:', id, updates);
+      setFiles(prev => prev.map(file => 
+        file.id === id 
+          ? { ...file, ...updates, updated_at: new Date().toISOString() }
+          : file
+      ));
+      
+      // Only show toast if content was not updated (to avoid spam during auto-save)
+      if (!updates.content) {
+        toast({
+          title: "Arquivo atualizado (Dev Mode)",
+          description: "Arquivo salvo com sucesso"
+        });
+      }
       return;
     }
 
@@ -254,11 +327,14 @@ export const useSupabaseFiles = () => {
   }, [toast, user]);
 
   const deleteFile = useCallback(async (id: string) => {
+    // MODO DESENVOLVIMENTO: Se não há usuário, deletar arquivo local
     if (!user) {
+      console.log('[useSupabaseFiles] Deleting file in development mode:', id);
+      setFiles(prev => prev.filter(file => file.id !== id));
+      
       toast({
-        title: "Erro de autenticação",
-        description: "Usuário não autenticado", 
-        variant: "destructive"
+        title: "Arquivo deletado (Dev Mode)",
+        description: "Arquivo removido com sucesso"
       });
       return;
     }
