@@ -28,8 +28,8 @@ const safeGetEnv = (key: string, defaultValue: string = ''): string => {
   // Tentar import.meta.env (Vite) de forma segura
   if (typeof window !== 'undefined') {
     try {
-      // @ts-ignore - Acesso dinâmico para evitar erro de compilação
-      const importMeta = (globalThis as any).import?.meta;
+      // @ts-expect-error - Acesso dinâmico para evitar erro de compilação
+      const importMeta = (globalThis as Record<string, unknown>).import?.meta;
       if (importMeta?.env?.[key]) {
         return importMeta.env[key];
       }
