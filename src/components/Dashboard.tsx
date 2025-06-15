@@ -1,9 +1,10 @@
-
 import React from 'react';
 import { FileText, Tag, Clock, Star, TrendingUp, Calendar, Sparkles, Activity, Zap, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { FileItem } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 // import './dashboard-modern.css';
 
 interface DashboardProps {
@@ -21,6 +22,32 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onCreateFile,
   className
 }) => {
+  const { user } = useAuth();
+  const { signInWithGoogle } = useSupabaseAuth();
+
+  if (!user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Card className="w-[350px]">
+          <CardHeader>
+            <CardTitle>Bem-vindo ao Notion Spark Studio</CardTitle>
+            <CardDescription>
+              Faça login para começar a usar a plataforma
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button 
+              className="w-full"
+              onClick={() => signInWithGoogle()}
+            >
+              Entrar com Google
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   const recentFiles = files
     .filter(f => f.type === 'file')
     .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
@@ -47,81 +74,40 @@ export const Dashboard: React.FC<DashboardProps> = ({
   };
 
   return (
-    <div className={`dashboard-container ${className}`}>
-      {/* Header Moderno */}
-      <div className="dashboard-header">
-        <div className="flex items-center gap-4">
-          <div className="dashboard-title-icon">
-            <Sparkles className="h-8 w-8 text-violet-400" />
-          </div>
-          <div>
-            <h1 className="dashboard-title">Dashboard</h1>
-            <p className="dashboard-subtitle">Bem-vindo de volta! Aqui está um resumo do seu workspace.</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats Cards Redesenhados */}
-      <div className="stats-grid">
-        {/* Arquivos Card */}
-        <div className="stat-card stat-card-blue group">
-          <div className="stat-card-content">
-            <div className="stat-icon-wrapper">
-              <FileText className="stat-icon" />
-              <div className="stat-icon-glow"></div>
-            </div>
-            <div className="stat-details">
-              <div className="stat-number">{stats.totalFiles}</div>
-              <div className="stat-label">Arquivos</div>
-            </div>
-          </div>
-          <div className="stat-card-decoration"></div>
-        </div>
-
-        {/* Tags Card */}
-        <div className="stat-card stat-card-green group">
-          <div className="stat-card-content">
-            <div className="stat-icon-wrapper">
-              <Tag className="stat-icon" />
-              <div className="stat-icon-glow"></div>
-            </div>
-            <div className="stat-details">
-              <div className="stat-number">{stats.totalTags}</div>
-              <div className="stat-label">Tags</div>
-            </div>
-          </div>
-          <div className="stat-card-decoration"></div>
-        </div>
-
-        {/* Favoritos Card */}
-        <div className="stat-card stat-card-yellow group">
-          <div className="stat-card-content">
-            <div className="stat-icon-wrapper">
-              <Star className="stat-icon" />
-              <div className="stat-icon-glow"></div>
-            </div>
-            <div className="stat-details">
-              <div className="stat-number">{stats.favorites}</div>
-              <div className="stat-label">Favoritos</div>
-            </div>
-          </div>
-          <div className="stat-card-decoration"></div>
-        </div>
-
-        {/* Recentes Card */}
-        <div className="stat-card stat-card-purple group">
-          <div className="stat-card-content">
-            <div className="stat-icon-wrapper">
-              <TrendingUp className="stat-icon" />
-              <div className="stat-icon-glow"></div>
-            </div>
-            <div className="stat-details">
-              <div className="stat-number">{recentFiles.length}</div>
-              <div className="stat-label">Recentes</div>
-            </div>
-          </div>
-          <div className="stat-card-decoration"></div>
-        </div>
+    <div className={`container mx-auto p-6 ${className}`}>
+      <h1 className="text-3xl font-bold mb-6">
+        Olá, {user.user_metadata?.name || user.email}!
+      </h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Produtividade</CardTitle>
+            <CardDescription>Suas métricas de produtividade</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>Em breve: gráficos e métricas de produtividade</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Tarefas</CardTitle>
+            <CardDescription>Suas tarefas pendentes</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>Em breve: lista de tarefas e gerenciamento</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Notas</CardTitle>
+            <CardDescription>Suas notas recentes</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>Em breve: editor de notas e documentos</p>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="content-grid">
