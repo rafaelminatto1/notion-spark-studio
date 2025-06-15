@@ -1,8 +1,9 @@
 // Serviço de Monitoramento Integrado com Supabase
 // FASE 3/4: Conecta monitoramento local com banco de dados
 
-import { supabase } from '@/integrations/supabase/client';
+import { getSupabaseClient } from '@/lib/supabase-config';
 import { config, isProduction } from '@/config/environment';
+import { safeGetEnv } from '@/utils/env';
 
 // Simulando types até as tabelas estarem criadas
 interface PerformanceMetric {
@@ -91,16 +92,17 @@ class SupabaseMonitoringService {
 
   constructor() {
     this.sessionId = this.generateSessionId();
-    this.isEnabled = isProduction;
+    this.isEnabled = safeGetEnv('NODE_ENV', 'development') === 'production';
     this.setupUserTracking();
     this.setupWebVitals();
     this.setupErrorTracking();
     
-    console.log('🔍 Supabase Monitoring initialized', {
-      session: this.sessionId,
-      enabled: this.isEnabled,
-      environment: config.NODE_ENV
-    });
+    if (this.isEnabled) {
+      this.startBatchFlush();
+      console.log('📊 Supabase Monitoring enabled');
+    } else {
+      console.log('📊 Supabase Monitoring disabled (development mode)');
+    }
   }
 
   private generateSessionId(): string {
@@ -109,6 +111,12 @@ class SupabaseMonitoringService {
 
   private async setupUserTracking(): Promise<void> {
     try {
+      const supabase = getSupabaseClient();
+      
+      if (!supabase) {
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       this.userId = user?.id || null;
       
@@ -492,6 +500,100 @@ class SupabaseMonitoringService {
     
     // Final flush
     this.flush();
+  }
+
+  private async startBatchFlush(): Promise<void> {
+    const supabase = getSupabaseClient();
+    
+    if (!supabase) {
+      console.warn('[Monitoring] Supabase não disponível, dados em cache');
+      return;
+    }
+
+    try {
+      // Flush performance metrics
+      if (this.queue.length > 0) {
+        const metrics = this.queue.splice(0, 10);
+        await this.insertPerformanceMetrics(metrics);
+      }
+
+      // Flush error logs
+      if (this.queue.length > 0) {
+        const errors = this.queue.splice(0, 10);
+        await this.insertErrorLogs(errors);
+      }
+
+      // Flush analytics events
+      if (this.queue.length > 0) {
+        const analytics = this.queue.splice(0, 10);
+        await this.insertAnalyticsEvents(analytics);
+      }
+    } catch (error) {
+      console.error('Failed to flush monitoring data:', error);
+    }
+  }
+
+  private async insertPerformanceMetrics(metrics: PerformanceMetric[]): Promise<void> {
+    const supabase = getSupabaseClient();
+    
+    if (!supabase) {
+      console.warn('[Monitoring] Supabase não disponível, dados em cache');
+      return;
+    }
+
+    try {
+      const { error: metricsError } = await supabase
+        .from('performance_metrics')
+        .insert(metrics);
+      
+      if (metricsError) {
+        console.error('Failed to insert performance metrics:', metricsError);
+      }
+    } catch (error) {
+      console.error('Failed to insert performance metrics:', error);
+    }
+  }
+
+  private async insertErrorLogs(errors: ErrorLog[]): Promise<void> {
+    const supabase = getSupabaseClient();
+    
+    if (!supabase) {
+      console.warn('[Monitoring] Supabase não disponível, dados em cache');
+      return;
+    }
+
+    try {
+      const { error: errorsError } = await supabase
+        .from('error_logs')
+        .insert(errors);
+      
+      if (errorsError) {
+        console.error('Failed to insert error logs:', errorsError);
+      }
+    } catch (error) {
+      console.error('Failed to insert error logs:', error);
+    }
+  }
+
+  private async insertAnalyticsEvents(events: AnalyticsEvent[]): Promise<void> {
+    const supabase = getSupabaseClient();
+    
+    if (!supabase) {
+      console.warn('[Monitoring] Supabase não disponível, dados em cache');
+      return;
+    }
+
+    try {
+      const { error: analyticsError } = await supabase
+        .from('analytics_events')
+        .insert(events);
+      
+      if (analyticsError) {
+        console.error('Failed to insert analytics events:', analyticsError);
+      }
+    } catch (error) {
+      console.error('Failed to insert analytics events:', error);
+    }
   }
 }
 

@@ -1,14 +1,40 @@
 // Serviço de Monitoramento Integrado com Supabase
 // FASE 3/4: Conecta monitoramento local com banco de dados
 
-import { supabase } from '@/integrations/supabase/client';
-import { config, isProduction } from '@/config/environment';
-import type { Database } from '@/integrations/supabase/types';
+import { getSupabaseClient } from '@/lib/supabase-config';
+import { safeGetEnv } from '@/utils/env';
 
-// Types das novas tabelas
-type PerformanceMetric = Database['public']['Tables']['performance_metrics']['Insert'];
-type ErrorLog = Database['public']['Tables']['error_logs']['Insert'];
-type AnalyticsEvent = Database['public']['Tables']['analytics_events']['Insert'];
+// Types simplificados para quando as tabelas não existem
+interface PerformanceMetric {
+  metric_name: string;
+  metric_value: number;
+  timestamp: string;
+  user_id?: string;
+  session_id: string;
+  context?: Record<string, unknown>;
+}
+
+interface ErrorLog {
+  error_message: string;
+  error_stack?: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  timestamp: string;
+  user_id?: string;
+  session_id: string;
+  context?: Record<string, unknown>;
+}
+
+interface AnalyticsEvent {
+  event_name: string;
+  event_category: string;
+  event_action?: string;
+  event_label?: string;
+  event_value?: number;
+  timestamp: string;
+  user_id?: string;
+  session_id: string;
+  properties?: Record<string, unknown>;
+}
 
 interface WebVitalMetric {
   name: 'fcp' | 'lcp' | 'fid' | 'cls' | 'ttfb' | 'tti';
@@ -46,16 +72,16 @@ class SupabaseMonitoringService {
 
   constructor() {
     this.sessionId = this.generateSessionId();
-    this.isEnabled = isProduction;
+    this.isEnabled = safeGetEnv('NODE_ENV', 'development') === 'production';
     this.setupUserTracking();
     this.setupWebVitals();
     this.setupErrorTracking();
     
-    console.log('🔍 Supabase Monitoring initialized', {
-      session: this.sessionId,
-      enabled: this.isEnabled,
-      environment: config.NODE_ENV
-    });
+    if (this.isEnabled) {
+      console.log('🔍 Supabase Monitoring enabled');
+    } else {
+      console.log('🔍 Supabase Monitoring disabled (development mode)');
+    }
   }
 
   private generateSessionId(): string {
@@ -64,6 +90,13 @@ class SupabaseMonitoringService {
 
   private async setupUserTracking(): Promise<void> {
     try {
+      const supabase = getSupabaseClient();
+      
+      if (!supabase) {
+        console.warn('[Monitoring] Supabase não disponível');
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       this.userId = user?.id || null;
       

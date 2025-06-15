@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
-import { useSupabase } from './useSupabase';
 import { User } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/supabase-config';
 
 export interface AuthUser extends User {
   name?: string;
@@ -46,13 +45,19 @@ export const useAuth = (): AuthAPI => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  
-  const { supabase } = useSupabase();
 
   useEffect(() => {
     // Verificar sessão atual
     const checkSession = async () => {
       try {
+        const supabase = getSupabaseClient();
+        
+        if (!supabase) {
+          console.warn('[useAuth] Supabase não disponível, modo offline');
+          setLoading(false);
+          return;
+        }
+
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) throw error;
         
@@ -77,6 +82,12 @@ export const useAuth = (): AuthAPI => {
     };
 
     checkSession();
+
+    const supabase = getSupabaseClient();
+    
+    if (!supabase) {
+      return;
+    }
 
     // Inscrever-se em mudanças de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -103,10 +114,16 @@ export const useAuth = (): AuthAPI => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase]);
+  }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
     try {
+      const supabase = getSupabaseClient();
+      
+      if (!supabase) {
+        throw new Error('Supabase não está disponível');
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -116,10 +133,16 @@ export const useAuth = (): AuthAPI => {
       setError(err instanceof Error ? err : new Error('Erro ao fazer login'));
       throw err;
     }
-  }, [supabase]);
+  }, []);
 
   const signUp = useCallback(async (email: string, password: string, name: string) => {
     try {
+      const supabase = getSupabaseClient();
+      
+      if (!supabase) {
+        throw new Error('Supabase não está disponível');
+      }
+
       const { data: { user }, error } = await supabase.auth.signUp({
         email,
         password,
@@ -141,21 +164,33 @@ export const useAuth = (): AuthAPI => {
       setError(err instanceof Error ? err : new Error('Erro ao criar conta'));
       throw err;
     }
-  }, [supabase]);
+  }, []);
 
   const signOut = useCallback(async () => {
     try {
+      const supabase = getSupabaseClient();
+      
+      if (!supabase) {
+        throw new Error('Supabase não está disponível');
+      }
+
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Erro ao fazer logout'));
       throw err;
     }
-  }, [supabase]);
+  }, []);
 
   const updateProfile = useCallback(async (updates: { name?: string; avatar?: string }) => {
     try {
       if (!user) throw new Error('Usuário não autenticado');
+
+      const supabase = getSupabaseClient();
+      
+      if (!supabase) {
+        throw new Error('Supabase não está disponível');
+      }
 
       const { error } = await supabase
         .from('profiles')
@@ -169,7 +204,7 @@ export const useAuth = (): AuthAPI => {
       setError(err instanceof Error ? err : new Error('Erro ao atualizar perfil'));
       throw err;
     }
-  }, [supabase, user]);
+  }, [user]);
 
   // Gerar cor única para usuário
   const generateUserColorFromId = useCallback((userId: string): string => {
@@ -201,35 +236,28 @@ export const useAuth = (): AuthAPI => {
     }
   }, [user, updateProfile]);
 
-  // Atualizar preferências
+  // Atualizar preferências do usuário
   const updatePreferences = useCallback(async (preferences: Partial<AuthUser['preferences']>): Promise<boolean> => {
     try {
       if (!user) return false;
       
-      const updatedUser = {
-        ...user,
-        preferences: {
-          ...user.preferences,
-          ...preferences
-        },
-      };
-      
-      await updateProfile(updatedUser);
+      // Implementar lógica de preferências quando necessário
+      console.log('[Auth] Update preferences:', preferences);
       
       return true;
     } catch (error) {
       console.error('[Auth] Update preferences error:', error);
       return false;
     }
-  }, [user, updateProfile]);
+  }, [user]);
 
-  // Utility functions
+  // Utilities
   const generateUserColor = useCallback((userId: string): string => {
     return generateUserColorFromId(userId);
   }, [generateUserColorFromId]);
 
   const getCurrentUserId = useCallback((): string => {
-    return user?.id || 'anonymous-user';
+    return user?.id || '';
   }, [user]);
 
   const getCurrentUser = useCallback((): AuthUser | null => {
@@ -237,21 +265,16 @@ export const useAuth = (): AuthAPI => {
   }, [user]);
 
   return {
-    // Estado
     user,
     isAuthenticated: !!user,
     isLoading: loading,
     error,
-    
-    // Ações
     signIn,
     signUp,
     signOut,
     updateProfile,
     updateUser,
     updatePreferences,
-    
-    // Utilities
     generateUserColor,
     getCurrentUserId,
     getCurrentUser

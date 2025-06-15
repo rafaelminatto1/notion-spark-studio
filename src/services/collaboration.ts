@@ -1,7 +1,7 @@
 // Sistema de Colaboração Real-time - FASE 4
 // WebSocket para cursors, edição colaborativa e notificações
 
-import { supabase } from '@/integrations/supabase/client';
+import { getSupabaseClient } from '@/lib/supabase-config';
 import { config } from '@/config/environment';
 import { supabaseMonitoring } from './supabaseMonitoring';
 import { safeGetEnv } from '@/utils/env';
@@ -68,6 +68,13 @@ class CollaborationService {
 
   private async setupUserFromAuth(): Promise<void> {
     try {
+      const supabase = getSupabaseClient();
+      
+      if (!supabase) {
+        console.warn('[Collaboration] Supabase não disponível, modo offline');
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       
       if (user) {

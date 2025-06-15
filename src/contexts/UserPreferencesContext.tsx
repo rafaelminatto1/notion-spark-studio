@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { getSupabaseClient } from '@/lib/supabase-config';
 import { useToast } from '@/hooks/use-toast';
 
 export interface UserPreferences {
@@ -37,6 +37,14 @@ export const UserPreferencesProvider = ({ children }: UserPreferencesProviderPro
   const loadUserPreferences = useCallback(async () => {
     setLoadingPreferences(true);
     try {
+      const supabase = getSupabaseClient();
+      
+      if (!supabase) {
+        console.warn('[UserPreferences] Supabase não disponível, usando configurações padrão');
+        setLoadingPreferences(false);
+        return;
+      }
+
       const { data: user } = await supabase.auth.getUser();
 
       if (!user.user) {
@@ -76,6 +84,12 @@ export const UserPreferencesProvider = ({ children }: UserPreferencesProviderPro
   useEffect(() => {
     loadUserPreferences();
 
+    const supabase = getSupabaseClient();
+    
+    if (!supabase) {
+      return;
+    }
+
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
         loadUserPreferences();
@@ -89,6 +103,17 @@ export const UserPreferencesProvider = ({ children }: UserPreferencesProviderPro
 
   const updateUserPreferences = useCallback(async (updates: Partial<UserPreferences>) => {
     try {
+      const supabase = getSupabaseClient();
+      
+      if (!supabase) {
+        toast({
+          title: "Modo offline",
+          description: "Não é possível salvar preferências no modo offline",
+          variant: "destructive"
+        });
+        return;
+      }
+
       const { data: user } = await supabase.auth.getUser();
 
       if (!user.user) return;
