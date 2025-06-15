@@ -1,6 +1,5 @@
 'use client';
 
-import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/contexts/AuthContext';
@@ -53,11 +52,6 @@ function AppContent({ children }: { children: React.ReactNode }) {
   );
 }
 
-export const metadata: Metadata = {
-  title: 'Notion Spark Studio',
-  description: 'Uma plataforma moderna para produtividade e colaboração',
-};
-
 export default function RootLayout({
   children,
 }: {
@@ -65,6 +59,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
+      <head>
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="alternate icon" href="/favicon.ico" />
+      </head>
       <body className={inter.className}>
         <ErrorBoundary>
           <AuthProvider>

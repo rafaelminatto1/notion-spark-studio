@@ -1,97 +1,117 @@
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from '@/integrations/supabase/types';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { safeGetEnv } from '@/utils/env';
 
-// Configurações do Supabase
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://bvugljspidtqumysbegq.supabase.co";
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2dWdsanNwaWR0cXVteXNiZWdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkxNjE4ODcsImV4cCI6MjA2NDczNzg4N30.YYZVpzyb7ZDyIV3uqaAkA5xBBzA2g7Udnt4uSqaeFAQ";
+// Singleton para evitar múltiplas instâncias
+let supabaseInstance: SupabaseClient | null = null;
 
-// Verificar se as variáveis de ambiente estão definidas
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  console.error('[Supabase Config] Variáveis de ambiente não encontradas');
-}
+// Configuração do Supabase
+const supabaseUrl = safeGetEnv('NEXT_PUBLIC_SUPABASE_URL', '');
+const supabaseAnonKey = safeGetEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', '');
 
-// Configurações do cliente
-const supabaseConfig = {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true,
-    flowType: 'pkce' as const,
-    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-  },
-  global: {
-    headers: {
-      'X-Client-Info': 'notion-spark-studio@1.0.0',
-    },
-  },
-  db: {
-    schema: 'public',
-  },
-  realtime: {
-    params: {
-      eventsPerSecond: 10,
-    },
-  },
+// Função para criar/obter instância única do Supabase
+export const getSupabaseClient = (): SupabaseClient | null => {
+  // Se já existe uma instância, retorna ela
+  if (supabaseInstance) {
+    return supabaseInstance;
+  }
+
+  // Verifica se as variáveis de ambiente estão configuradas
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.warn('[Supabase] Variáveis de ambiente não configuradas. Modo offline ativado.');
+    return null;
+  }
+
+  try {
+    // Cria nova instância com configurações otimizadas
+    supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true,
+        storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+        storageKey: 'notion-spark-auth', // Chave única para evitar conflitos
+      },
+      realtime: {
+        params: {
+          eventsPerSecond: 10,
+        },
+      },
+      global: {
+        headers: {
+          'X-Client-Info': 'notion-spark-studio',
+        },
+      },
+    });
+
+    console.log('[Supabase] Cliente inicializado com sucesso');
+    return supabaseInstance;
+  } catch (error) {
+    console.error('[Supabase] Erro ao inicializar cliente:', error);
+    return null;
+  }
 };
 
-// Criar cliente Supabase com configurações robustas
-export const supabase = createClient<Database>(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY,
-  supabaseConfig
-);
-
-// Função para verificar se o Supabase está funcionando
+// Função para verificar conexão com Supabase
 export const checkSupabaseConnection = async (): Promise<boolean> => {
+  const client = getSupabaseClient();
+  
+  if (!client) {
+    return false;
+  }
+
   try {
-    const { data, error } = await supabase.from('profiles').select('count').limit(1);
+    const { error } = await client.from('_health_check').select('*').limit(1);
     
-    if (error) {
-      console.warn('[Supabase Config] Erro na conexão:', error.message);
-      return false;
+    // Se não há erro ou é erro de tabela não encontrada (esperado), conexão está OK
+    if (!error || error.code === 'PGRST116') {
+      console.log('[Supabase] Conexão verificada com sucesso');
+      return true;
     }
     
-    console.log('[Supabase Config] Conexão estabelecida com sucesso');
-    return true;
+    console.warn('[Supabase] Erro na verificação de conexão:', error);
+    return false;
   } catch (error) {
-    console.error('[Supabase Config] Erro inesperado na conexão:', error);
+    console.warn('[Supabase] Erro ao verificar conexão:', error);
     return false;
   }
 };
 
-// Função para inicializar o Supabase de forma segura
-export const initializeSupabase = async () => {
-  try {
-    console.log('[Supabase Config] Inicializando Supabase...');
-    
-    // Verificar conexão
-    const isConnected = await checkSupabaseConnection();
-    
-    if (!isConnected) {
-      console.warn('[Supabase Config] Supabase não está disponível, usando modo offline');
-      return { success: false, offline: true };
-    }
-    
-    // Verificar sessão atual
-    const { data: { session }, error } = await supabase.auth.getSession();
-    
-    if (error) {
-      console.warn('[Supabase Config] Erro ao verificar sessão:', error.message);
-      return { success: false, error };
-    }
-    
-    console.log('[Supabase Config] Supabase inicializado com sucesso');
-    return { success: true, session };
-    
-  } catch (error) {
-    console.error('[Supabase Config] Erro na inicialização:', error);
-    return { success: false, error };
+// Função para inicializar Supabase de forma segura
+export const initializeSupabase = async (): Promise<{
+  client: SupabaseClient | null;
+  isConnected: boolean;
+  isOfflineMode: boolean;
+}> => {
+  console.log('[Supabase] Inicializando...');
+  
+  const client = getSupabaseClient();
+  
+  if (!client) {
+    console.log('[Supabase] Modo offline ativado - variáveis de ambiente não configuradas');
+    return {
+      client: null,
+      isConnected: false,
+      isOfflineMode: true,
+    };
   }
+
+  const isConnected = await checkSupabaseConnection();
+  
+  if (!isConnected) {
+    console.log('[Supabase] Modo offline ativado - sem conexão com servidor');
+  }
+
+  return {
+    client,
+    isConnected,
+    isOfflineMode: !isConnected,
+  };
 };
 
-// Exportar configurações para uso em outros lugares
-export const supabaseConfig_export = {
-  url: SUPABASE_URL,
-  anonKey: SUPABASE_ANON_KEY,
-  isConfigured: !!(SUPABASE_URL && SUPABASE_ANON_KEY),
-}; 
+// Função para resetar instância (útil para testes)
+export const resetSupabaseInstance = () => {
+  supabaseInstance = null;
+};
+
+// Export da instância para compatibilidade (deprecated - use getSupabaseClient)
+export const supabase = getSupabaseClient(); 
