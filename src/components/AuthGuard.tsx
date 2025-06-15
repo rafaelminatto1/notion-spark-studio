@@ -1,19 +1,24 @@
-
 import React, { useEffect } from 'react';
-import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, Loader2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AuthGuardProps {
   children: React.ReactNode;
 }
 
 export const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
-  const { user, loading } = useSupabaseAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log('[AuthGuard] Estado de autenticação:', {
+      hasUser: !!user,
+      isLoading: loading
+    });
+
     if (!loading && !user) {
+      console.log('[AuthGuard] Redirecionando para /auth');
       navigate('/auth');
     }
   }, [user, loading, navigate]);

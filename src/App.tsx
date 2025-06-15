@@ -13,6 +13,7 @@ import { FileSystemProvider } from "@/contexts/FileSystemContext";
 import { UserPreferencesProvider } from "@/contexts/UserPreferencesContext";
 import { PermissionsProvider } from "@/components/permissions/PermissionsEngine";
 import { CollaborationProvider } from './components/collaboration/CollaborationProvider';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -57,27 +58,40 @@ const AppContent = () => {
   );
 };
 
-const App = () => (
-  <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <ConnectionStatus />
-          <UserPreferencesProvider>
-            <FileSystemProvider>
-              <PermissionsProvider>
-                <CollaborationProvider>
-                  <AppContent />
-                </CollaborationProvider>
-              </PermissionsProvider>
-            </FileSystemProvider>
-          </UserPreferencesProvider>
-        </TooltipProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
-  </ErrorBoundary>
-);
-
-export default App;
+export default function App() {
+  return (
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <TooltipProvider>
+              <FileSystemProvider>
+                <UserPreferencesProvider>
+                  <PermissionsProvider>
+                    <CollaborationProvider>
+                      <Suspense fallback={
+                        <div className="min-h-screen flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary/20 border-t-primary"></div>
+                        </div>
+                      }>
+                        <AppContent />
+                      </Suspense>
+                      <ConnectionStatus />
+                      <Toaster />
+                      <Sonner />
+                    </CollaborationProvider>
+                  </PermissionsProvider>
+                </UserPreferencesProvider>
+              </FileSystemProvider>
+            </TooltipProvider>
+          </ThemeProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
+  );
+}
