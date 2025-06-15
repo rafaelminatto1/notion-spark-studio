@@ -1,6 +1,6 @@
 /**
  * Utilitário para acessar variáveis de ambiente de forma compatível
- * entre Vite (import.meta.env) e Jest (process.env)
+ * entre Vite (import.meta.env) e Next.js (process.env)
  */
 
 interface EnvVars {
@@ -15,6 +15,31 @@ interface EnvVars {
 
 // Variável global para armazenar o ambiente detectado
 let cachedEnv: EnvVars | null = null;
+
+/**
+ * Função segura para obter variável de ambiente
+ */
+const safeGetEnv = (key: string, defaultValue: string = ''): string => {
+  // Tentar process.env primeiro (Next.js/Node.js)
+  if (typeof process !== 'undefined' && process.env?.[key]) {
+    return process.env[key];
+  }
+  
+  // Tentar import.meta.env (Vite) de forma segura
+  if (typeof window !== 'undefined') {
+    try {
+      // @ts-ignore - Acesso dinâmico para evitar erro de compilação
+      const importMeta = (globalThis as any).import?.meta;
+      if (importMeta?.env?.[key]) {
+        return importMeta.env[key];
+      }
+    } catch (error) {
+      // Ignora erro se import.meta não estiver disponível
+    }
+  }
+  
+  return defaultValue;
+};
 
 /**
  * Detecta se estamos no ambiente Vite usando uma função dinâmica
@@ -70,14 +95,15 @@ export const getEnv = (): EnvVars => {
     return cachedEnv;
   }
 
-  // Fallback para Node.js/outros ambientes
+  // Fallback para Node.js/Next.js
+  const nodeEnv = safeGetEnv('NODE_ENV', 'development');
   cachedEnv = {
-    MODE: process.env.NODE_ENV || 'development',
-    VITE_WS_URL: process.env.VITE_WS_URL,
-    VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL,
-    VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY,
-    DEV: process.env.NODE_ENV === 'development',
-    PROD: process.env.NODE_ENV === 'production',
+    MODE: nodeEnv,
+    VITE_WS_URL: safeGetEnv('VITE_WS_URL'),
+    VITE_SUPABASE_URL: safeGetEnv('VITE_SUPABASE_URL'),
+    VITE_SUPABASE_ANON_KEY: safeGetEnv('VITE_SUPABASE_ANON_KEY'),
+    DEV: nodeEnv === 'development',
+    PROD: nodeEnv === 'production',
     SSR: false
   };
   

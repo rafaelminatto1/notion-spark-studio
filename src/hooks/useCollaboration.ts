@@ -32,9 +32,9 @@ export const useCollaboration = ({
   userId,
   userName,
   userAvatar,
-  websocketUrl = import.meta.env.MODE === 'development'
+  websocketUrl = process.env.NODE_ENV === 'development'
     ? 'ws://localhost:8080/collaboration'
-    : import.meta.env.VITE_WS_URL || 'wss://ws.notion-spark.com/collaboration',
+    : process.env.VITE_WS_URL || 'wss://ws.notion-spark.com/collaboration',
   onContentChange,
   onError
 }: UseCollaborationProps) => {

@@ -34,6 +34,39 @@ export interface EnvironmentConfig {
   COMMIT_HASH?: string;
 }
 
+// 🚀 CORREÇÃO: Função para obter variáveis de ambiente de forma compatível
+function getEnvVar(key: string, defaultValue: string = ''): string {
+  // Tentar import.meta.env primeiro (Vite)
+  if (typeof window !== 'undefined') {
+    try {
+      // @ts-ignore - Acesso dinâmico para evitar erro de compilação
+      const importMeta = (globalThis as any).import?.meta;
+      if (importMeta?.env?.[key]) {
+        return importMeta.env[key];
+      }
+    } catch (error) {
+      // Ignora erro se import.meta não estiver disponível
+    }
+  }
+  
+  // Fallback para process.env (Next.js)
+  if (typeof process !== 'undefined' && process.env?.[key]) {
+    return process.env[key];
+  }
+  
+  return defaultValue;
+}
+
+// 🚀 CORREÇÃO: Detectar ambiente de forma compatível
+function getCurrentEnvironment(): Environment {
+  const nodeEnv = getEnvVar('NODE_ENV', 'development');
+  const mode = getEnvVar('MODE', nodeEnv);
+  
+  // Priorizar NODE_ENV, depois MODE
+  const env = nodeEnv || mode;
+  return ['development', 'test', 'production'].includes(env) ? env as Environment : 'development';
+}
+
 // Configuração padrão
 const defaultConfig: EnvironmentConfig = {
   NODE_ENV: 'development',
@@ -81,19 +114,13 @@ const environments: Record<Environment, Partial<EnvironmentConfig>> = {
     DEBUG_MODE: false,
     LOG_LEVEL: 'warn',
     ENABLE_ANALYTICS: true,
-    API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://api.notion-spark.com',
-    WS_URL: import.meta.env.VITE_WS_URL || 'wss://ws.notion-spark.com',
-    ANALYTICS_ID: import.meta.env.VITE_ANALYTICS_ID,
+    API_BASE_URL: getEnvVar('VITE_API_BASE_URL', 'https://api.notion-spark.com'),
+    WS_URL: getEnvVar('VITE_WS_URL', 'wss://ws.notion-spark.com'),
+    ANALYTICS_ID: getEnvVar('VITE_ANALYTICS_ID'),
     MAX_CONNECTIONS: 1000,
     CACHE_TTL: 3600000, // 1 hora
   },
 };
-
-// Detectar ambiente atual
-function getCurrentEnvironment(): Environment {
-  const env = import.meta.env.NODE_ENV as Environment;
-  return ['development', 'test', 'production'].includes(env) ? env : 'development';
-}
 
 // Criar configuração final
 function createConfig(): EnvironmentConfig {
@@ -105,11 +132,11 @@ function createConfig(): EnvironmentConfig {
     ...envConfig,
     NODE_ENV: currentEnv,
     
-    // Override com variáveis de ambiente do Vite
-    APP_NAME: import.meta.env.VITE_APP_NAME || defaultConfig.APP_NAME,
-    APP_VERSION: import.meta.env.VITE_APP_VERSION || defaultConfig.APP_VERSION,
-    BUILD_TIME: import.meta.env.VITE_BUILD_TIME,
-    COMMIT_HASH: import.meta.env.VITE_COMMIT_HASH,
+    // Override com variáveis de ambiente
+    APP_NAME: getEnvVar('VITE_APP_NAME', defaultConfig.APP_NAME),
+    APP_VERSION: getEnvVar('VITE_APP_VERSION', defaultConfig.APP_VERSION),
+    BUILD_TIME: getEnvVar('VITE_BUILD_TIME'),
+    COMMIT_HASH: getEnvVar('VITE_COMMIT_HASH'),
   };
   
   return config;
@@ -124,7 +151,7 @@ export const isTest = config.NODE_ENV === 'test';
 export const isProduction = config.NODE_ENV === 'production';
 
 // Logs de configuração (apenas em desenvolvimento)
-if (isDevelopment) {
+if (isDevelopment && typeof console !== 'undefined') {
   console.log('🔧 Environment Configuration:', {
     environment: config.NODE_ENV,
     version: config.APP_VERSION,
@@ -156,6 +183,8 @@ export function isFeatureEnabled(feature: keyof Pick<EnvironmentConfig,
 
 // Helper para logging condicionado ao ambiente
 export function logConfig(level: EnvironmentConfig['LOG_LEVEL'], message: string, ...args: unknown[]): void {
+  if (typeof console === 'undefined') return;
+  
   const levels = ['error', 'warn', 'info', 'debug'];
   const currentLevelIndex = levels.indexOf(config.LOG_LEVEL);
   const messageLevel = levels.indexOf(level);

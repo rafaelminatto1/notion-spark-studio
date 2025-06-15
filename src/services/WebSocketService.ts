@@ -303,10 +303,10 @@ export class WebSocketService extends EventEmitter {
 
   // Handlers privados
   private getWebSocketUrl(): string {
-    if (import.meta.env.MODE === 'development') {
+    if (process.env.NODE_ENV === 'development') {
       return 'ws://localhost:3001/collaboration';
     }
-    return import.meta.env.VITE_WS_URL || 'wss://ws.notion-spark.com/collaboration';
+    return process.env.VITE_WS_URL || 'wss://ws.notion-spark.com/collaboration';
   }
 
   private handleMessage(event: MessageEvent): void {

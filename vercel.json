@@ -7,9 +7,15 @@
     }
   ],
   "env": {
+    "NODE_ENV": "production",
     "VITE_APP_NAME": "Notion Spark Studio",
     "VITE_APP_VERSION": "2.0.0",
     "VITE_API_BASE_URL": "https://api.notion-spark.com",
     "VITE_WS_URL": "wss://ws.notion-spark.com"
+  },
+  "functions": {
+    "app/api/**/*.js": {
+      "maxDuration": 30
+    }
   }
 } 
