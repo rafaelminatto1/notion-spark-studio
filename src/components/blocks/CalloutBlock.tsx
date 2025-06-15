@@ -69,7 +69,7 @@ export const CalloutBlock: React.FC<CalloutBlockProps> = ({
         onChange={(e) => onUpdate({ content: e.target.value })}
         onFocus={onFocus}
         placeholder="Escreva um callout..."
-        className="w-full bg-transparent border-none resize-none focus:ring-0 focus:outline-none text-gray-200 min-h-[2rem]"
+        className="w-full bg-transparent border-none resize-none focus:ring-0 focus:outline-none text-foreground min-h-[2rem]"
         rows={1}
       />
     </div>

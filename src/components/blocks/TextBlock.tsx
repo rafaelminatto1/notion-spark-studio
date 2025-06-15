@@ -179,7 +179,7 @@ export const TextBlock: React.FC<TextBlockProps> = ({
 - [ ] Todo item
 > Citação"
         className={cn(
-          "w-full bg-transparent border-none resize-none focus:ring-0 focus:outline-none text-gray-200 overflow-hidden pr-20 transition-all duration-200 textarea-clean",
+          "w-full bg-transparent border-none resize-none focus:ring-0 focus:outline-none text-foreground overflow-hidden pr-20 transition-all duration-200 textarea-clean",
           isSelected && "ring-1 ring-notion-purple",
           isDragging && "ring-2 ring-blue-400 bg-blue-50/5"
         )}

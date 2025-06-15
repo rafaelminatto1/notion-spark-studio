@@ -122,7 +122,7 @@ Use [[ para criar links entre documentos
 Use o botão 'Mídia' para inserir imagens e vídeos
 "
           className={cn(
-            "min-h-[200px] max-h-[60vh] bg-transparent border-none resize-none text-workspace-text leading-relaxed text-base focus:ring-0 focus:outline-none pr-20 overflow-y-auto",
+            "min-h-[200px] max-h-[60vh] bg-transparent border-none resize-none text-foreground leading-relaxed text-base focus:ring-0 focus:outline-none pr-20 overflow-y-auto",
             className
           )}
           style={{ height: 'auto' }}

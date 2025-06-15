@@ -46,7 +46,7 @@ export const ToggleBlock: React.FC<ToggleBlockProps> = ({
           onChange={(e) => onUpdate({ content: e.target.value })}
           onFocus={onFocus}
           placeholder="Toggle..."
-          className="flex-1 bg-transparent border-none resize-none focus:ring-0 focus:outline-none text-gray-200 min-h-[2rem]"
+          className="flex-1 bg-transparent border-none resize-none focus:ring-0 focus:outline-none text-foreground min-h-[2rem]"
           rows={1}
         />
       </div>
