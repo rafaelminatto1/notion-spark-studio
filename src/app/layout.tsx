@@ -5,7 +5,7 @@ import './globals.css';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Toaster } from '@/components/ui/toaster';
 import { Navbar } from '@/components/Navbar';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import { useState, createContext, useContext } from 'react';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -26,53 +26,36 @@ export const useNavigation = () => {
   return context;
 };
 
-function NavigationProvider({ children }: { children: React.ReactNode }) {
-  const [currentSection, setCurrentSection] = useState('dashboard');
-
-  return (
-    <NavigationContext.Provider value={{ currentSection, setCurrentSection }}>
-      {children}
-    </NavigationContext.Provider>
-  );
-}
-
-function AppContent({ children }: { children: React.ReactNode }) {
-  const { currentSection, setCurrentSection } = useNavigation();
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar 
-        currentSection={currentSection}
-        onNavigate={setCurrentSection}
-      />
-      <main className="flex-1">
-        {children}
-      </main>
-    </div>
-  );
-}
-
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const [currentSection, setCurrentSection] = useState('dashboard');
+
   return (
     <html lang="pt-BR">
       <head>
+        <title>Notion Spark Studio</title>
+        <meta name="description" content="Uma plataforma moderna para produtividade e colaboração" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-        <link rel="alternate icon" href="/favicon.ico" />
+        <link rel="icon" href="/favicon.ico" sizes="32x32" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#6366f1" />
       </head>
       <body className={inter.className}>
         <ErrorBoundary>
-          <AuthProvider>
-            <NavigationProvider>
-              <AppContent>
-                {children}
-              </AppContent>
-            </NavigationProvider>
-            <Toaster />
-          </AuthProvider>
+          <NavigationContext.Provider value={{ currentSection, setCurrentSection }}>
+            <AuthProvider>
+              <div className="min-h-screen bg-background">
+                <Navbar />
+                <main className="pt-16">
+                  {children}
+                </main>
+              </div>
+              <Toaster />
+            </AuthProvider>
+          </NavigationContext.Provider>
         </ErrorBoundary>
       </body>
     </html>
