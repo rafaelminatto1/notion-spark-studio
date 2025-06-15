@@ -1,8 +1,12 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { Plus, Book, ChevronRight, Star, Clock, Users, Edit, Share, Trash2 } from 'lucide-react';
+import { Plus, Book, ChevronRight, Star, Clock, Users, Edit, Share, Trash2, BarChart3, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { FileItem } from '@/types';
 import { usePermissions } from './permissions/PermissionsEngine';
+import { useDebounce } from '@/hooks/useDebounce';
+import { useAdvancedCache } from '@/hooks/useAdvancedCache';
+import { usePerformance } from '@/hooks/usePerformance';
+import { EmptyStateOptimized } from './EmptyStateOptimized';
 
 interface NotebooksPanelProps {
   notebooks: FileItem[];
@@ -25,11 +29,40 @@ export const NotebooksPanel: React.FC<NotebooksPanelProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedNotebooks, setExpandedNotebooks] = useState<Set<string>>(new Set());
+  const [showPerformanceStats, setShowPerformanceStats] = useState(false);
   const { checkPermission, getUserPermissions, state: permissionsState } = usePermissions();
 
-  const filteredNotebooks = (notebooks || []).filter(notebook =>
-    notebook && notebook.name && notebook.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // 🚀 MELHORIA: Debounce na busca para melhor performance
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
+  // 🚀 MELHORIA: Cache inteligente para resultados de busca
+  const searchCache = useAdvancedCache({
+    maxSize: 30,
+    defaultTTL: 3 * 60 * 1000, // 3 minutos
+    prefetchEnabled: false
+  });
+
+  // 🚀 MELHORIA: Monitoramento de performance
+  const {
+    metrics,
+    startRenderTimer,
+    endRenderTimer,
+    getPerformanceRecommendations
+  } = usePerformance(notebooks);
+
+  // 🚀 MELHORIA: Filtros otimizados com cache
+  const filteredNotebooks = useMemo(() => {
+    const cacheKey = `notebooks-${debouncedSearchTerm}`;
+    const cached = searchCache.get(cacheKey);
+    if (cached) return cached;
+
+    const filtered = (notebooks || []).filter(notebook =>
+      notebook && notebook.name && notebook.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
+    );
+
+    searchCache.set(cacheKey, filtered);
+    return filtered;
+  }, [notebooks, debouncedSearchTerm, searchCache]);
 
   const toggleNotebookExpansion = (notebookId: string) => {
     const newExpanded = new Set(expandedNotebooks);
@@ -104,26 +137,71 @@ export const NotebooksPanel: React.FC<NotebooksPanelProps> = ({
           </span>
         </div>
         
-        {canCreateFile && (
+        <div className="flex items-center gap-2">
+          {/* 🚀 Performance Stats Toggle */}
           <button
-            onClick={onCreateNotebook}
-            className="group relative p-2 rounded-lg transition-all duration-200 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:scale-105 active:scale-95"
-            title="Criar Novo Notebook"
+            onClick={() => setShowPerformanceStats(!showPerformanceStats)}
+            className={cn(
+              "group relative p-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95",
+              showPerformanceStats 
+                ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400" 
+                : "hover:bg-slate-50 dark:hover:bg-slate-800/20 text-slate-500 dark:text-slate-400"
+            )}
+            title="Estatísticas de Performance"
           >
-            <Plus className="h-4 w-4 text-slate-500 group-hover:text-emerald-600 dark:text-slate-400 dark:group-hover:text-emerald-400 transition-colors" />
-            <div className="absolute inset-0 rounded-lg bg-emerald-200/20 dark:bg-emerald-400/10 scale-0 group-hover:scale-100 transition-transform duration-200" />
+            <BarChart3 className="h-4 w-4 transition-colors" />
           </button>
-        )}
+
+          {canCreateFile && (
+            <button
+              onClick={onCreateNotebook}
+              className="group relative p-2 rounded-lg transition-all duration-200 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:scale-105 active:scale-95"
+              title="Criar Novo Notebook"
+            >
+              <Plus className="h-4 w-4 text-slate-500 group-hover:text-emerald-600 dark:text-slate-400 dark:group-hover:text-emerald-400 transition-colors" />
+              <div className="absolute inset-0 rounded-lg bg-emerald-200/20 dark:bg-emerald-400/10 scale-0 group-hover:scale-100 transition-transform duration-200" />
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Search Bar com efeitos */}
+      {/* 🚀 Performance Stats Panel */}
+      {showPerformanceStats && (
+        <div className="px-4 py-2 bg-blue-50 dark:bg-blue-900/20 border-b border-blue-200 dark:border-blue-700/50 text-xs">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <span className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                Render: {metrics.renderTime.toFixed(1)}ms
+              </span>
+              <span className="flex items-center gap-1">
+                <Book className="h-3 w-3" />
+                {filteredNotebooks.length} notebooks
+              </span>
+            </div>
+            <span className="text-blue-600 dark:text-blue-400 font-medium">
+              Performance: {metrics.renderTime < 30 ? '🚀 Excelente' : metrics.renderTime < 60 ? '⚡ Boa' : '🐌 Lenta'}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Search Bar com efeitos otimizado */}
       <div className="p-3 border-b border-slate-200/40 dark:border-slate-700/40">
         <div className="relative group">
           <input
             type="text"
             placeholder="Buscar notebooks..."
-            className="w-full pl-3 pr-3 py-2 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 dark:focus:border-emerald-400 transition-all duration-200 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-3 pr-8 py-2 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 dark:focus:border-emerald-400 transition-all duration-200 placeholder:text-slate-400 dark:placeholder:text-slate-500"
           />
+          {/* 🚀 Indicador de busca ativa */}
+          {debouncedSearchTerm && (
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+              <Zap className="h-3 w-3 text-emerald-500 dark:text-emerald-400" />
+            </div>
+          )}
           <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-emerald-400/5 to-blue-400/5 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" />
         </div>
       </div>
@@ -131,32 +209,32 @@ export const NotebooksPanel: React.FC<NotebooksPanelProps> = ({
       {/* Lista de Notebooks com hover states */}
       <div className="flex-1 overflow-y-auto p-2 space-y-1">
         {safeNotebooks.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-            <div className="p-4 rounded-full bg-slate-100 dark:bg-slate-800 mb-4">
-              <Book className="h-6 w-6 text-slate-400" />
-            </div>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
-              Nenhum notebook ainda
-            </p>
-            {canCreateFile && (
-              <button
-                onClick={() => {
-                  console.log('[NotebooksPanel] Criar Primeiro Notebook clicked');
-                  console.log('[NotebooksPanel] onCreateNotebook function:', typeof onCreateNotebook);
-                  try {
-                    onCreateNotebook();
-                    console.log('[NotebooksPanel] onCreateNotebook called successfully');
-                  } catch (error) {
-                    console.error('[NotebooksPanel] Error calling onCreateNotebook:', error);
-                  }
-                }}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-emerald-500/25"
-              >
-                <Plus className="h-4 w-4" />
-                Criar Primeiro Notebook
-              </button>
-            )}
-          </div>
+          <EmptyStateOptimized
+            icon={Book}
+            title="Nenhum notebook ainda"
+            description="Organize suas notas criando seu primeiro notebook"
+            actionLabel={canCreateFile ? "Criar Primeiro Notebook" : undefined}
+            onAction={canCreateFile ? () => {
+              console.log('[NotebooksPanel] Criar Primeiro Notebook clicked');
+              console.log('[NotebooksPanel] onCreateNotebook function:', typeof onCreateNotebook);
+              try {
+                onCreateNotebook();
+                console.log('[NotebooksPanel] onCreateNotebook called successfully');
+              } catch (error) {
+                console.error('[NotebooksPanel] Error calling onCreateNotebook:', error);
+              }
+            } : undefined}
+            size="md"
+            variant="default"
+          />
+        ) : filteredNotebooks.length === 0 ? (
+          <EmptyStateOptimized
+            icon={Book}
+            title="Nenhum notebook encontrado"
+            description={`Nenhum notebook corresponde à busca "${debouncedSearchTerm}"`}
+            size="sm"
+            variant="search"
+          />
         ) : (
           visibleFiles.map((notebook) => (
             <div key={notebook.id} className="group relative">
