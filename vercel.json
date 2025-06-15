@@ -1,4 +1,11 @@
 {
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
   "env": {
     "VITE_APP_NAME": "Notion Spark Studio",
     "VITE_APP_VERSION": "2.0.0",
