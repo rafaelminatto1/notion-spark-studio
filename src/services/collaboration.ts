@@ -4,6 +4,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { config } from '@/config/environment';
 import { supabaseMonitoring } from './supabaseMonitoring';
+import { safeGetEnv } from '@/utils/env';
 
 interface User {
   id: string;
@@ -128,9 +129,10 @@ class CollaborationService {
       await this.createCollaborationSession(roomId);
 
       // WebSocket URL (will fallback to mock in dev)
-      const wsUrl = import.meta.env.MODE === 'development' 
+      const mode = safeGetEnv('NODE_ENV', 'development');
+      const wsUrl = mode === 'development' 
         ? 'ws://localhost:8080' 
-        : import.meta.env.VITE_WS_URL || 'wss://ws.notion-spark.com';
+        : safeGetEnv('VITE_WS_URL', 'wss://ws.notion-spark.com');
       this.ws = new WebSocket(`${wsUrl}/collaboration/${roomId}`);
 
       this.ws.onopen = () => {

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { GraphNode, GraphLink } from '@/components/GraphView/types';
+import { safeGetEnv } from '@/utils/env';
 
 interface ViewportBounds {
   minX: number;
@@ -143,7 +144,8 @@ export function useViewportNodes(
 
   // Debug logging em desenvolvimento
   useEffect(() => {
-    if (import.meta.env.MODE === 'development') {
+    const mode = safeGetEnv('NODE_ENV', 'development');
+    if (mode === 'development') {
       console.log(`🎯 Viewport Optimization: ${renderingStats.visibleCount}/${nodes.length} nodes visible (${renderingStats.performanceGain}% performance gain)`);
     }
   }, [renderingStats, nodes.length]);

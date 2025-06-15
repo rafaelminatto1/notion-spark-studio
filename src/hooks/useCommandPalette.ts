@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { safeGetEnv } from '@/utils/env';
 
 interface UseCommandPaletteOptions {
   defaultShortcut?: string;
@@ -116,7 +117,8 @@ export const useCommandPalette = (options: UseCommandPaletteOptions = {}) => {
 
   // Log de debug (pode ser removido em produção)
   useEffect(() => {
-    if (import.meta.env.MODE === 'development') {
+    const mode = safeGetEnv('NODE_ENV', 'development');
+    if (mode === 'development') {
       console.log(`Command Palette: ${isOpen ? 'opened' : 'closed'} in context: ${currentContext}`);
     }
   }, [isOpen, currentContext]);

@@ -4,6 +4,12 @@ import { CollaboratorCursor } from './LiveCursors';
 import { Operation } from './OperationalTransform';
 import { Comment } from './CommentsSystem';
 import { toast } from 'sonner';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Zap, Users, Wifi, WifiOff } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { safeGetEnv } from '@/utils/env';
 
 interface CollaborationContextType {
   // State
@@ -250,7 +256,7 @@ export const CollaborationProvider: React.FC<CollaborationProviderProps> = ({
       )}
 
       {/* Collaboration Stats (Development only) */}
-      {import.meta.env.MODE === 'development' && enabled && (
+      {safeGetEnv('NODE_ENV', 'development') === 'development' && enabled && (
         <div className="fixed top-4 left-4 bg-black/80 text-white text-xs p-3 rounded-lg font-mono z-50">
           <div className="font-bold mb-2">📊 Collaboration Stats</div>
           <div>Status: {connectionStatus}</div>
@@ -265,11 +271,49 @@ export const CollaborationProvider: React.FC<CollaborationProviderProps> = ({
         </div>
       )}
 
-      {import.meta.env.MODE === 'development' && enabled && (
+      {safeGetEnv('NODE_ENV', 'development') === 'development' && enabled && (
         <div className="fixed bottom-4 right-4 bg-yellow-100 p-2 rounded shadow">
           <p className="text-xs">Modo de colaboração: {enabled ? 'Ativo' : 'Inativo'}</p>
         </div>
       )}
+
+      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+        {safeGetEnv('NODE_ENV', 'development') === 'development' && enabled && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            className="flex items-center gap-2"
+          >
+            <Card className="bg-blue-50 border-blue-200">
+              <CardContent className="p-2">
+                <div className="flex items-center gap-2 text-xs text-blue-600">
+                  <Zap className="w-3 h-3" />
+                  DEV Mode
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+        
+        {safeGetEnv('NODE_ENV', 'development') === 'development' && enabled && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            className="flex items-center gap-2"
+          >
+            <Card className="bg-green-50 border-green-200">
+              <CardContent className="p-2">
+                <div className="flex items-center gap-2 text-xs text-green-600">
+                  <Users className="w-3 h-3" />
+                  {collaboration.getActiveCollaborators().length} active
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+      </div>
     </CollaborationContext.Provider>
   );
 };
