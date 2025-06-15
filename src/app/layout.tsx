@@ -6,6 +6,7 @@ import './globals.css';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Toaster } from '@/components/ui/toaster';
 import { Navbar } from '@/components/Navbar';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useState, createContext, useContext } from 'react';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -65,14 +66,16 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={inter.className}>
-        <AuthProvider>
-          <NavigationProvider>
-            <AppContent>
-              {children}
-            </AppContent>
-          </NavigationProvider>
-          <Toaster />
-        </AuthProvider>
+        <ErrorBoundary>
+          <AuthProvider>
+            <NavigationProvider>
+              <AppContent>
+                {children}
+              </AppContent>
+            </NavigationProvider>
+            <Toaster />
+          </AuthProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );
