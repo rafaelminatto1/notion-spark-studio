@@ -1,10 +1,13 @@
 import React from 'react';
-import { FileText, Tag, Clock, Star, TrendingUp, Calendar, Sparkles, Activity, Zap, Target } from 'lucide-react';
+import { FileText, Tag, Clock, Star, TrendingUp, Calendar, Sparkles, Activity, Zap, Target, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { FileItem } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
+import { TaskList } from './tasks/TaskList';
+import { PerformanceMonitor } from './PerformanceMonitor';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 // import './dashboard-modern.css';
 
 interface DashboardProps {
@@ -78,37 +81,50 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <h1 className="text-3xl font-bold mb-6">
         Olá, {user.user_metadata?.name || user.email}!
       </h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Produtividade</CardTitle>
-            <CardDescription>Suas métricas de produtividade</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p>Em breve: gráficos e métricas de produtividade</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle>Tarefas</CardTitle>
-            <CardDescription>Suas tarefas pendentes</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p>Em breve: lista de tarefas e gerenciamento</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle>Notas</CardTitle>
-            <CardDescription>Suas notas recentes</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p>Em breve: editor de notas e documentos</p>
-          </CardContent>
-        </Card>
-      </div>
+
+      <Tabs defaultValue="tasks" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="tasks">Tarefas</TabsTrigger>
+          <TabsTrigger value="notes">Notas</TabsTrigger>
+          <TabsTrigger value="metrics">Métricas</TabsTrigger>
+          <TabsTrigger value="performance">
+            <BarChart3 className="w-4 h-4 mr-2" />
+            Performance
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="tasks" className="space-y-4">
+          <TaskList />
+        </TabsContent>
+
+        <TabsContent value="notes">
+          <Card>
+            <CardHeader>
+              <CardTitle>Notas</CardTitle>
+              <CardDescription>Em breve: editor de notas e documentos</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p>O editor de notas está em desenvolvimento...</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="metrics">
+          <Card>
+            <CardHeader>
+              <CardTitle>Métricas de Produtividade</CardTitle>
+              <CardDescription>Em breve: gráficos e métricas de produtividade</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p>As métricas de produtividade estão em desenvolvimento...</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="performance" className="space-y-4">
+          <PerformanceMonitor />
+        </TabsContent>
+      </Tabs>
 
       <div className="content-grid">
         {/* Recent Files */}
@@ -191,31 +207,90 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <CardTitle className="content-card-title">
             <div className="flex items-center gap-3">
               <div className="content-icon-wrapper">
-                <Zap className="h-5 w-5" />
+                <Sparkles className="h-5 w-5" />
               </div>
               Ações Rápidas
             </div>
           </CardTitle>
         </CardHeader>
         <CardContent className="content-card-body">
-          <div className="quick-actions">
+          <div className="quick-actions-grid">
             <Button
-              onClick={() => onCreateFile('Nova Página')}
-              className="quick-action-btn quick-action-primary"
+              onClick={() => onCreateFile('Nova Nota')}
+              className="quick-action-button"
+              variant="outline"
             >
-              <FileText className="h-4 w-4" />
-              Nova Página
+              <FileText className="h-4 w-4 mr-2" />
+              Nova Nota
             </Button>
             <Button
-              onClick={() => onCreateFile('Diário - ' + new Date().toLocaleDateString())}
-              className="quick-action-btn quick-action-secondary"
+              className="quick-action-button"
+              variant="outline"
             >
-              <Calendar className="h-4 w-4" />
-              Entrada de Diário
+              <Calendar className="h-4 w-4 mr-2" />
+              Agendar
+            </Button>
+            <Button
+              className="quick-action-button"
+              variant="outline"
+            >
+              <TrendingUp className="h-4 w-4 mr-2" />
+              Relatórios
             </Button>
           </div>
         </CardContent>
       </Card>
+
+      {/* Statistics */}
+      <div className="stats-grid">
+        <Card className="stat-card">
+          <CardContent className="stat-card-content">
+            <div className="stat-icon-wrapper">
+              <FileText className="stat-icon" />
+            </div>
+            <div className="stat-details">
+              <p className="stat-value">{stats.totalFiles}</p>
+              <p className="stat-label">Arquivos</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="stat-card">
+          <CardContent className="stat-card-content">
+            <div className="stat-icon-wrapper">
+              <Star className="stat-icon" />
+            </div>
+            <div className="stat-details">
+              <p className="stat-value">{stats.favorites}</p>
+              <p className="stat-label">Favoritos</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="stat-card">
+          <CardContent className="stat-card-content">
+            <div className="stat-icon-wrapper">
+              <Tag className="stat-icon" />
+            </div>
+            <div className="stat-details">
+              <p className="stat-value">{stats.totalTags}</p>
+              <p className="stat-label">Tags</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="stat-card">
+          <CardContent className="stat-card-content">
+            <div className="stat-icon-wrapper">
+              <Zap className="stat-icon" />
+            </div>
+            <div className="stat-details">
+              <p className="stat-value">100%</p>
+              <p className="stat-label">Produtividade</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
