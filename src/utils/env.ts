@@ -18,33 +18,59 @@ let cachedEnv: EnvVars | null = null;
 
 /**
  * Função segura para obter variável de ambiente
+ * Funciona tanto em ambientes Next.js (process.env) quanto Vite (import.meta.env)
  */
-const safeGetEnv = (key: string, defaultValue: string = ''): string => {
+function safeGetEnv(key: string, defaultValue: string = ''): string {
   // Tentar process.env primeiro (Next.js/Node.js)
-  if (typeof process !== 'undefined' && process.env?.[key]) {
-    return process.env[key];
+  if (typeof process !== 'undefined' && process.env && process.env[key]) {
+    return process.env[key] as string;
   }
   
   // Tentar import.meta.env (Vite) de forma segura
   if (typeof window !== 'undefined') {
     try {
       // @ts-expect-error - Acesso dinâmico para evitar erro de compilação
-      const importMeta = (globalThis as Record<string, unknown>).import?.meta;
-      if (importMeta?.env?.[key]) {
-        return importMeta.env[key];
+      const importMeta = (globalThis as any).import?.meta;
+      if (importMeta && importMeta.env && importMeta.env[key]) {
+        return importMeta.env[key] as string;
       }
     } catch (error) {
-      // Ignora erro se import.meta não estiver disponível
+      // Silently ignore errors
     }
   }
   
   return defaultValue;
-};
+}
+
+/**
+ * Função interna para obter variável de ambiente (para uso interno do módulo)
+ */
+function getEnvVar(key: string, defaultValue: string = ''): string {
+  // Tentar process.env primeiro (Next.js/Node.js)
+  if (typeof process !== 'undefined' && process.env && process.env[key]) {
+    return process.env[key] as string;
+  }
+  
+  // Tentar import.meta.env (Vite) de forma segura
+  if (typeof window !== 'undefined') {
+    try {
+      // @ts-expect-error - Acesso dinâmico para evitar erro de compilação
+      const importMeta = (globalThis as any).import?.meta;
+      if (importMeta && importMeta.env && importMeta.env[key]) {
+        return importMeta.env[key] as string;
+      }
+    } catch (error) {
+      // Silently ignore errors
+    }
+  }
+  
+  return defaultValue;
+}
 
 /**
  * Detecta se estamos no ambiente Vite usando uma função dinâmica
  */
-const getViteEnv = (): EnvVars | null => {
+function getViteEnv(): EnvVars | null {
   try {
     // Usa eval para evitar problemas de parsing no Jest
     const importMeta = eval('typeof import !== "undefined" ? import.meta : null');
@@ -63,19 +89,19 @@ const getViteEnv = (): EnvVars | null => {
     // Ignora erro quando import.meta não está disponível
   }
   return null;
-};
+}
 
 /**
  * Obtém as variáveis de ambiente de forma compatível
  */
-export const getEnv = (): EnvVars => {
+function getEnv(): EnvVars {
   // Cache para evitar re-execução
   if (cachedEnv) {
     return cachedEnv;
   }
 
   // Se estamos no ambiente de teste (Jest)
-  if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
+  if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'test') {
     cachedEnv = {
       MODE: 'test',
       VITE_WS_URL: 'ws://localhost:3001/collaboration',
@@ -96,40 +122,43 @@ export const getEnv = (): EnvVars => {
   }
 
   // Fallback para Node.js/Next.js
-  const nodeEnv = safeGetEnv('NODE_ENV', 'development');
+  const nodeEnv = getEnvVar('NODE_ENV', 'development');
   cachedEnv = {
     MODE: nodeEnv,
-    VITE_WS_URL: safeGetEnv('VITE_WS_URL'),
-    VITE_SUPABASE_URL: safeGetEnv('VITE_SUPABASE_URL'),
-    VITE_SUPABASE_ANON_KEY: safeGetEnv('VITE_SUPABASE_ANON_KEY'),
+    VITE_WS_URL: getEnvVar('VITE_WS_URL'),
+    VITE_SUPABASE_URL: getEnvVar('VITE_SUPABASE_URL'),
+    VITE_SUPABASE_ANON_KEY: getEnvVar('VITE_SUPABASE_ANON_KEY'),
     DEV: nodeEnv === 'development',
     PROD: nodeEnv === 'production',
     SSR: false
   };
   
   return cachedEnv;
-};
+}
 
 /**
  * Verifica se estamos em modo de desenvolvimento
  */
-export const isDev = (): boolean => {
+function isDev(): boolean {
   const env = getEnv();
   return env.MODE === 'development' || env.DEV;
-};
+}
 
 /**
  * Verifica se estamos em modo de produção
  */
-export const isProd = (): boolean => {
+function isProd(): boolean {
   const env = getEnv();
   return env.MODE === 'production' || env.PROD;
-};
+}
 
 /**
  * Verifica se estamos em ambiente de teste
  */
-export const isTest = (): boolean => {
+function isTest(): boolean {
   const env = getEnv();
   return env.MODE === 'test';
-}; 
+}
+
+// Exportações
+export { safeGetEnv, getEnv, isDev, isProd, isTest }; 
