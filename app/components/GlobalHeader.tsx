@@ -47,8 +47,8 @@ const GlobalHeader: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Só mostrar na página inicial
-  if (pathname !== '/') {
+  // Mostrar em todas as páginas exceto quando está na página de login
+  if (pathname === '/login') {
     return null;
   }
 
@@ -128,6 +128,10 @@ const GlobalHeader: React.FC = () => {
                 <DropdownMenuItem onClick={() => router.push('/settings')}>
                   <Settings className="h-4 w-4 mr-2" />
                   Configurações
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push('/about')}>
+                  <Activity className="h-4 w-4 mr-2" />
+                  Sobre
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
@@ -209,6 +213,19 @@ const GlobalHeader: React.FC = () => {
                 >
                   <Settings className="h-4 w-4" />
                   Configurações
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start gap-2"
+                  onClick={() => {
+                    router.push('/about');
+                    setMenuOpen(false);
+                  }}
+                >
+                  <Activity className="h-4 w-4" />
+                  Sobre
                 </Button>
                 
                 <Button 
