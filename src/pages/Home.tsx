@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -21,96 +19,80 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/router';
 import Link from 'next/link';
-import GlobalHeader from './components/GlobalHeader';
+import Header from '@/components/Header';
 
 // Dados dinâmicos para demonstração
 const stats = [
   { icon: Users, label: 'Usuários Ativos', value: '2.4K+', growth: '+12%' },
   { icon: FileText, label: 'Templates Criados', value: '18K+', growth: '+34%' },
   { icon: Brain, label: 'IA Interações', value: '156K+', growth: '+89%' },
-  { icon: Activity, label: 'Performance', value: '99.9%', growth: '+2%' },
+  { icon: Activity, label: 'Uptime', value: '99.9%', growth: 'Estável' }
 ];
 
 const features = [
   {
     icon: Brain,
     title: 'IA Avançada',
-    description: 'Sistema de inteligência artificial que aprende com seus padrões de trabalho e sugere otimizações automáticas.',
-    color: 'from-blue-500 to-indigo-600'
+    description: 'Sistema de inteligência artificial que aprende com seu comportamento e otimiza automaticamente seus templates e workflows.',
+    color: 'from-blue-500 to-cyan-500'
+  },
+  {
+    icon: Shield,
+    title: 'Máxima Segurança',
+    description: 'Proteção avançada com backup automático, criptografia end-to-end e sistemas de recuperação resilientes.',
+    color: 'from-green-500 to-emerald-500'
   },
   {
     icon: Zap,
     title: 'Performance Extrema',
-    description: 'Arquitetura otimizada com cache inteligente, lazy loading e preload preditivo para máxima velocidade.',
-    color: 'from-yellow-400 to-orange-500'
-  },
-  {
-    icon: Shield,
-    title: 'Segurança Robusta',
-    description: 'Criptografia end-to-end, backup automático e sistema de monitoramento de integridade em tempo real.',
-    color: 'from-green-400 to-emerald-600'
-  },
-  {
-    icon: Database,
-    title: 'Sincronização Real-time',
-    description: 'Colaboração em tempo real com conflito automático de merge e histórico completo de versões.',
-    color: 'from-purple-400 to-pink-600'
+    description: 'Cache inteligente, lazy loading e otimizações que tornam sua experiência 45% mais rápida que a concorrência.',
+    color: 'from-yellow-500 to-orange-500'
   },
   {
     icon: Settings2,
-    title: 'Automação Inteligente',
-    description: 'Workflows automatizados com triggers customizáveis e integração profunda com APIs externas.',
-    color: 'from-cyan-400 to-blue-600'
+    title: 'Customização Total',
+    description: 'Controle completo sobre design, funcionalidades e integrações. Adapte tudo às suas necessidades específicas.',
+    color: 'from-purple-500 to-pink-500'
   },
   {
-    icon: Activity,
-    title: 'Analytics Avançado',
-    description: 'Dashboard com métricas detalhadas, insights de produtividade e relatórios personalizáveis.',
-    color: 'from-red-400 to-rose-600'
+    icon: Database,
+    title: 'Integração Notion',
+    description: 'Conecta perfeitamente com Notion, sincroniza dados em tempo real e mantém tudo sempre atualizado.',
+    color: 'from-indigo-500 to-blue-500'
+  },
+  {
+    icon: Sparkles,
+    title: 'Templates Inteligentes',
+    description: 'Biblioteca com centenas de templates que se adaptam automaticamente ao seu estilo e necessidades.',
+    color: 'from-rose-500 to-red-500'
   }
 ];
 
 const testimonials = [
   {
-    name: 'Ana Silva',
+    name: 'Sofia Rodrigues',
     role: 'Product Manager',
-    company: 'TechCorp',
-    content: 'Revolucionou completamente nosso workflow. A IA realmente entende nossas necessidades.',
-    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b1a?w=100&h=100&fit=crop&crop=face'
+    company: 'Tech Startup',
+    content: 'O Notion Spark revolucionou nossa produtividade. Economia de 3 horas por dia na criação de documentos.',
+    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150'
   },
   {
-    name: 'Carlos Santos',
-    role: 'Lead Developer',
-    company: 'StartupXYZ',
-    content: 'A performance é incrível. Conseguimos 40% mais produtividade em apenas 2 semanas.',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face'
+    name: 'Carlos Henrique',
+    role: 'CEO',
+    company: 'Digital Agency',
+    content: 'Templates incríveis e IA que realmente entende o que preciso. Melhor investimento do ano!',
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150'
   },
   {
-    name: 'Maria Costa',
-    role: 'UX Designer',
-    company: 'DesignStudio',
-    content: 'Interface intuitiva e recursos que realmente fazem a diferença no dia a dia.',
-    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face'
+    name: 'Ana Costa',
+    role: 'Designer',
+    company: 'Creative Studio',
+    content: 'Interface linda e funcionalidades poderosas. Finalmente um sistema que combina design e performance.',
+    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150'
   }
 ];
-
-// Animations
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
-};
-
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
-};
 
 const Home: React.FC = () => {
   const router = useRouter();
@@ -120,51 +102,62 @@ const Home: React.FC = () => {
     setIsVisible(true);
   }, []);
 
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+  };
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.3 }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background overflow-hidden">
-      <GlobalHeader />
+      <Header />
       {/* Hero Section */}
       <section className="relative py-20 lg:py-32 px-4 pt-32">
         {/* Gradient Background */}
         <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/5 via-background to-secondary/5" />
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-from)_0%,_transparent_65%)] from-primary/10" />
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.3),rgba(255,255,255,0))]" />
         
-        <div className="container mx-auto relative">
+        <div className="container mx-auto text-center">
           <motion.div
             initial="hidden"
             animate={isVisible ? "visible" : "hidden"}
             variants={staggerContainer}
-            className="text-center space-y-8"
+            className="space-y-8"
           >
             {/* Badge */}
             <motion.div variants={fadeInUp}>
-              <Badge className="bg-primary/10 text-primary border-primary/20 px-4 py-2">
-                <Sparkles className="h-3 w-3 mr-2" />
-                Powered by Next.js 15 + IA
+              <Badge variant="outline" className="animate-pulse gap-2 bg-primary/10 border-primary/20">
+                <Sparkles className="h-4 w-4" />
+                Novo: IA Avançada Implementada
+                <ArrowRight className="h-3 w-3" />
               </Badge>
             </motion.div>
 
             {/* Main Title */}
             <motion.h1 
               variants={fadeInUp}
-              className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight"
+              className="text-4xl md:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent leading-tight"
             >
-              O Futuro da{' '}
-              <span className="bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent">
-                Produtividade
+              Transforme seu Notion com{' '}
+              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                IA Avançada
               </span>
-              <br />
-              Está Aqui
             </motion.h1>
 
-            {/* Subtitle */}
+            {/* Description */}
             <motion.p 
               variants={fadeInUp}
               className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed"
             >
-              Plataforma revolucionária que combina <strong>Inteligência Artificial avançada</strong>,{' '}
-              <strong>performance extrema</strong> e <strong>segurança robusta</strong> para transformar 
-              como você trabalha com dados e templates.
+              Plataforma revolucionária que combina inteligência artificial, templates inteligentes e 
+              performance extrema para criar a experiência Notion mais avançada do mundo.
             </motion.p>
 
             {/* CTA Buttons */}
@@ -387,26 +380,51 @@ const Home: React.FC = () => {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-4 border-t bg-background/50 backdrop-blur-sm">
+      <footer className="py-12 px-4 border-t bg-muted/50">
         <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center">
-                <Sparkles className="h-4 w-4 text-white" />
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold">Notion Spark Studio</h3>
+              <p className="text-muted-foreground text-sm">
+                Transformando produtividade com inteligência artificial avançada.
+              </p>
+              <div className="flex gap-2">
+                <Button size="sm" variant="ghost" className="w-10 h-10 p-0">
+                  <Github className="h-4 w-4" />
+                </Button>
               </div>
-              <span className="text-lg font-bold">Notion Spark Studio</span>
             </div>
             
-            <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <Link href="/dashboard" className="hover:text-primary transition-colors">Dashboard</Link>
-              <Link href="/ai" className="hover:text-primary transition-colors">IA Workspace</Link>
-              <Link href="/notion" className="hover:text-primary transition-colors">Integração</Link>
-              <Link href="/performance" className="hover:text-primary transition-colors">Performance</Link>
+            <div className="space-y-4">
+              <h4 className="font-medium">Produto</h4>
+              <div className="space-y-2 text-sm">
+                <a href="/dashboard" className="block text-muted-foreground hover:text-foreground transition-colors">Dashboard</a>
+                <a href="/ai" className="block text-muted-foreground hover:text-foreground transition-colors">IA Workspace</a>
+                <a href="/notion" className="block text-muted-foreground hover:text-foreground transition-colors">Integração Notion</a>
+              </div>
             </div>
             
-            <div className="text-sm text-muted-foreground">
-              © 2024 Notion Spark Studio. Todos os direitos reservados.
+            <div className="space-y-4">
+              <h4 className="font-medium">Recursos</h4>
+              <div className="space-y-2 text-sm">
+                <a href="/performance" className="block text-muted-foreground hover:text-foreground transition-colors">Performance</a>
+                <a href="/settings" className="block text-muted-foreground hover:text-foreground transition-colors">Configurações</a>
+                <a href="#" className="block text-muted-foreground hover:text-foreground transition-colors">Documentação</a>
+              </div>
             </div>
+            
+            <div className="space-y-4">
+              <h4 className="font-medium">Suporte</h4>
+              <div className="space-y-2 text-sm">
+                <a href="#" className="block text-muted-foreground hover:text-foreground transition-colors">Central de Ajuda</a>
+                <a href="#" className="block text-muted-foreground hover:text-foreground transition-colors">Contato</a>
+                <a href="#" className="block text-muted-foreground hover:text-foreground transition-colors">Status</a>
+              </div>
+            </div>
+          </div>
+          
+          <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
+            <p>© 2024 Notion Spark Studio. Todos os direitos reservados.</p>
           </div>
         </div>
       </footer>

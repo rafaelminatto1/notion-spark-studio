@@ -181,7 +181,7 @@ const AppContent = () => {
         </div>
 
         <Routes>
-          <Route path="/" element={<Dashboard />} />
+
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/notion" element={<NotionIntegration />} />
           <Route path="/ai" element={<AIWorkspace />} />
