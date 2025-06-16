@@ -324,3 +324,21 @@ beforeEach(() => {
 if (process.env.NODE_ENV === 'test') {
   console.log('🧪 Test environment configured successfully');
 }
+
+// Mock para performance API em ambiente de teste
+if (typeof global.performance === 'undefined') {
+  global.performance = {
+    now: jest.fn(() => Date.now()),
+    getEntriesByType: jest.fn(() => [
+      { name: 'first-contentful-paint', startTime: 100 }
+    ]),
+    mark: jest.fn(),
+    measure: jest.fn(),
+    clearMarks: jest.fn(),
+    clearMeasures: jest.fn(),
+    getEntriesByName: jest.fn(() => []),
+    navigation: {
+      type: 'navigate'
+    }
+  } as any;
+}

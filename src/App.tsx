@@ -1,9 +1,9 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthGuard } from "@/components/AuthGuard";
 import { useTokenCleanup } from "@/hooks/useTokenCleanup";
@@ -17,7 +17,8 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { CacheProvider } from '@/utils/SmartCache';
 import { BackupProvider } from '@/utils/BackupSystem';
 import { HealthDashboard } from '@/utils/HealthMonitor';
-import { PerformanceOptimizer } from '@/utils/PerformanceOptimizer';
+import { PerformanceOptimizer, IntelligentPreloader, BundleAnalyzer } from '@/utils/PerformanceOptimizer';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,6 +32,7 @@ const queryClient = new QueryClient({
         return failureCount < 2;
       },
       staleTime: 5 * 60 * 1000, // 5 minutes
+      cacheTime: 10 * 60 * 1000, // 10 minutes
       refetchOnWindowFocus: false,
     },
   },
@@ -44,24 +46,127 @@ const NotFound = lazy(() => import('./legacy-pages/NotFound'));
 
 // Lazy loading de componentes principais
 const Dashboard = PerformanceOptimizer.createLazyComponent(
-  () => import('@/pages/Dashboard'),
-  { retryAttempts: 3, loadingComponent: <div>Carregando Dashboard...</div> }
+  () => {
+    const startTime = performance.now();
+    return import('@/pages/Dashboard').then(module => {
+      const loadTime = performance.now() - startTime;
+      BundleAnalyzer.trackChunkLoad('Dashboard', module.default.toString().length, loadTime);
+      return module;
+    });
+  },
+  { 
+    chunkName: 'dashboard',
+    retryDelay: 1000,
+    maxRetries: 3,
+    preload: false,
+    fallback: () => <div className="flex items-center justify-center min-h-screen"><LoadingSpinner /></div>
+  }
 );
 
 const NotionIntegration = PerformanceOptimizer.createLazyComponent(
-  () => import('@/pages/NotionIntegration'),
-  { retryAttempts: 3, loadingComponent: <div>Carregando Integração...</div> }
+  () => {
+    const startTime = performance.now();
+    return import('@/pages/NotionIntegration').then(module => {
+      const loadTime = performance.now() - startTime;
+      BundleAnalyzer.trackChunkLoad('NotionIntegration', module.default.toString().length, loadTime);
+      return module;
+    });
+  },
+  { 
+    chunkName: 'notion-integration',
+    retryDelay: 1000,
+    maxRetries: 3,
+    preload: false,
+    fallback: () => <div className="flex items-center justify-center min-h-screen"><LoadingSpinner /></div>
+  }
 );
 
 const AIWorkspace = PerformanceOptimizer.createLazyComponent(
-  () => import('@/pages/AIWorkspace'),
-  { retryAttempts: 3, loadingComponent: <div>Carregando IA...</div> }
+  () => {
+    const startTime = performance.now();
+    return import('@/pages/AIWorkspace').then(module => {
+      const loadTime = performance.now() - startTime;
+      BundleAnalyzer.trackChunkLoad('AIWorkspace', module.default.toString().length, loadTime);
+      return module;
+    });
+  },
+  { 
+    chunkName: 'ai-workspace',
+    retryDelay: 1000,
+    maxRetries: 3,
+    preload: false,
+    fallback: () => <div className="flex items-center justify-center min-h-screen"><LoadingSpinner /></div>
+  }
 );
 
 const Settings = PerformanceOptimizer.createLazyComponent(
-  () => import('@/pages/Settings'),
-  { retryAttempts: 3, loadingComponent: <div>Carregando Configurações...</div> }
+  () => {
+    const startTime = performance.now();
+    return import('@/pages/Settings').then(module => {
+      const loadTime = performance.now() - startTime;
+      BundleAnalyzer.trackChunkLoad('Settings', module.default.toString().length, loadTime);
+      return module;
+    });
+  },
+  { 
+    chunkName: 'settings',
+    retryDelay: 1000,
+    maxRetries: 3,
+    preload: false,
+    fallback: () => <div className="flex items-center justify-center min-h-screen"><LoadingSpinner /></div>
+  }
 );
+
+// Componente para tracking de navegação
+function RouteTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    // Track user navigation for intelligent preloading
+    IntelligentPreloader.trackUserNavigation(location.pathname);
+    
+    // Predict and preload next likely routes
+    const predictions = IntelligentPreloader.predictNextRoutes(location.pathname);
+    
+    // Preload em background com baixa prioridade
+    const preloadComponents = predictions.map(route => {
+      switch (route) {
+        case '/dashboard':
+          return { 
+            name: 'Dashboard', 
+            import: () => import('@/pages/Dashboard'), 
+            priority: 8 
+          };
+        case '/notion':
+          return { 
+            name: 'NotionIntegration', 
+            import: () => import('@/pages/NotionIntegration'), 
+            priority: 7 
+          };
+        case '/ai':
+          return { 
+            name: 'AIWorkspace', 
+            import: () => import('@/pages/AIWorkspace'), 
+            priority: 6 
+          };
+        case '/settings':
+          return { 
+            name: 'Settings', 
+            import: () => import('@/pages/Settings'), 
+            priority: 5 
+          };
+        default:
+          return null;
+      }
+    }).filter(Boolean);
+
+    if (preloadComponents.length > 0) {
+      IntelligentPreloader.preloadOnIdle(preloadComponents);
+    }
+  }, [location.pathname]);
+
+  return null;
+}
 
 const AppContent = () => {
   // Hook para limpeza automática de tokens expirados
@@ -81,6 +186,11 @@ const AppContent = () => {
           <Route path="/notion" element={<NotionIntegration />} />
           <Route path="/ai" element={<AIWorkspace />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/performance" element={
+            <Suspense fallback={<LoadingSpinner />}>
+              {React.createElement(lazy(() => import('@/pages/Performance')))}
+            </Suspense>
+          } />
           
           {/* Rota para monitoramento completo */}
           <Route 
@@ -169,6 +279,7 @@ export default function App() {
                               <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary/20 border-t-primary"></div>
                             </div>
                           }>
+                            <RouteTracker />
                             <AppContent />
                           </Suspense>
                           <ConnectionStatus />

@@ -237,9 +237,16 @@ export class PerformanceAnalyzer {
   }
 
   private static getRenderTime(): number {
-    const paintEntries = performance.getEntriesByType('paint');
-    const fcp = paintEntries.find(entry => entry.name === 'first-contentful-paint');
-    return fcp ? fcp.startTime : 0;
+    try {
+      if (typeof performance !== 'undefined' && typeof performance.getEntriesByType === 'function') {
+        const paintEntries = performance.getEntriesByType('paint');
+        const fcp = paintEntries.find(entry => entry.name === 'first-contentful-paint');
+        return fcp ? fcp.startTime : 0;
+      }
+    } catch (error) {
+      // Fallback para ambientes de teste ou navegadores sem suporte
+    }
+    return 0;
   }
 
   private static getCacheHitRate(): number {
@@ -456,6 +463,204 @@ export function PerformanceIndicator({
   );
 }
 
+/**
+ * Sistema avançado de preload baseado em comportamento do usuário
+ */
+export class IntelligentPreloader {
+  private static userBehavior: Map<string, number> = new Map();
+  private static routePatterns: Map<string, string[]> = new Map();
+  private static hoverPreloads: Set<string> = new Set();
+  private static preloadQueue: Array<{ component: string; priority: number; timestamp: number }> = [];
+  
+  static trackUserNavigation(route: string) {
+    const count = this.userBehavior.get(route) || 0;
+    this.userBehavior.set(route, count + 1);
+    
+    // Atualizar padrões de navegação
+    this.updateRoutePatterns(route);
+  }
+  
+  private static updateRoutePatterns(currentRoute: string) {
+    const lastRoutes = Array.from(this.userBehavior.keys()).slice(-5);
+    this.routePatterns.set(currentRoute, lastRoutes);
+  }
+  
+  static predictNextRoutes(currentRoute: string): string[] {
+    const patterns = this.routePatterns.get(currentRoute) || [];
+    const predictions: Array<{ route: string; score: number }> = [];
+    
+    // Analisar padrões históricos
+    for (const [route, count] of this.userBehavior.entries()) {
+      if (route !== currentRoute) {
+        const score = count * (patterns.includes(route) ? 2 : 1);
+        predictions.push({ route, score });
+      }
+    }
+    
+    // Retornar top 3 predições
+    return predictions
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3)
+      .map(p => p.route);
+  }
+  
+  static preloadOnHover(componentName: string, importFn: () => Promise<any>) {
+    if (this.hoverPreloads.has(componentName)) return;
+    
+    this.hoverPreloads.add(componentName);
+    
+    // Preload com baixa prioridade após 150ms de hover
+    setTimeout(() => {
+      if (this.hoverPreloads.has(componentName)) {
+        importFn().catch(console.error);
+      }
+    }, 150);
+  }
+  
+  static cancelHoverPreload(componentName: string) {
+    this.hoverPreloads.delete(componentName);
+  }
+  
+  /**
+   * Preload baseado em idle time do browser
+   */
+  static preloadOnIdle(components: Array<{ name: string; import: () => Promise<any>; priority: number }>) {
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback((deadline) => {
+        for (const component of components.sort((a, b) => b.priority - a.priority)) {
+          if (deadline.timeRemaining() > 0) {
+            component.import().catch(console.error);
+          } else {
+            break;
+          }
+        }
+      });
+    }
+  }
+}
+
+/**
+ * Service Worker para cache avançado e preload
+ */
+export class AdvancedCacheManager {
+  private static swRegistration: ServiceWorkerRegistration | null = null;
+  
+  static async initialize() {
+    if ('serviceWorker' in navigator) {
+      try {
+        this.swRegistration = await navigator.serviceWorker.register('/sw.js');
+        console.log('SW registered:', this.swRegistration);
+        
+        // Comunicar estratégias de cache
+        this.sendCacheStrategy();
+      } catch (error) {
+        console.warn('SW registration failed:', error);
+      }
+    }
+  }
+  
+  private static sendCacheStrategy() {
+    if (this.swRegistration?.active) {
+      this.swRegistration.active.postMessage({
+        type: 'CACHE_STRATEGY',
+        strategy: {
+          images: 'cache-first',
+          apis: 'network-first',
+          chunks: 'stale-while-revalidate',
+          fonts: 'cache-first'
+        }
+      });
+    }
+  }
+  
+  static async preloadCriticalResources() {
+    const criticalResources = [
+      '/api/user/profile',
+      '/api/templates/recent',
+      '/fonts/inter-var.woff2'
+    ];
+    
+    if (this.swRegistration?.active) {
+      this.swRegistration.active.postMessage({
+        type: 'PRELOAD_RESOURCES',
+        resources: criticalResources
+      });
+    }
+  }
+}
+
+/**
+ * Sistema de Bundle Analysis em tempo real
+ */
+export class BundleAnalyzer {
+  private static chunks: Map<string, { size: number; loadTime: number; dependencies: string[] }> = new Map();
+  
+  static trackChunkLoad(chunkName: string, size: number, loadTime: number, dependencies: string[] = []) {
+    this.chunks.set(chunkName, { size, loadTime, dependencies });
+    this.analyzePerformance();
+  }
+  
+  private static analyzePerformance() {
+    const totalSize = Array.from(this.chunks.values()).reduce((sum, chunk) => sum + chunk.size, 0);
+    const avgLoadTime = Array.from(this.chunks.values()).reduce((sum, chunk) => sum + chunk.loadTime, 0) / this.chunks.size;
+    
+    // Detectar chunks problemáticos
+    const slowChunks = Array.from(this.chunks.entries())
+      .filter(([, chunk]) => chunk.loadTime > 2000)
+      .map(([name]) => name);
+    
+    const largeChunks = Array.from(this.chunks.entries())
+      .filter(([, chunk]) => chunk.size > 500 * 1024) // > 500KB
+      .map(([name]) => name);
+    
+    if (slowChunks.length > 0 || largeChunks.length > 0) {
+      console.warn('Performance issues detected:', {
+        slowChunks,
+        largeChunks,
+        totalSize: `${(totalSize / 1024 / 1024).toFixed(2)}MB`,
+        avgLoadTime: `${avgLoadTime.toFixed(0)}ms`
+      });
+      
+      this.suggestOptimizations(slowChunks, largeChunks);
+    }
+  }
+  
+  private static suggestOptimizations(slowChunks: string[], largeChunks: string[]) {
+    const suggestions: string[] = [];
+    
+    if (largeChunks.length > 0) {
+      suggestions.push(`Consider splitting large chunks: ${largeChunks.join(', ')}`);
+    }
+    
+    if (slowChunks.length > 0) {
+      suggestions.push(`Optimize slow-loading chunks: ${slowChunks.join(', ')}`);
+    }
+    
+    // Enviar para analytics (em produção)
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('bundle-optimization-suggestions', {
+        detail: { suggestions, slowChunks, largeChunks }
+      }));
+    }
+  }
+  
+  static getPerformanceReport() {
+    const chunks = Array.from(this.chunks.entries()).map(([name, data]) => ({
+      name,
+      ...data,
+      efficiency: data.size / Math.max(data.loadTime, 1) // bytes per ms
+    }));
+    
+    return {
+      totalChunks: chunks.length,
+      totalSize: chunks.reduce((sum, chunk) => sum + chunk.size, 0),
+      avgLoadTime: chunks.reduce((sum, chunk) => sum + chunk.loadTime, 0) / chunks.length,
+      mostEfficient: chunks.sort((a, b) => b.efficiency - a.efficiency).slice(0, 3),
+      leastEfficient: chunks.sort((a, b) => a.efficiency - b.efficiency).slice(0, 3)
+    };
+  }
+}
+
 export default {
   createLazyComponent,
   withLazyLoading,
@@ -465,7 +670,10 @@ export default {
   usePerformanceMonitoring,
   LazyComponents,
   preloadRouteComponents,
-  PerformanceIndicator
+  PerformanceIndicator,
+  IntelligentPreloader,
+  AdvancedCacheManager,
+  BundleAnalyzer
 };
 
 // Exportar como objeto nomeado
@@ -478,5 +686,8 @@ export const PerformanceOptimizer = {
   usePerformanceMonitoring,
   LazyComponents,
   preloadRouteComponents,
-  PerformanceIndicator
+  PerformanceIndicator,
+  IntelligentPreloader,
+  AdvancedCacheManager,
+  BundleAnalyzer
 }; 

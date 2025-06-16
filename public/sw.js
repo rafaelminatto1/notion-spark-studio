@@ -1,19 +1,26 @@
 // Notion Spark Studio - Advanced Service Worker
 // Version: 4.0.0
 
-const CACHE_NAME = 'notion-spark-v4.0.0';
-const STATIC_CACHE = 'static-v4.0.0';
-const DYNAMIC_CACHE = 'dynamic-v4.0.0';
-const API_CACHE = 'api-v4.0.0';
+const CACHE_NAME = 'notion-spark-v1';
+const STATIC_CACHE = 'static-v1';
+const DYNAMIC_CACHE = 'dynamic-v1';
+const API_CACHE = 'api-v1';
 const IMAGE_CACHE = 'images-v4.0.0';
 
-// Cache strategies
+// Recursos críticos para cache imediato
+const CRITICAL_RESOURCES = [
+  '/',
+  '/offline.html',
+  '/manifest.json'
+];
+
+// Estratégias de cache por tipo de recurso
 const CACHE_STRATEGIES = {
-  CACHE_FIRST: 'cache-first',
-  NETWORK_FIRST: 'network-first',
-  STALE_WHILE_REVALIDATE: 'stale-while-revalidate',
-  NETWORK_ONLY: 'network-only',
-  CACHE_ONLY: 'cache-only'
+  images: 'cache-first',
+  apis: 'network-first', 
+  chunks: 'stale-while-revalidate',
+  fonts: 'cache-first',
+  static: 'cache-first'
 };
 
 // Resource patterns
@@ -58,23 +65,23 @@ class CacheManager {
     
     // API requests - Network first with cache fallback
     if (API_PATTERNS.some(pattern => pattern.test(url.pathname))) {
-      return CACHE_STRATEGIES.NETWORK_FIRST;
+      return CACHE_STRATEGIES.apis;
     }
     
     // Images - Cache first with network fallback
     if (IMAGE_PATTERNS.some(pattern => pattern.test(url.pathname))) {
-      return CACHE_STRATEGIES.CACHE_FIRST;
+      return CACHE_STRATEGIES.images;
     }
     
     // Static resources - Cache first
     if (STATIC_RESOURCES.includes(url.pathname) || 
         url.pathname.includes('/_next/static/') ||
         FONT_PATTERNS.some(pattern => pattern.test(url.href))) {
-      return CACHE_STRATEGIES.CACHE_FIRST;
+      return CACHE_STRATEGIES.static;
     }
     
     // Dynamic content - Stale while revalidate
-    return CACHE_STRATEGIES.STALE_WHILE_REVALIDATE;
+    return CACHE_STRATEGIES.chunks;
   }
 
   static getCacheName(request) {
@@ -309,63 +316,67 @@ class NotificationManager {
 }
 
 // Install event
-self.addEventListener('install', event => {
-  console.log('Service Worker installing...');
+self.addEventListener('install', (event) => {
+  console.log('[SW] Installing...');
   
   event.waitUntil(
     caches.open(STATIC_CACHE)
-      .then(cache => cache.addAll(STATIC_RESOURCES))
+      .then(cache => {
+        console.log('[SW] Caching critical resources');
+        return cache.addAll(CRITICAL_RESOURCES);
+      })
       .then(() => self.skipWaiting())
   );
 });
 
 // Activate event
-self.addEventListener('activate', event => {
-  console.log('Service Worker activating...');
+self.addEventListener('activate', (event) => {
+  console.log('[SW] Activating...');
   
   event.waitUntil(
-    Promise.all([
-      CacheManager.cleanupOldCaches(),
-      self.clients.claim()
-    ])
+    caches.keys()
+      .then(cacheNames => {
+        return Promise.all(
+          cacheNames.map(cacheName => {
+            // Limpar caches antigos
+            if (cacheName !== CACHE_NAME && 
+                cacheName !== STATIC_CACHE && 
+                cacheName !== DYNAMIC_CACHE &&
+                cacheName !== API_CACHE) {
+              console.log('[SW] Deleting old cache:', cacheName);
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      })
+      .then(() => self.clients.claim())
   );
 });
 
 // Fetch event with intelligent caching
-self.addEventListener('fetch', event => {
-  // Skip non-GET requests and chrome-extension requests
-  if (event.request.method !== 'GET' || 
-      event.request.url.startsWith('chrome-extension://')) {
-    return;
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+  
+  // Determinar estratégia de cache
+  let strategy = 'network-first';
+  let cacheName = DYNAMIC_CACHE;
+  
+  if (request.destination === 'image') {
+    strategy = CACHE_STRATEGIES.images;
+    cacheName = STATIC_CACHE;
+  } else if (url.pathname.startsWith('/api/')) {
+    strategy = CACHE_STRATEGIES.apis;
+    cacheName = API_CACHE;
+  } else if (url.pathname.includes('chunk') || url.pathname.includes('.js')) {
+    strategy = CACHE_STRATEGIES.chunks;
+    cacheName = STATIC_CACHE;
+  } else if (url.pathname.includes('.woff') || url.pathname.includes('.woff2')) {
+    strategy = CACHE_STRATEGIES.fonts;
+    cacheName = STATIC_CACHE;
   }
-
-  event.respondWith(
-    (async () => {
-      const strategy = await CacheManager.getCacheStrategy(event.request);
-      const cacheName = CacheManager.getCacheName(event.request);
-      
-      switch (strategy) {
-        case CACHE_STRATEGIES.CACHE_FIRST:
-          return NetworkStrategies.cacheFirst(event.request, cacheName);
-          
-        case CACHE_STRATEGIES.NETWORK_FIRST:
-          return NetworkStrategies.networkFirst(event.request, cacheName);
-          
-        case CACHE_STRATEGIES.STALE_WHILE_REVALIDATE:
-          return NetworkStrategies.staleWhileRevalidate(event.request, cacheName);
-          
-        case CACHE_STRATEGIES.NETWORK_ONLY:
-          return fetch(event.request);
-          
-        case CACHE_STRATEGIES.CACHE_ONLY:
-          const cache = await caches.open(cacheName);
-          return cache.match(event.request);
-          
-        default:
-          return NetworkStrategies.staleWhileRevalidate(event.request, cacheName);
-      }
-    })()
-  );
+  
+  event.respondWith(handleRequest(request, strategy, cacheName));
 });
 
 // Background sync event
@@ -425,38 +436,21 @@ self.addEventListener('notificationclick', event => {
 });
 
 // Message handling for communication with main app
-self.addEventListener('message', event => {
-  console.log('Service Worker received message:', event.data);
+self.addEventListener('message', (event) => {
+  const { type, data } = event.data;
   
-  if (event.data && event.data.type) {
-    switch (event.data.type) {
-      case 'SKIP_WAITING':
-        self.skipWaiting();
-        break;
-        
-      case 'GET_PERFORMANCE_METRICS':
-        event.ports[0].postMessage(performanceMetrics);
-        break;
-        
-      case 'CLEAR_CACHE':
-        event.waitUntil(
-          caches.keys().then(cacheNames => 
-            Promise.all(cacheNames.map(name => caches.delete(name)))
-          )
-        );
-        break;
-        
-      case 'QUEUE_OFFLINE_ACTION':
-        event.waitUntil(
-          BackgroundSync.queueRequest(event.data.request, event.data.data)
-        );
-        break;
-        
-      case 'ENABLE_COMPRESSION':
-        // Handle compression request from performance optimizer
-        console.log('Compression enabled via service worker');
-        break;
-    }
+  switch (type) {
+    case 'CACHE_STRATEGY':
+      updateCacheStrategies(data.strategy);
+      break;
+      
+    case 'PRELOAD_RESOURCES':
+      preloadResources(data.resources);
+      break;
+      
+    case 'CLEAR_CACHE':
+      clearAllCaches();
+      break;
   }
 });
 
@@ -479,4 +473,49 @@ setInterval(() => {
   };
 }, 3600000); // Every hour
 
-console.log('Notion Spark Service Worker v4.0.0 loaded'); 
+console.log('Notion Spark Service Worker v4.0.0 loaded');
+
+async function handleRequest(request, strategy, cacheName) {
+  switch (strategy) {
+    case 'cache-first':
+      return NetworkStrategies.cacheFirst(request, cacheName);
+      
+    case 'network-first':
+      return NetworkStrategies.networkFirst(request, cacheName);
+      
+    case 'stale-while-revalidate':
+      return NetworkStrategies.staleWhileRevalidate(request, cacheName);
+      
+    default:
+      return fetch(request);
+  }
+}
+
+function updateCacheStrategies(newStrategies) {
+  Object.assign(CACHE_STRATEGIES, newStrategies);
+  console.log('[SW] Cache strategies updated:', CACHE_STRATEGIES);
+}
+
+async function preloadResources(resources) {
+  console.log('[SW] Preloading resources:', resources);
+  
+  const cache = await caches.open(STATIC_CACHE);
+  
+  for (const resource of resources) {
+    try {
+      const response = await fetch(resource);
+      if (response.ok) {
+        await cache.put(resource, response);
+        console.log('[SW] Preloaded:', resource);
+      }
+    } catch (error) {
+      console.warn('[SW] Failed to preload:', resource, error);
+    }
+  }
+}
+
+async function clearAllCaches() {
+  const cacheNames = await caches.keys();
+  await Promise.all(cacheNames.map(name => caches.delete(name)));
+  console.log('[SW] All caches cleared');
+} 
