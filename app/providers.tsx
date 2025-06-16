@@ -7,6 +7,7 @@ import { Toaster } from '../src/components/ui/toaster';
 import { TooltipProvider } from '../src/components/ui/tooltip';
 import ErrorBoundary from '../src/components/ErrorBoundary';
 
+// Mover QueryClient para fora do componente para evitar re-criação
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
