@@ -1,0 +1,611 @@
+import { useState, useEffect, useCallback } from 'react';
+import { useSSRSafeValue } from './useSSRSafe';
+import { useProductionAnalytics } from './useProductionAnalytics';
+
+interface PushNotificationOptions {
+  title: string;
+  body: string;
+  icon?: string;
+  badge?: string;
+  image?: string;
+  tag?: string;
+  data?: Record<string, unknown>;
+  actions?: NotificationAction[];
+  requireInteraction?: boolean;
+  silent?: boolean;
+  timestamp?: number;
+}
+
+interface NotificationAction {
+  action: string;
+  title: string;
+  icon?: string;
+}
+
+interface ScheduledNotification {
+  id: string;
+  options: PushNotificationOptions;
+  scheduledAt: number;
+  recurring?: {
+    type: 'daily' | 'weekly' | 'monthly';
+    interval?: number;
+  };
+  conditions?: {
+    userInactive?: number; // milliseconds
+    pageNotVisited?: string[];
+    featureNotUsed?: string[];
+  };
+}
+
+interface NotificationPreferences {
+  enabled: boolean;
+  types: {
+    reminders: boolean;
+    updates: boolean;
+    social: boolean;
+    marketing: boolean;
+    system: boolean;
+  };
+  schedule: {
+    quietHoursStart: number; // 0-23
+    quietHoursEnd: number; // 0-23
+    timezone: string;
+    daysEnabled: boolean[]; // [sun, mon, tue, wed, thu, fri, sat]
+  };
+  frequency: {
+    maxPerDay: number;
+    maxPerWeek: number;
+    minInterval: number; // minutes between notifications
+  };
+}
+
+class PushNotificationManager {
+  private static instance: PushNotificationManager;
+  private registration: ServiceWorkerRegistration | null = null;
+  private preferences: NotificationPreferences;
+  private scheduledNotifications: Map<string, ScheduledNotification> = new Map();
+  private lastNotificationTime = 0;
+  private notificationCount = { daily: 0, weekly: 0 };
+  private userActivity: { lastActive: number; pageViews: string[]; featuresUsed: string[] };
+
+  constructor() {
+    this.preferences = this.getDefaultPreferences();
+    this.userActivity = {
+      lastActive: Date.now(),
+      pageViews: [],
+      featuresUsed: []
+    };
+    
+    this.loadPreferences();
+    this.initializeServiceWorker();
+    this.setupActivityTracking();
+    this.scheduleEngagementNotifications();
+  }
+
+  static getInstance(): PushNotificationManager {
+    if (!PushNotificationManager.instance) {
+      PushNotificationManager.instance = new PushNotificationManager();
+    }
+    return PushNotificationManager.instance;
+  }
+
+  private getDefaultPreferences(): NotificationPreferences {
+    return {
+      enabled: false,
+      types: {
+        reminders: true,
+        updates: true,
+        social: true,
+        marketing: false,
+        system: true
+      },
+      schedule: {
+        quietHoursStart: 22,
+        quietHoursEnd: 8,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        daysEnabled: [true, true, true, true, true, true, true]
+      },
+      frequency: {
+        maxPerDay: 5,
+        maxPerWeek: 15,
+        minInterval: 30
+      }
+    };
+  }
+
+  private loadPreferences() {
+    if (typeof localStorage !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('notification-preferences');
+        if (stored) {
+          this.preferences = { ...this.getDefaultPreferences(), ...JSON.parse(stored) };
+        }
+      } catch (error) {
+        console.warn('Failed to load notification preferences:', error);
+      }
+    }
+  }
+
+  private savePreferences() {
+    if (typeof localStorage !== 'undefined') {
+      try {
+        localStorage.setItem('notification-preferences', JSON.stringify(this.preferences));
+      } catch (error) {
+        console.warn('Failed to save notification preferences:', error);
+      }
+    }
+  }
+
+  private async initializeServiceWorker() {
+    if ('serviceWorker' in navigator) {
+      try {
+        this.registration = await navigator.serviceWorker.ready;
+        console.log('Push notifications service worker ready');
+      } catch (error) {
+        console.warn('Service worker not available for push notifications:', error);
+      }
+    }
+  }
+
+  private setupActivityTracking() {
+    if (typeof window === 'undefined') return;
+
+    // Track user activity
+    const updateActivity = () => {
+      this.userActivity.lastActive = Date.now();
+    };
+
+    ['click', 'keydown', 'scroll', 'mousemove'].forEach(event => {
+      window.addEventListener(event, updateActivity, { passive: true });
+    });
+
+    // Track page views
+    window.addEventListener('popstate', () => {
+      const page = window.location.pathname;
+      if (!this.userActivity.pageViews.includes(page)) {
+        this.userActivity.pageViews.push(page);
+      }
+    });
+
+    // Reset daily counters
+    setInterval(() => {
+      const now = new Date();
+      if (now.getHours() === 0 && now.getMinutes() === 0) {
+        this.notificationCount.daily = 0;
+      }
+    }, 60000); // Check every minute
+  }
+
+  private scheduleEngagementNotifications() {
+    // Daily reminder for inactive users
+    this.scheduleNotification({
+      id: 'daily-engagement',
+      options: {
+        title: '🎯 Continue sua jornada!',
+        body: 'Você tem ideias esperando para serem organizadas. Que tal dar uma olhada?',
+        icon: '/icons/reminder.png',
+        tag: 'engagement',
+        data: { type: 'engagement', action: 'open_app' }
+      },
+      scheduledAt: Date.now() + 24 * 60 * 60 * 1000,
+      recurring: { type: 'daily' },
+      conditions: {
+        userInactive: 24 * 60 * 60 * 1000, // 24 hours
+        pageNotVisited: ['/dashboard']
+      }
+    });
+
+    // Weekly feature discovery
+    this.scheduleNotification({
+      id: 'weekly-feature',
+      options: {
+        title: '✨ Descubra novos recursos!',
+        body: 'Explore funcionalidades que podem revolucionar sua produtividade.',
+        icon: '/icons/feature.png',
+        tag: 'feature-discovery',
+        actions: [
+          { action: 'explore', title: 'Explorar', icon: '/icons/explore.png' },
+          { action: 'later', title: 'Mais tarde' }
+        ],
+        data: { type: 'feature-discovery', features: ['ai-tagging', 'graph-view', 'collaboration'] }
+      },
+      scheduledAt: Date.now() + 7 * 24 * 60 * 60 * 1000,
+      recurring: { type: 'weekly' },
+      conditions: {
+        featureNotUsed: ['ai-tagging', 'graph-view']
+      }
+    });
+
+    // Motivational boost for active users
+    this.scheduleNotification({
+      id: 'motivation-boost',
+      options: {
+        title: '🚀 Você está indo muito bem!',
+        body: 'Já organizou várias ideias hoje. Continue assim!',
+        icon: '/icons/celebration.png',
+        tag: 'motivation',
+        data: { type: 'motivation', achievement: 'active-user' }
+      },
+      scheduledAt: Date.now() + 4 * 60 * 60 * 1000, // 4 hours
+      conditions: {
+        featureNotUsed: [] // For active users only
+      }
+    });
+  }
+
+  async requestPermission(): Promise<NotificationPermission> {
+    if (!('Notification' in window)) {
+      throw new Error('Notifications not supported');
+    }
+
+    let permission = Notification.permission;
+
+    if (permission === 'default') {
+      permission = await Notification.requestPermission();
+    }
+
+    if (permission === 'granted') {
+      this.preferences.enabled = true;
+      this.savePreferences();
+    }
+
+    return permission;
+  }
+
+  async subscribeToPush(): Promise<PushSubscription | null> {
+    if (!this.registration) {
+      await this.initializeServiceWorker();
+    }
+
+    if (!this.registration) {
+      throw new Error('Service worker not available');
+    }
+
+    try {
+      const subscription = await this.registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+      });
+
+      // Send subscription to server
+      await fetch('/api/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(subscription)
+      });
+
+      return subscription;
+    } catch (error) {
+      console.error('Failed to subscribe to push notifications:', error);
+      return null;
+    }
+  }
+
+  private isWithinQuietHours(): boolean {
+    const now = new Date();
+    const hour = now.getHours();
+    const { quietHoursStart, quietHoursEnd } = this.preferences.schedule;
+
+    if (quietHoursStart < quietHoursEnd) {
+      return hour >= quietHoursStart && hour < quietHoursEnd;
+    } else {
+      return hour >= quietHoursStart || hour < quietHoursEnd;
+    }
+  }
+
+  private canSendNotification(type: keyof NotificationPreferences['types']): boolean {
+    if (!this.preferences.enabled || !this.preferences.types[type]) {
+      return false;
+    }
+
+    if (this.isWithinQuietHours()) {
+      return false;
+    }
+
+    const now = Date.now();
+    const timeSinceLastNotification = now - this.lastNotificationTime;
+    const minInterval = this.preferences.frequency.minInterval * 60 * 1000;
+
+    if (timeSinceLastNotification < minInterval) {
+      return false;
+    }
+
+    if (this.notificationCount.daily >= this.preferences.frequency.maxPerDay) {
+      return false;
+    }
+
+    if (this.notificationCount.weekly >= this.preferences.frequency.maxPerWeek) {
+      return false;
+    }
+
+    const today = new Date().getDay();
+    if (!this.preferences.schedule.daysEnabled[today]) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private checkConditions(conditions?: ScheduledNotification['conditions']): boolean {
+    if (!conditions) return true;
+
+    const now = Date.now();
+
+    // Check user inactivity
+    if (conditions.userInactive) {
+      const timeSinceActive = now - this.userActivity.lastActive;
+      if (timeSinceActive < conditions.userInactive) {
+        return false;
+      }
+    }
+
+    // Check page visits
+    if (conditions.pageNotVisited?.length) {
+      const hasVisited = conditions.pageNotVisited.some(page => 
+        this.userActivity.pageViews.includes(page)
+      );
+      if (hasVisited) {
+        return false;
+      }
+    }
+
+    // Check feature usage
+    if (conditions.featureNotUsed?.length) {
+      const hasUsed = conditions.featureNotUsed.some(feature =>
+        this.userActivity.featuresUsed.includes(feature)
+      );
+      if (hasUsed) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  scheduleNotification(notification: ScheduledNotification) {
+    this.scheduledNotifications.set(notification.id, notification);
+
+    const delay = notification.scheduledAt - Date.now();
+    
+    if (delay > 0) {
+      setTimeout(() => {
+        this.processScheduledNotification(notification.id);
+      }, delay);
+    }
+  }
+
+  private processScheduledNotification(id: string) {
+    const notification = this.scheduledNotifications.get(id);
+    if (!notification) return;
+
+    if (this.checkConditions(notification.conditions)) {
+      this.sendNotification(notification.options, 'reminders');
+    }
+
+    // Handle recurring notifications
+    if (notification.recurring) {
+      let nextSchedule = 0;
+      const now = Date.now();
+
+      switch (notification.recurring.type) {
+        case 'daily':
+          nextSchedule = now + 24 * 60 * 60 * 1000;
+          break;
+        case 'weekly':
+          nextSchedule = now + 7 * 24 * 60 * 60 * 1000;
+          break;
+        case 'monthly':
+          nextSchedule = now + 30 * 24 * 60 * 60 * 1000;
+          break;
+      }
+
+      if (nextSchedule > 0) {
+        const recurringNotification = {
+          ...notification,
+          scheduledAt: nextSchedule
+        };
+        this.scheduleNotification(recurringNotification);
+      }
+    }
+  }
+
+  sendNotification(
+    options: PushNotificationOptions,
+    type: keyof NotificationPreferences['types'] = 'system'
+  ): Promise<Notification | null> {
+    return new Promise((resolve, reject) => {
+      if (!this.canSendNotification(type)) {
+        resolve(null);
+        return;
+      }
+
+      if (Notification.permission !== 'granted') {
+        reject(new Error('Notification permission not granted'));
+        return;
+      }
+
+      try {
+        const notification = new Notification(options.title, {
+          body: options.body,
+          icon: options.icon || '/icons/default-notification.png',
+          badge: options.badge || '/icons/badge.png',
+          image: options.image,
+          tag: options.tag,
+          data: options.data,
+          requireInteraction: options.requireInteraction,
+          silent: options.silent,
+          timestamp: options.timestamp || Date.now(),
+          actions: options.actions
+        });
+
+        notification.onclick = (event) => {
+          event.preventDefault();
+          window.focus();
+          
+          if (options.data?.action === 'open_app') {
+            window.location.href = '/dashboard';
+          }
+          
+          notification.close();
+        };
+
+        this.lastNotificationTime = Date.now();
+        this.notificationCount.daily++;
+        this.notificationCount.weekly++;
+
+        resolve(notification);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  // Track feature usage for conditional notifications
+  trackFeatureUsage(featureName: string) {
+    if (!this.userActivity.featuresUsed.includes(featureName)) {
+      this.userActivity.featuresUsed.push(featureName);
+    }
+  }
+
+  // Update preferences
+  updatePreferences(updates: Partial<NotificationPreferences>) {
+    this.preferences = { ...this.preferences, ...updates };
+    this.savePreferences();
+  }
+
+  getPreferences(): NotificationPreferences {
+    return { ...this.preferences };
+  }
+
+  // Unsubscribe from push notifications
+  async unsubscribe(): Promise<void> {
+    if (!this.registration) return;
+
+    try {
+      const subscription = await this.registration.pushManager.getSubscription();
+      if (subscription) {
+        await subscription.unsubscribe();
+        
+        // Notify server
+        await fetch('/api/push/unsubscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ endpoint: subscription.endpoint })
+        });
+      }
+
+      this.preferences.enabled = false;
+      this.savePreferences();
+    } catch (error) {
+      console.error('Failed to unsubscribe from push notifications:', error);
+    }
+  }
+}
+
+export function usePushNotifications() {
+  const [notificationManager] = useState(() => 
+    typeof window !== 'undefined' ? PushNotificationManager.getInstance() : null
+  );
+  const [permission, setPermission] = useState<NotificationPermission>('default');
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [preferences, setPreferences] = useState<NotificationPreferences | null>(null);
+  const isClient = useSSRSafeValue(true, false);
+  const { trackFeatureUsage } = useProductionAnalytics();
+
+  useEffect(() => {
+    if (!isClient || !notificationManager) return;
+
+    setPermission(Notification.permission);
+    setPreferences(notificationManager.getPreferences());
+
+    // Check if already subscribed
+    navigator.serviceWorker.ready.then(registration => {
+      return registration.pushManager.getSubscription();
+    }).then(subscription => {
+      setIsSubscribed(!!subscription);
+    }).catch(console.warn);
+  }, [isClient, notificationManager]);
+
+  const requestPermission = useCallback(async () => {
+    if (!notificationManager) return 'denied';
+
+    try {
+      const newPermission = await notificationManager.requestPermission();
+      setPermission(newPermission);
+      trackFeatureUsage('push-notifications-permission', undefined, newPermission === 'granted');
+      return newPermission;
+    } catch (error) {
+      console.error('Error requesting notification permission:', error);
+      return 'denied';
+    }
+  }, [notificationManager, trackFeatureUsage]);
+
+  const subscribe = useCallback(async () => {
+    if (!notificationManager) return null;
+
+    try {
+      const subscription = await notificationManager.subscribeToPush();
+      setIsSubscribed(!!subscription);
+      trackFeatureUsage('push-notifications-subscribe', undefined, !!subscription);
+      return subscription;
+    } catch (error) {
+      console.error('Error subscribing to push notifications:', error);
+      return null;
+    }
+  }, [notificationManager, trackFeatureUsage]);
+
+  const sendNotification = useCallback(async (
+    options: PushNotificationOptions,
+    type?: keyof NotificationPreferences['types']
+  ) => {
+    if (!notificationManager) return null;
+
+    try {
+      const notification = await notificationManager.sendNotification(options, type);
+      trackFeatureUsage('push-notifications-send', undefined, !!notification);
+      return notification;
+    } catch (error) {
+      console.error('Error sending notification:', error);
+      return null;
+    }
+  }, [notificationManager, trackFeatureUsage]);
+
+  const updatePreferences = useCallback((updates: Partial<NotificationPreferences>) => {
+    if (!notificationManager) return;
+
+    notificationManager.updatePreferences(updates);
+    setPreferences(notificationManager.getPreferences());
+    trackFeatureUsage('push-notifications-preferences');
+  }, [notificationManager, trackFeatureUsage]);
+
+  const unsubscribe = useCallback(async () => {
+    if (!notificationManager) return;
+
+    await notificationManager.unsubscribe();
+    setIsSubscribed(false);
+    trackFeatureUsage('push-notifications-unsubscribe');
+  }, [notificationManager, trackFeatureUsage]);
+
+  const trackFeature = useCallback((featureName: string) => {
+    notificationManager?.trackFeatureUsage(featureName);
+  }, [notificationManager]);
+
+  const scheduleNotification = useCallback((notification: ScheduledNotification) => {
+    notificationManager?.scheduleNotification(notification);
+    trackFeatureUsage('push-notifications-schedule');
+  }, [notificationManager, trackFeatureUsage]);
+
+  return {
+    permission,
+    isSubscribed,
+    preferences,
+    isSupported: isClient && 'Notification' in window && 'serviceWorker' in navigator,
+    requestPermission,
+    subscribe,
+    unsubscribe,
+    sendNotification,
+    updatePreferences,
+    trackFeature,
+    scheduleNotification
+  };
+} 
