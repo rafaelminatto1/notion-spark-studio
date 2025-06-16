@@ -407,7 +407,21 @@ class ProductionAnalytics {
   }
 }
 
-export function useProductionAnalytics() {
+// Verificar se estamos no browser
+const isBrowser = typeof window !== 'undefined';
+
+// Observer para Core Web Vitals
+let performanceObserver: PerformanceObserver | null = null;
+
+export const useProductionAnalytics = (options: ProductionAnalyticsOptions = {}) => {
+  const {
+    enableWebVitals = true,
+    enableBehaviorTracking = true,
+    enableFeatureUsage = true,
+    flushInterval = 30000, // 30 segundos
+    maxQueueSize = 100
+  } = options;
+
   const analyticsRef = useRef<ProductionAnalytics>();
   const isClient = useSSRSafeValue(true, false);
 
@@ -452,6 +466,49 @@ export function useProductionAnalytics() {
   const getFeatureUsageMetrics = useCallback(() => {
     return analyticsRef.current?.getFeatureUsageMetrics() || [];
   }, []);
+
+  // Inicializar apenas no browser
+  useEffect(() => {
+    if (!isBrowser) return;
+
+    // Core Web Vitals
+    if (enableWebVitals && 'PerformanceObserver' in window) {
+      try {
+        performanceObserver = new PerformanceObserver((list) => {
+          list.getEntries().forEach((entry) => {
+            if (entry.entryType === 'navigation') {
+              const navEntry = entry as PerformanceNavigationTiming;
+              trackEvent({
+                type: 'page_performance',
+                category: 'performance',
+                action: 'page_load',
+                metadata: {
+                  pageLoadTime: navEntry.loadEventEnd - navEntry.navigationStart,
+                  domContentLoaded: navEntry.domContentLoadedEventEnd - navEntry.navigationStart,
+                  firstContentfulPaint: navEntry.domContentLoadedEventEnd - navEntry.domContentLoadedEventStart,
+                  largestContentfulPaint: 0,
+                  cumulativeLayoutShift: 0,
+                  firstInputDelay: 0,
+                  timeToInteractive: navEntry.loadEventEnd - navEntry.fetchStart
+                }
+              });
+            }
+          });
+        });
+
+        performanceObserver.observe({ entryTypes: ['navigation', 'measure'] });
+      } catch (error) {
+        console.warn('Performance Observer não suportado:', error);
+      }
+    }
+
+    return () => {
+      if (performanceObserver) {
+        performanceObserver.disconnect();
+        performanceObserver = null;
+      }
+    };
+  }, [enableWebVitals, trackEvent]);
 
   return {
     trackEvent,

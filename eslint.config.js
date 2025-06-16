@@ -5,13 +5,33 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist"] },
+  js.configs.recommended,
+  ...tseslint.configs.strictTypeChecked,
   {
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ["**/*.{ts,tsx}"],
+    ignores: [
+      'dist/**',
+      '.next/**',
+      'node_modules/**',
+      'coverage/**',
+      '.vercel/**',
+      'out/**',
+      'build/**',
+      '*.config.js',
+      '*.config.ts'
+    ]
+  },
+  {
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
+      parserOptions: {
+        project: ['./tsconfig.app.json', './tsconfig.node.json'],
+        tsconfigRootDir: import.meta.dirname,
+        sourceType: 'module',
+        ecmaFeatures: {
+          jsx: true
+        }
+      }
     },
     plugins: {
       "react-hooks": reactHooks,
@@ -23,7 +43,10 @@ export default tseslint.config(
         "warn",
         { allowConstantExport: true },
       ],
-      "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+      "@typescript-eslint/no-unused-vars": ["warn", { 
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_'
+      }],
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-unsafe-assignment": "warn",
       "@typescript-eslint/no-unsafe-member-access": "warn",

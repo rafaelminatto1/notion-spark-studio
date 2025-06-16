@@ -14,6 +14,7 @@ interface PushNotificationOptions {
   requireInteraction?: boolean;
   silent?: boolean;
   timestamp?: number;
+  vapidKey?: string;
 }
 
 interface NotificationAction {
@@ -502,7 +503,7 @@ class PushNotificationManager {
   }
 }
 
-export function usePushNotifications() {
+export const usePushNotifications = (options: PushNotificationOptions = {}) => {
   const [notificationManager] = useState(() => 
     typeof window !== 'undefined' ? PushNotificationManager.getInstance() : null
   );
@@ -526,19 +527,47 @@ export function usePushNotifications() {
     }).catch(console.warn);
   }, [isClient, notificationManager]);
 
-  const requestPermission = useCallback(async () => {
-    if (!notificationManager) return 'denied';
+  const checkNotificationSupport = useCallback(() => {
+    if (!('Notification' in window)) {
+      console.warn('Browser não suporta notificações');
+      return false;
+    }
+    
+    if (!('serviceWorker' in navigator)) {
+      console.warn('Service Worker não suportado');
+      return false;
+    }
+    
+    return true;
+  }, []);
+
+  const requestPermission = useCallback(async (): Promise<boolean> => {
+    if (!checkNotificationSupport()) return false;
 
     try {
-      const newPermission = await notificationManager.requestPermission();
-      setPermission(newPermission);
-      trackFeatureUsage('push-notifications-permission', undefined, newPermission === 'granted');
-      return newPermission;
+      let permission = Notification.permission;
+      
+      if (permission === 'default') {
+        permission = await Notification.requestPermission();
+      }
+      
+      const granted = permission === 'granted';
+      setPermission(permission);
+      
+      if (granted) {
+        await notificationManager?.unsubscribe();
+        await notificationManager?.initializeServiceWorker();
+        trackFeatureUsage('push-notifications-permission', undefined, granted);
+      } else {
+        trackFeatureUsage('push-notifications-permission', undefined, granted);
+      }
+      
+      return granted;
     } catch (error) {
-      console.error('Error requesting notification permission:', error);
-      return 'denied';
+      console.error('Erro ao solicitar permissão:', error);
+      return false;
     }
-  }, [notificationManager, trackFeatureUsage]);
+  }, [checkNotificationSupport, notificationManager, trackFeatureUsage]);
 
   const subscribe = useCallback(async () => {
     if (!notificationManager) return null;
@@ -595,6 +624,109 @@ export function usePushNotifications() {
     trackFeatureUsage('push-notifications-schedule');
   }, [notificationManager, trackFeatureUsage]);
 
+  const setupServiceWorker = useCallback(async () => {
+    try {
+      if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.register('/sw.js');
+        
+        registration.addEventListener('updatefound', () => {
+          console.log('Atualização do Service Worker encontrada');
+        });
+
+        // Configurar push manager se disponível
+        if ('PushManager' in window && registration.pushManager) {
+          const subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(options.vapidKey || '')
+          });
+          
+          console.log('Push subscription criada:', subscription);
+          setIsSubscribed(true);
+        }
+        
+        notificationManager?.initializeServiceWorker();
+      }
+    } catch (error) {
+      console.error('Erro ao configurar Service Worker:', error);
+    }
+  }, [options.vapidKey, notificationManager]);
+
+  const manageCampaigns = useCallback(() => {
+    if (!isSubscribed || notificationManager?.scheduledNotifications.size === 0) return;
+
+    const now = Date.now();
+    
+    notificationManager?.scheduledNotifications.forEach((notification, id) => {
+      if (!notification.recurring || !notification.recurring.type) return;
+
+      // Verificar triggers
+      if (notification.recurring.type === 'daily' && now - notification.scheduledAt > 24 * 60 * 60 * 1000) {
+        scheduleNotification(notification);
+      } else if (notification.recurring.type === 'weekly' && now - notification.scheduledAt > 7 * 24 * 60 * 60 * 1000) {
+        scheduleNotification(notification);
+      } else if (notification.recurring.type === 'monthly' && now - notification.scheduledAt > 30 * 24 * 60 * 60 * 1000) {
+        scheduleNotification(notification);
+      }
+    });
+  }, [isSubscribed, notificationManager, scheduleNotification]);
+
+  const shouldTriggerCampaign = useCallback((
+    trigger: ScheduledNotification, 
+    now: number
+  ): boolean => {
+    if (!trigger.recurring) return false;
+
+    const scheduledAt = trigger.scheduledAt;
+    const type = trigger.recurring.type;
+
+    if (type === 'daily' && now - scheduledAt > 24 * 60 * 60 * 1000) return true;
+    if (type === 'weekly' && now - scheduledAt > 7 * 24 * 60 * 60 * 1000) return true;
+    if (type === 'monthly' && now - scheduledAt > 30 * 24 * 60 * 60 * 1000) return true;
+
+    return false;
+  }, []);
+
+  const trackBehavior = useCallback((action: string, metadata?: any) => {
+    if (!options.enableBehaviorTracking) return;
+
+    const event: BehaviorEvent = {
+      action,
+      timestamp: Date.now(),
+      metadata: {
+        page: window.location.pathname,
+        userAgent: navigator.userAgent.substring(0, 100),
+        ...metadata
+      }
+    };
+
+    notificationManager?.trackFeatureUsage(action);
+
+    // Processar campanhas baseadas em comportamento
+    manageCampaigns();
+  }, [options.enableBehaviorTracking, manageCampaigns]);
+
+  const calculateAverageSessionDuration = useCallback((events: BehaviorEvent[]): number => {
+    if (events.length < 2) return 0;
+    
+    const sessionGaps = [];
+    for (let i = 1; i < events.length; i++) {
+      const gap = events[i].timestamp - events[i-1].timestamp;
+      if (gap < 30 * 60 * 1000) { // Considerar mesmo sessão se < 30min
+        sessionGaps.push(gap);
+      }
+    }
+    
+    return sessionGaps.length > 0 
+      ? sessionGaps.reduce((sum, gap) => sum + gap, 0) / sessionGaps.length 
+      : 0;
+  }, []);
+
+  useEffect(() => {
+    if (checkNotificationSupport() && permission === 'granted') {
+      setupServiceWorker();
+    }
+  }, [checkNotificationSupport, setupServiceWorker, permission]);
+
   return {
     permission,
     isSubscribed,
@@ -606,6 +738,23 @@ export function usePushNotifications() {
     sendNotification,
     updatePreferences,
     trackFeature,
-    scheduleNotification
+    scheduleNotification,
+    checkNotificationSupport,
+    trackBehavior
   };
+};
+
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding)
+    .replace(/-/g, '+')
+    .replace(/_/g, '/');
+
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
 } 

@@ -36,34 +36,104 @@ interface CacheConfig {
 type EvictionStrategy = 'lru' | 'lfu' | 'ttl' | 'adaptive';
 
 // Classe principal do cache inteligente
-export class SmartCache {
+export class SmartCacheSystem {
   private cache = new Map<string, CacheEntry>();
-  private stats: CacheStats = {
-    totalEntries: 0,
-    totalSize: 0,
-    hitRate: 0,
-    missRate: 0,
-    evictionCount: 0,
-    memoryUsage: 0
-  };
-  private config: CacheConfig;
-  private cleanupTimer: NodeJS.Timeout | null = null;
-  private accessLog: { key: string; timestamp: number }[] = [];
-
-  constructor(config: Partial<CacheConfig> = {}) {
-    this.config = {
-      maxSize: 50, // 50MB
-      maxEntries: 1000,
-      defaultTTL: 30 * 60 * 1000, // 30 minutos
-      cleanupInterval: 5 * 60 * 1000, // 5 minutos
-      compressionEnabled: true,
-      persistToDisk: true,
-      adaptiveEviction: true,
-      ...config
-    };
-
+  private lruOrder: string[] = [];
+  private accessFrequency = new Map<string, number>();
+  private lastCleanup = Date.now();
+  private compressionWorker: Worker | null = null;
+  
+  constructor(private config: CacheConfig) {
+    this.initializeCompression();
     this.startCleanupTimer();
-    this.loadFromDisk();
+  }
+
+  private initializeCompression() {
+    if (typeof Worker !== 'undefined' && this.config.compressionEnabled) {
+      try {
+        // Criar worker para compressão apenas se necessário
+        const workerCode = `
+          self.onmessage = function(e) {
+            const { id, operation, data } = e.data;
+            
+            if (operation === 'compress') {
+              // Simulação de compressão (em produção usaria bibliotecas reais)
+              const compressed = JSON.stringify(data);
+              self.postMessage({ id, result: compressed, size: compressed.length });
+            } else if (operation === 'decompress') {
+              const decompressed = JSON.parse(data);
+              self.postMessage({ id, result: decompressed });
+            }
+          };
+        `;
+        
+        const blob = new Blob([workerCode], { type: 'application/javascript' });
+        this.compressionWorker = new Worker(URL.createObjectURL(blob));
+      } catch (error) {
+        console.warn('Compression worker não disponível:', error);
+      }
+    }
+  }
+
+  private startCleanupTimer() {
+    setInterval(() => {
+      this.performMaintenance();
+    }, this.config.cleanupInterval || 300000); // 5 minutos
+  }
+
+  private performMaintenance() {
+    const now = Date.now();
+    let removedCount = 0;
+    
+    // Remover entradas expiradas
+    for (const [key, entry] of this.cache.entries()) {
+      if (this.isExpired(entry, now)) {
+        this.cache.delete(key);
+        this.removeFromLRU(key);
+        removedCount++;
+      }
+    }
+
+    // Se ainda estamos acima do limite, remover por estratégia
+    if (this.cache.size > this.config.maxSize) {
+      const toRemove = this.cache.size - this.config.maxSize;
+      this.evictEntries(toRemove);
+      removedCount += toRemove;
+    }
+
+    this.lastCleanup = now;
+    
+    if (removedCount > 0) {
+      console.log(`[SmartCache] Limpeza realizada: ${removedCount} entradas removidas`);
+    }
+  }
+
+  private evictEntries(count: number) {
+    const entries = Array.from(this.cache.entries());
+    
+    // Ordenar por estratégia de eviction
+    const sorted = entries.sort(([keyA, entryA], [keyB, entryB]) => {
+      switch (this.config.adaptiveEviction) {
+        case 'lru':
+          return entryA.lastAccessed - entryB.lastAccessed;
+        case 'lfu':
+          const freqA = this.accessFrequency.get(keyA) || 0;
+          const freqB = this.accessFrequency.get(keyB) || 0;
+          return freqA - freqB;
+        case 'ttl':
+          return entryA.timestamp - entryB.timestamp;
+        default:
+          return entryA.lastAccessed - entryB.lastAccessed;
+      }
+    });
+
+    // Remover as primeiras 'count' entradas
+    for (let i = 0; i < count && i < sorted.length; i++) {
+      const [key] = sorted[i];
+      this.cache.delete(key);
+      this.removeFromLRU(key);
+      this.accessFrequency.delete(key);
+    }
   }
 
   // Métodos principais
@@ -387,35 +457,6 @@ export class SmartCache {
     this.stats.memoryUsage = this.getMemoryUsage().percentage;
   }
 
-  private startCleanupTimer(): void {
-    if (this.cleanupTimer) {
-      clearInterval(this.cleanupTimer);
-    }
-
-    this.cleanupTimer = setInterval(() => {
-      this.cleanup();
-    }, this.config.cleanupInterval);
-  }
-
-  private async cleanup(): Promise<void> {
-    const now = Date.now();
-    let cleaned = 0;
-
-    for (const [key, entry] of this.cache.entries()) {
-      if (this.isExpired(entry)) {
-        this.cache.delete(key);
-        cleaned++;
-      }
-    }
-
-    if (cleaned > 0) {
-      this.updateStats();
-      if (this.config.persistToDisk) {
-        await this.saveToDisk();
-      }
-    }
-  }
-
   private async saveToDisk(): Promise<void> {
     if (!this.config.persistToDisk) return;
 
@@ -470,7 +511,7 @@ export class SmartCache {
 }
 
 // Context para React
-const CacheContext = createContext<SmartCache | null>(null);
+const CacheContext = createContext<SmartCacheSystem | null>(null);
 
 // Provider do cache
 interface CacheProviderProps {
@@ -479,7 +520,7 @@ interface CacheProviderProps {
 }
 
 export const CacheProvider: React.FC<CacheProviderProps> = ({ children, config }) => {
-  const [cache] = useState(() => new SmartCache(config));
+  const [cache] = useState(() => new SmartCacheSystem(config as CacheConfig));
 
   useEffect(() => {
     return () => {
@@ -677,7 +718,7 @@ export const CacheMonitor: React.FC = () => {
 };
 
 export default {
-  SmartCache,
+  SmartCacheSystem,
   CacheProvider,
   useSmartCache,
   useCachedData,
