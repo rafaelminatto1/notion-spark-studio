@@ -1,7 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
-import { Button } from './ui/button';
-import { AlertTriangle, RefreshCw, Home, Bug, Mail } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertTriangle, RefreshCw, Bug, Home, Mail } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface Props {
@@ -11,6 +11,7 @@ interface Props {
   enableRetry?: boolean;
   maxRetries?: number;
   showErrorDetails?: boolean;
+  isolateError?: boolean;
 }
 
 interface State {
@@ -30,12 +31,19 @@ interface ErrorReport {
   timestamp: number;
   userAgent: string;
   url: string;
+  userId?: string;
   sessionId: string;
   retryCount: number;
+  context: {
+    component: string;
+    props: any;
+    state: any;
+  };
 }
 
 class EnhancedErrorBoundary extends Component<Props, State> {
   private retryTimeouts: NodeJS.Timeout[] = [];
+  private errorReportingService: ErrorReportingService;
 
   constructor(props: Props) {
     super(props);
@@ -48,6 +56,8 @@ class EnhancedErrorBoundary extends Component<Props, State> {
       errorId: '',
       isRetrying: false
     };
+
+    this.errorReportingService = new ErrorReportingService();
   }
 
   static getDerivedStateFromError(error: Error): Partial<State> {
@@ -79,6 +89,9 @@ class EnhancedErrorBoundary extends Component<Props, State> {
       this.scheduleAutoRetry();
     }
 
+    // Reportar erro para serviço de monitoramento
+    this.reportError(error, errorInfo);
+
     // Mostrar toast de erro
     this.showErrorToast(error);
   }
@@ -93,7 +106,12 @@ class EnhancedErrorBoundary extends Component<Props, State> {
       userAgent: navigator.userAgent,
       url: window.location.href,
       sessionId: this.getSessionId(),
-      retryCount: this.state.retryCount
+      retryCount: this.state.retryCount,
+      context: {
+        component: this.getComponentName(),
+        props: this.sanitizeProps(this.props),
+        state: this.sanitizeState(this.state)
+      }
     };
 
     // Log local
@@ -105,6 +123,24 @@ class EnhancedErrorBoundary extends Component<Props, State> {
 
     // Salvar no localStorage para debug
     this.saveErrorToStorage(errorReport);
+  };
+
+  private reportError = async (error: Error, errorInfo: ErrorInfo) => {
+    try {
+      await this.errorReportingService.report({
+        error,
+        errorInfo,
+        errorId: this.state.errorId,
+        retryCount: this.state.retryCount,
+        context: {
+          component: this.getComponentName(),
+          url: window.location.href,
+          timestamp: Date.now()
+        }
+      });
+    } catch (reportingError) {
+      console.error('Failed to report error:', reportingError);
+    }
   };
 
   private shouldAutoRetry = (error: Error): boolean => {
@@ -182,17 +218,16 @@ class EnhancedErrorBoundary extends Component<Props, State> {
   };
 
   private showErrorToast = (error: Error) => {
-    try {
-      toast({
-        title: "Ops! Algo deu errado",
-        description: this.props.showErrorDetails ? error.message : "Ocorreu um erro inesperado. Tentando resolver...",
-        variant: "destructive",
-        duration: 5000
-      });
-    } catch (toastError) {
-      // Fallback se toast não estiver disponível (ex: em testes)
-      console.warn('Toast not available:', toastError);
-    }
+    toast({
+      title: "Ops! Algo deu errado",
+      description: this.props.showErrorDetails ? error.message : "Ocorreu um erro inesperado. Tentando resolver...",
+      variant: "destructive",
+      duration: 5000
+    });
+  };
+
+  private getComponentName = (): string => {
+    return this.state.errorInfo?.componentStack?.split('\n')[1]?.trim() || 'Unknown Component';
   };
 
   private getSessionId = (): string => {
@@ -202,6 +237,19 @@ class EnhancedErrorBoundary extends Component<Props, State> {
       sessionStorage.setItem('error-boundary-session', sessionId);
     }
     return sessionId;
+  };
+
+  private sanitizeProps = (props: any): any => {
+    const sanitized = { ...props };
+    delete sanitized.children;
+    delete sanitized.onError;
+    return sanitized;
+  };
+
+  private sanitizeState = (state: any): any => {
+    const sanitized = { ...state };
+    delete sanitized.errorInfo; // Evitar referência circular
+    return sanitized;
   };
 
   private saveErrorToStorage = (errorReport: ErrorReport) => {
@@ -331,40 +379,93 @@ class EnhancedErrorBoundary extends Component<Props, State> {
   }
 }
 
-// Hook para usar Error Boundary programaticamente
-export const useErrorHandler = () => {
-  const handleError = (error: Error, errorInfo?: any) => {
-    console.error('[useErrorHandler] Erro capturado:', error);
-    
-    // Em produção, enviar para serviço de monitoramento
-    if (process.env.NODE_ENV === 'production') {
-      // Exemplo: Sentry.captureException(error);
-    }
-  };
+// Serviço de relatório de erros
+class ErrorReportingService {
+  private endpoint = '/api/errors';
+  private queue: any[] = [];
+  private isOnline = navigator.onLine;
 
-  const reportError = async (error: Error, context?: any) => {
-    const errorReport = {
-      error: error.message,
-      stack: error.stack,
-      context,
+  constructor() {
+    // Monitorar status de conexão
+    window.addEventListener('online', () => {
+      this.isOnline = true;
+      this.flushQueue();
+    });
+
+    window.addEventListener('offline', () => {
+      this.isOnline = false;
+    });
+  }
+
+  async report(errorData: any): Promise<void> {
+    const report = {
+      ...errorData,
       timestamp: Date.now(),
+      userAgent: navigator.userAgent,
       url: window.location.href
     };
 
-    console.log('Error Report:', errorReport);
-    
-    // Em produção, enviar para API
-    if (process.env.NODE_ENV === 'production') {
+    if (this.isOnline) {
       try {
-        await fetch('/api/errors', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(errorReport)
-        });
-      } catch (reportingError) {
-        console.error('Failed to report error:', reportingError);
+        await this.sendReport(report);
+      } catch (error) {
+        console.error('Failed to send error report:', error);
+        this.queue.push(report);
+      }
+    } else {
+      this.queue.push(report);
+    }
+  }
+
+  private async sendReport(report: any): Promise<void> {
+    // Em desenvolvimento, apenas log
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Error Report (would be sent to server):', report);
+      return;
+    }
+
+    // Em produção, enviar para endpoint real
+    const response = await fetch(this.endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(report)
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+  }
+
+  private async flushQueue(): Promise<void> {
+    while (this.queue.length > 0 && this.isOnline) {
+      const report = this.queue.shift();
+      try {
+        await this.sendReport(report);
+      } catch (error) {
+        console.error('Failed to flush error report:', error);
+        this.queue.unshift(report); // Recolocar na fila
+        break;
       }
     }
+  }
+}
+
+// Hook para usar Error Boundary programaticamente
+export const useErrorHandler = () => {
+  const handleError = (error: Error, errorInfo?: any) => {
+    // Simular erro para acionar Error Boundary
+    throw error;
+  };
+
+  const reportError = async (error: Error, context?: any) => {
+    const service = new ErrorReportingService();
+    await service.report({
+      error,
+      context,
+      timestamp: Date.now()
+    });
   };
 
   return { handleError, reportError };
@@ -375,4 +476,4 @@ export const ErrorBoundary: React.FC<Props> = (props) => {
   return <EnhancedErrorBoundary {...props} />;
 };
 
-export default EnhancedErrorBoundary;
+export default EnhancedErrorBoundary; 

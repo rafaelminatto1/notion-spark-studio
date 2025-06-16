@@ -354,7 +354,7 @@ export const SmartContentSuggestions: React.FC<SmartContentSuggestionsProps> = (
   const analyzeWritingPatterns = (): SmartInsight[] => {
     const insights: SmartInsight[] = [];
     
-    if (allFiles.length > 5) {
+    if (allFiles && allFiles.length > 5) {
       const avgLength = allFiles.reduce((sum, f) => sum + (f.content?.length || 0), 0) / allFiles.length;
       
       insights.push({
@@ -373,6 +373,8 @@ export const SmartContentSuggestions: React.FC<SmartContentSuggestionsProps> = (
 
   const analyzeProductivityTrends = (): SmartInsight[] => {
     const insights: SmartInsight[] = [];
+    
+    if (!allFiles || allFiles.length === 0) return insights;
     
     const recentFiles = allFiles.filter(f => {
       const daysSinceUpdate = (Date.now() - new Date(f.updatedAt).getTime()) / (1000 * 60 * 60 * 24);
@@ -396,6 +398,8 @@ export const SmartContentSuggestions: React.FC<SmartContentSuggestionsProps> = (
   const findOptimizationOpportunities = (): SmartInsight[] => {
     const insights: SmartInsight[] = [];
     
+    if (!allFiles || allFiles.length === 0) return insights;
+    
     const untaggedFiles = allFiles.filter(f => !f.tags || f.tags.length === 0);
     
     if (untaggedFiles.length > 0) {
@@ -415,6 +419,8 @@ export const SmartContentSuggestions: React.FC<SmartContentSuggestionsProps> = (
 
   const discoverContentConnections = (): SmartInsight[] => {
     const insights: SmartInsight[] = [];
+    
+    if (!allFiles || allFiles.length < 2) return insights;
     
     // Encontrar arquivos que poderiam estar conectados
     let potentialConnections = 0;
