@@ -123,4 +123,22 @@ export interface CustomEventDetail<T = UnknownRecord> {
   type: string;
   data: T;
   timestamp: number;
+}
+
+export interface PerformanceAlert {
+  id: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  message: string;
+  timestamp: number;
+  autoFixable: boolean;
+}
+
+export interface PerformanceOptimization {
+  id: string;
+  name: string;
+  description: string;
+  priority: 'low' | 'medium' | 'high';
+  estimatedImprovement: string;
+  applied: boolean;
+  implementation: () => Promise<void>;
 } 

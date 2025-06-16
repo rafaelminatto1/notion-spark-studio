@@ -177,7 +177,7 @@ class EnhancedErrorBoundary extends Component<Props, State> {
       timestamp: new Date().toISOString()
     };
 
-    const mailtoLink = `mailto:support@notionspark.com?subject=Bug Report - ${this.state.errorId}&body=${encodeURIComponent(JSON.stringify(errorReport, null, 2))}`;
+    const mailtoLink = `mailto:support@notionspark.com?subject=Bug Report - ${String(this.state.errorId)}&body=${encodeURIComponent(JSON.stringify(errorReport, null, 2))}`;
     window.open(mailtoLink);
   };
 
@@ -198,7 +198,7 @@ class EnhancedErrorBoundary extends Component<Props, State> {
   private getSessionId = (): string => {
     let sessionId = sessionStorage.getItem('error-boundary-session');
     if (!sessionId) {
-      sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
       sessionStorage.setItem('error-boundary-session', sessionId);
     }
     return sessionId;
@@ -252,9 +252,9 @@ class EnhancedErrorBoundary extends Component<Props, State> {
             <CardContent className="space-y-3">
               {/* Informações do erro */}
               <div className="text-xs text-muted-foreground text-center">
-                ID do Erro: {this.state.errorId}
+                ID do Erro: {String(this.state.errorId)}
                 {this.state.retryCount > 0 && (
-                  <div>Tentativas: {this.state.retryCount}</div>
+                  <div>Tentativas: {String(this.state.retryCount)}</div>
                 )}
               </div>
 
@@ -331,9 +331,9 @@ class EnhancedErrorBoundary extends Component<Props, State> {
   }
 }
 
-// Hook para usar Error Boundary programaticamente
+  // Hook para usar Error Boundary programaticamente
 export const useErrorHandler = () => {
-  const handleError = (error: Error, errorInfo?: any) => {
+  const handleError = (error: Error, errorInfo?: unknown) => {
     console.error('[useErrorHandler] Erro capturado:', error);
     
     // Em produção, enviar para serviço de monitoramento
@@ -342,7 +342,7 @@ export const useErrorHandler = () => {
     }
   };
 
-  const reportError = async (error: Error, context?: any) => {
+  const reportError = async (error: Error, context?: unknown) => {
     const errorReport = {
       error: error.message,
       stack: error.stack,

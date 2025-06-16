@@ -245,7 +245,7 @@ export class ApplicationHealthMonitor {
         unit: '%',
         status: memoryUsage <= 70 ? 'healthy' : memoryUsage <= 85 ? 'warning' : 'critical',
         threshold: { warning: 70, critical: 85 },
-        description: `${Math.round(memInfo.usedJSHeapSize / 1024 / 1024)}MB de ${Math.round(memInfo.jsHeapSizeLimit / 1024 / 1024)}MB`,
+        description: `${Math.round(memInfo.usedJSHeapSize / 1024 / 1024).toString()}MB de ${Math.round(memInfo.jsHeapSizeLimit / 1024 / 1024).toString()}MB`,
         lastUpdated: new Date()
       });
     }
@@ -260,7 +260,7 @@ export class ApplicationHealthMonitor {
           id: `critical_${metric.id}`,
           severity: 'critical',
           title: `${metric.name} Crítico`,
-          description: `${metric.name} está em ${metric.value}${metric.unit}, acima do limite crítico de ${metric.threshold.critical}${metric.unit}`,
+          description: `${metric.name} está em ${metric.value.toString()}${metric.unit}, acima do limite crítico de ${metric.threshold.critical.toString()}${metric.unit}`,
           impact: 'Pode causar travamentos ou lentidão severa',
           solution: this.getSolutionForMetric(metric.id),
           autoFixable: this.isAutoFixable(metric.id),
@@ -271,7 +271,7 @@ export class ApplicationHealthMonitor {
           id: `warning_${metric.id}`,
           severity: 'medium',
           title: `${metric.name} em Alerta`,
-          description: `${metric.name} está em ${metric.value}${metric.unit}, próximo do limite`,
+          description: `${metric.name} está em ${metric.value.toString()}${metric.unit}, próximo do limite`,
           impact: 'Pode afetar a performance da aplicação',
           solution: this.getSolutionForMetric(metric.id),
           autoFixable: this.isAutoFixable(metric.id),
