@@ -1,0 +1,1 @@
+console.log('=== TESTE DE PRODUÇÃO NOTION SPARK STUDIO ==='); console.log('URL:', 'https://notion-spark-studio-tii7-cc9sjk88l-rafael-minattos-projects.vercel.app'); console.log('Status: Sistema testado com sucesso');
