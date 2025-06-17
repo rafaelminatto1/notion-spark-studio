@@ -10,6 +10,11 @@ import type {
   UserJourney
 } from '../types/common';
 
+// 🛠️ Helper function para gerar session ID
+function generateSessionId(): string {
+  return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+}
+
 export interface AnalyticsConfig {
   enabled: boolean;
   trackingLevel: 'basic' | 'detailed' | 'comprehensive';
@@ -50,14 +55,35 @@ export function useAdvancedAnalytics(config: AnalyticsConfig = {
   const trackEvent = useCallback((event: Omit<UserEvent, 'id' | 'timestamp' | 'userId' | 'sessionId'>) => {
     if (!config.enabled || !isTracking) return;
     
-    const fullEvent = {
-      ...event,
-      userId: userIdRef.current || 'anonymous',
-      sessionId: sessionIdRef.current,
+    // 🐛 DEBUG: Log para capturar o erro
+    console.log('🔍 [DEBUG] useAdvancedAnalytics trackEvent called with:', event);
+    
+    // Validação de entrada
+    if (!event || typeof event !== 'object') {
+      console.error('❌ [ERROR] Invalid event object in useAdvancedAnalytics:', event);
+      return;
+    }
+    
+    const userId = userIdRef.current || 'anonymous';
+    const sessionId = sessionIdRef.current || generateSessionId();
+    
+    // Preparar dados seguros para o engine
+    const eventData = {
+      action: event.action || 'unknown',
+      page: event.category || 'unknown',
+      metadata: event.properties || {},
+      timestamp: Date.now(),
+      sessionId: sessionId
     };
     
-    engineRef.current.trackEvent(fullEvent);
-    setRealtimeEvents(prev => prev + 1);
+    console.log('🔍 [DEBUG] Calling engine trackEvent with:', { userId, eventData });
+    
+    try {
+      engineRef.current.trackEvent(userId, eventData);
+      setRealtimeEvents(prev => prev + 1);
+    } catch (error) {
+      console.error('❌ [ERROR] Error in trackEvent:', error);
+    }
   }, [config.enabled, isTracking]);
 
   /**

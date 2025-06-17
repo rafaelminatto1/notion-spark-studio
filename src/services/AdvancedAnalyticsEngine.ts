@@ -197,8 +197,19 @@ export class AdvancedAnalyticsEngine {
     timestamp?: number;
     sessionId?: string;
   }): void {
+    // 🐛 DEBUG: Log para capturar o erro de timestamp
+    console.log('🔍 [DEBUG] trackEvent called with:', { userId, eventData });
+    
+    // Validação de entrada
+    if (!eventData || typeof eventData !== 'object') {
+      console.error('❌ [ERROR] eventData is not a valid object:', eventData);
+      return;
+    }
+    
     const timestamp = eventData.timestamp || Date.now();
     const sessionId = eventData.sessionId || this.getOrCreateSessionId(userId);
+    
+    console.log('🔍 [DEBUG] Processed values:', { timestamp, sessionId });
 
     // Criar step da jornada
     const journeyStep: UserJourneyStep = {

@@ -826,6 +826,11 @@ export class AIPerformanceOptimizer {
    * 🏷️ Gera ID de sessão
    */
   private generateSessionId(): string {
+    // 🔧 SSR Safe: Verificar se sessionStorage está disponível
+    if (typeof window === 'undefined' || typeof sessionStorage === 'undefined') {
+      return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    }
+    
     if (!window.sessionStorage.getItem('aiOptimizer-sessionId')) {
       window.sessionStorage.setItem('aiOptimizer-sessionId', this.generateId());
     }
@@ -909,6 +914,12 @@ export class AIPerformanceOptimizer {
    */
   private loadStoredData(): void {
     try {
+      // 🔧 SSR Safe: Verificar se localStorage está disponível
+      if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+        console.log('📊 localStorage não disponível (SSR), usando dados padrão');
+        return;
+      }
+      
       const stored = localStorage.getItem('aiOptimizer-data');
       if (stored) {
         const data = JSON.parse(stored);
