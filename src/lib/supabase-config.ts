@@ -13,7 +13,6 @@ const getSupabaseUrl = (): string => {
              process.env.SUPABASE_URL ||
              'https://bvugljspidtqumysbegq.supabase.co';
   
-  console.log('[SUPABASE CONFIG] URL final escolhida:', url);
   return url;
 };
 
@@ -25,25 +24,13 @@ const getSupabaseAnonKey = (): string => {
              process.env.SUPABASE_ANON_KEY ||
              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2dWdsanNwaWR0cXVteXNiZWdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkxNjE4ODcsImV4cCI6MjA2NDczNzg4N30.YYZVpzyb7ZDyIV3uqaAkA5xBBzA2g7Udnt4uSqaeFAQ';
   
-  console.log('[SUPABASE CONFIG] ANON_KEY final escolhida:', key ? `${key.substring(0, 30)}...` : 'VAZIA');
   return key;
 };
 
 const supabaseUrl = getSupabaseUrl();
 const supabaseAnonKey = getSupabaseAnonKey();
 
-// Debug logs para identificar problema
-console.log('[SUPABASE DEBUG] URL obtida:', supabaseUrl ? `${supabaseUrl.substring(0, 20)}...` : 'VAZIA');
-console.log('[SUPABASE DEBUG] ANON_KEY obtida:', supabaseAnonKey ? `${supabaseAnonKey.substring(0, 20)}...` : 'VAZIA');
-console.log('[SUPABASE DEBUG] Variáveis process.env disponíveis:', Object.keys(process.env || {}).filter(k => k.includes('SUPABASE')));
-console.log('[SUPABASE DEBUG] Ambiente atual:', process.env.NODE_ENV);
-console.log('[SUPABASE DEBUG] Vercel URL:', process.env.VERCEL_URL || 'undefined');
-
-// Verificação adicional das variáveis
-if (typeof process !== 'undefined' && process.env) {
-  console.log('[SUPABASE DEBUG] NEXT_PUBLIC_SUPABASE_URL direto:', process.env.NEXT_PUBLIC_SUPABASE_URL);
-  console.log('[SUPABASE DEBUG] NEXT_PUBLIC_SUPABASE_ANON_KEY direto:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'PRESENTE' : 'AUSENTE');
-}
+// Configuração robusta com múltiplos fallbacks implementada
 
 // Função para criar/obter instância única do Supabase
 export const getSupabaseClient = (): SupabaseClient | null => {

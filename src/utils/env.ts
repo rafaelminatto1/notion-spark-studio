@@ -34,16 +34,12 @@ export function safeGetEnv(key: string, defaultValue = ''): string {
       // Primeiro tenta process.env, depois window.env
       const envValue = process?.env?.[key] ?? (window as WindowWithEnv).env?.[key];
       
-      // Log de debug para verificar o que está sendo retornado
-      console.log(`[ENV DEBUG] Buscando "${key}": encontrado="${envValue}" | process.env disponível=${typeof process !== 'undefined'}`);
-      
       return envValue ?? defaultValue;
     } else {
       // Servidor
       return process.env[key] ?? defaultValue;
     }
-  } catch (error) {
-    console.log(`[ENV DEBUG] Erro ao buscar "${key}":`, error);
+  } catch {
     return defaultValue;
   }
 }
