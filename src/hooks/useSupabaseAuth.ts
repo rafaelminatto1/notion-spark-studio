@@ -262,5 +262,35 @@ export const useSupabaseAuth = () => {
     signUp,
     signOut,
     resetPassword,
+    // Aliases para compatibilidade com formulários existentes
+    signInWithEmail: signIn,
+    signUpWithEmail: signUp,
+    signInWithGoogle: async () => {
+      const client = getSupabaseClient();
+      if (!client) {
+        console.error('[useSupabaseAuth] Cliente não disponível para Google OAuth');
+        return;
+      }
+      
+      try {
+        const { data, error } = await client.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: `${window.location.origin}/auth/callback`
+          }
+        });
+        
+        if (error) {
+          console.error('[useSupabaseAuth] Erro no login com Google:', error);
+          throw error;
+        }
+        
+        console.log('[useSupabaseAuth] Login com Google iniciado');
+        return data;
+      } catch (error) {
+        console.error('[useSupabaseAuth] Erro no signInWithGoogle:', error);
+        throw error;
+      }
+    },
   };
 };
