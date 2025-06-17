@@ -1,9 +1,7 @@
-import { createClient } from '@supabase/supabase-js';
-import { env } from './env';
+// Redirects to our unified Supabase configuration
+import { getSupabaseClient, checkSupabaseConnection } from './supabase-config';
 
-// Só criar cliente se as variáveis estiverem definidas
-export const supabase = env.SUPABASE_URL && env.SUPABASE_ANON_KEY 
-  ? createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY)
-  : null;
+// Só usar cliente da configuração unificada
+export const supabase = getSupabaseClient();
 
-export const isSupabaseEnabled = Boolean(env.SUPABASE_URL && env.SUPABASE_ANON_KEY); 
+export const isSupabaseEnabled = Boolean(supabase); 

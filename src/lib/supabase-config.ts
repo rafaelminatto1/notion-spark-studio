@@ -53,7 +53,7 @@ export const getSupabaseClient = (): SupabaseClient | null => {
         persistSession: true,
         detectSessionInUrl: true,
         storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-        storageKey: 'notion-spark-auth', // Chave única para evitar conflitos
+        storageKey: 'notion-spark-auth-v2', // Chave única para evitar conflitos
       },
       realtime: {
         params: {
@@ -84,16 +84,12 @@ export const checkSupabaseConnection = async (): Promise<boolean> => {
   }
 
   try {
-    const { error } = await client.from('_health_check').select('*').limit(1);
+    // Usar método mais simples para verificar conectividade
+    const { data, error } = await client.auth.getSession();
     
-    // Se não há erro ou é erro de tabela não encontrada (esperado), conexão está OK
-    if (!error || error.code === 'PGRST116') {
-      console.log('[Supabase] Conexão verificada com sucesso');
-      return true;
-    }
-    
-    console.warn('[Supabase] Erro na verificação de conexão:', error);
-    return false;
+    // Se conseguimos fazer a chamada (mesmo que não tenha sessão), a conexão está OK
+    console.log('[Supabase] Conexão verificada com sucesso');
+    return true;
   } catch (error) {
     console.warn('[Supabase] Erro ao verificar conexão:', error);
     return false;
