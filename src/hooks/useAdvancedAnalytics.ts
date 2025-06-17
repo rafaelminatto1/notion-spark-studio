@@ -1,539 +1,386 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import AdvancedAnalyticsEngine from '@/services/AdvancedAnalyticsEngine';
-import type {
-  AdvancedAnalytics,
-  UserJourneyStep,
-  FeatureUsageMetrics,
-  PerformanceInsight,
+import { advancedAnalyticsEngine } from '../services/AdvancedAnalyticsEngine';
+import type { 
+  UserEvent, 
+  AnalyticsMetrics, 
+  AnalyticsInsight, 
   ConversionFunnel,
-  RetentionMetric
-} from '@/types/common';
+  CohortAnalysis,
+  MetricsTrend,
+  UserJourney
+} from '../types/common';
 
-interface UseAdvancedAnalyticsReturn {
-  // Analytics principais
-  analytics: AdvancedAnalytics;
-  
-  // Insights e recomendações
-  insights: PerformanceInsight[];
-  recommendations: string[];
-  
-  // Métricas de jornada
-  userJourney: UserJourneyStep[];
-  journeyInsights: {
-    patterns: any;
-    insights: string[];
-    optimizations: string[];
-  };
-  
-  // Funnels
-  funnels: ConversionFunnel[];
-  activeFunnel: ConversionFunnel | null;
-  
-  // Retenção
-  retentionMetrics: RetentionMetric[];
-  
-  // Predições
-  predictions: {
-    nextActions: { action: string; probability: number }[];
-    churnRisk: number;
-    ltv: number;
-    recommendedFeatures: string[];
-  };
-  
-  // Estado
-  isTracking: boolean;
-  isAnalyzing: boolean;
-  lastEventTime: number;
-  
-  // Métricas em tempo real
-  realTimeMetrics: {
-    activeUsers: number;
-    eventsPerMinute: number;
-    conversionRate: number;
-    engagementScore: number;
-  };
-  
-  // Ações de tracking
-  track: (action: string, metadata?: Record<string, any>) => void;
-  trackPage: (page: string, metadata?: Record<string, any>) => void;
-  trackFeature: (featureId: string, metadata?: Record<string, any>) => void;
-  trackEvent: (eventName: string, properties?: Record<string, any>) => void;
-  
-  // Gestão de funnels
-  createFunnel: (config: FunnelConfig) => void;
-  setActiveFunnel: (funnelId: string) => void;
-  
-  // Análises
-  generateInsights: () => Promise<PerformanceInsight[]>;
-  analyzeJourney: () => Promise<void>;
-  generateReport: (timeframe?: 'day' | 'week' | 'month') => Promise<AnalyticsReport>;
-  
-  // Configuração
-  configure: (config: AnalyticsConfig) => void;
-  startTracking: () => void;
-  stopTracking: () => void;
-  reset: () => void;
+export interface AnalyticsConfig {
+  enabled: boolean;
+  trackingLevel: 'basic' | 'detailed' | 'comprehensive';
+  autoTrack: boolean;
+  realTimeInsights: boolean;
+  retentionPeriod: number; // em dias
 }
 
-interface FunnelConfig {
-  id: string;
-  name: string;
-  steps: string[];
-  timeWindow?: number;
-}
-
-interface AnalyticsConfig {
-  enableAutoTracking?: boolean;
-  trackPageViews?: boolean;
-  trackUserInteractions?: boolean;
-  enablePredictions?: boolean;
-  flushInterval?: number;
-}
-
-interface AnalyticsReport {
-  summary: {
-    totalEvents: number;
-    uniqueUsers: number;
-    avgSessionDuration: number;
-    conversionRate: number;
-  };
-  insights: PerformanceInsight[];
-  recommendations: string[];
-  trends: {
-    userGrowth: number;
-    engagementTrend: number;
-    retentionTrend: number;
-  };
-}
-
-export function useAdvancedAnalytics(
-  userId: string,
-  initialConfig: AnalyticsConfig = {}
-): UseAdvancedAnalyticsReturn {
-  // Estado principal
-  const [analytics, setAnalytics] = useState<AdvancedAnalytics>({
-    userJourney: [],
-    featureUsage: {},
-    performanceInsights: [],
-    conversionFunnels: [],
-    retentionMetrics: []
-  });
-  
-  const [insights, setInsights] = useState<PerformanceInsight[]>([]);
-  const [recommendations, setRecommendations] = useState<string[]>([]);
-  const [userJourney, setUserJourney] = useState<UserJourneyStep[]>([]);
-  const [journeyInsights, setJourneyInsights] = useState({
-    patterns: {},
-    insights: [],
-    optimizations: []
-  });
-  const [funnels, setFunnels] = useState<ConversionFunnel[]>([]);
-  const [activeFunnel, setActiveFunnelState] = useState<ConversionFunnel | null>(null);
-  const [retentionMetrics, setRetentionMetrics] = useState<RetentionMetric[]>([]);
-  const [predictions, setPredictions] = useState({
-    nextActions: [],
-    churnRisk: 0,
-    ltv: 0,
-    recommendedFeatures: []
-  });
-  
-  // Estado de controle
-  const [isTracking, setIsTracking] = useState(false);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [lastEventTime, setLastEventTime] = useState(0);
-  const [realTimeMetrics, setRealTimeMetrics] = useState({
-    activeUsers: 1,
-    eventsPerMinute: 0,
+export function useAdvancedAnalytics(config: AnalyticsConfig = {
+  enabled: true,
+  trackingLevel: 'detailed',
+  autoTrack: true,
+  realTimeInsights: true,
+  retentionPeriod: 30
+}) {
+  const [metrics, setMetrics] = useState<AnalyticsMetrics>({
+    activeUsers: 0,
+    totalSessions: 0,
+    averageSessionDuration: 0,
+    bounceRate: 0,
     conversionRate: 0,
-    engagementScore: 75
+    retentionRate: 0,
+    engagementScore: 0,
+    performanceScore: 0
   });
   
-  // Refs
-  const engineRef = useRef<AdvancedAnalyticsEngine | null>(null);
-  const configRef = useRef<AnalyticsConfig>({
-    enableAutoTracking: true,
-    trackPageViews: true,
-    trackUserInteractions: true,
-    enablePredictions: true,
-    flushInterval: 30000,
-    ...initialConfig
-  });
-  const eventCountRef = useRef(0);
-  const sessionStartRef = useRef(Date.now());
-  const currentPageRef = useRef(window.location.pathname);
+  const [insights, setInsights] = useState<AnalyticsInsight[]>([]);
+  const [isTracking, setIsTracking] = useState(config.autoTrack);
+  const [realtimeEvents, setRealtimeEvents] = useState(0);
   
-  // Inicializar engine
-  useEffect(() => {
-    engineRef.current = AdvancedAnalyticsEngine.getInstance();
+  const engineRef = useRef(advancedAnalyticsEngine);
+  const sessionIdRef = useRef<string>('');
+  const userIdRef = useRef<string>('');
+
+  /**
+   * 📊 Registra evento personalizado
+   */
+  const trackEvent = useCallback((event: Omit<UserEvent, 'id' | 'timestamp' | 'userId' | 'sessionId'>) => {
+    if (!config.enabled || !isTracking) return;
     
-    // Iniciar tracking automático se habilitado
-    if (configRef.current.enableAutoTracking) {
-      startTracking();
-    }
-    
-    return () => {
-      stopTracking();
+    const fullEvent = {
+      ...event,
+      userId: userIdRef.current || 'anonymous',
+      sessionId: sessionIdRef.current,
     };
-  }, []);
-  
-  // Tracking automático de interações
-  useEffect(() => {
-    if (!isTracking || !configRef.current.trackUserInteractions) return;
     
-    const handleInteraction = (event: Event) => {
-      track(event.type, {
-        target: (event.target as Element)?.tagName,
+    engineRef.current.trackEvent(fullEvent);
+    setRealtimeEvents(prev => prev + 1);
+  }, [config.enabled, isTracking]);
+
+  /**
+   * 🎯 Tracking automático de cliques
+   */
+  const trackClick = useCallback((elementId: string, category: string = 'ui') => {
+    trackEvent({
+      type: 'click',
+      action: 'click',
+      category,
+      properties: { elementId },
+      performance: {
+        pageLoadTime: performance.timing?.loadEventEnd - performance.timing?.navigationStart || 0,
+        renderTime: performance.now(),
+        interactionTime: performance.now(),
+        memoryUsage: (performance as any).memory?.usedJSHeapSize || 0,
+        networkLatency: 0,
+        fps: 60
+      }
+    });
+  }, [trackEvent]);
+
+  /**
+   * 👁️ Tracking de visualizações
+   */
+  const trackView = useCallback((pagePath: string, category: string = 'page') => {
+    trackEvent({
+      type: 'view',
+      action: 'page_view',
+      category,
+      properties: { 
+        path: pagePath,
+        referrer: document.referrer,
         timestamp: Date.now()
-      });
-    };
-    
-    const handlePageView = () => {
-      const newPage = window.location.pathname;
-      if (newPage !== currentPageRef.current) {
-        trackPage(newPage);
-        currentPageRef.current = newPage;
-      }
-    };
-    
-    // Event listeners
-    document.addEventListener('click', handleInteraction);
-    document.addEventListener('keydown', handleInteraction);
-    window.addEventListener('popstate', handlePageView);
-    
-    // Observer para mudanças de rota (SPA)
-    const observer = new MutationObserver(() => {
-      handlePageView();
-    });
-    
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true
-    });
-    
-    return () => {
-      document.removeEventListener('click', handleInteraction);
-      document.removeEventListener('keydown', handleInteraction);
-      window.removeEventListener('popstate', handlePageView);
-      observer.disconnect();
-    };
-  }, [isTracking]);
-  
-  // Tracking de ação
-  const track = useCallback((action: string, metadata: Record<string, any> = {}) => {
-    if (!engineRef.current || !isTracking) return;
-    
-    const eventData = {
-      action,
-      page: window.location.pathname,
-      metadata: {
-        ...metadata,
-        sessionId: `session_${sessionStartRef.current}`,
-        userAgent: navigator.userAgent,
-        viewport: {
-          width: window.innerWidth,
-          height: window.innerHeight
-        }
       },
-      timestamp: Date.now()
-    };
-    
-    engineRef.current.trackEvent(userId, eventData);
-    
-    // Atualizar contadores
-    eventCountRef.current++;
-    setLastEventTime(Date.now());
-    
-    // Atualizar métricas em tempo real
-    updateRealTimeMetrics();
-  }, [userId, isTracking]);
-  
-  // Tracking de página
-  const trackPage = useCallback((page: string, metadata: Record<string, any> = {}) => {
-    track('page_view', { page, ...metadata });
-  }, [track]);
-  
-  // Tracking de feature
-  const trackFeature = useCallback((featureId: string, metadata: Record<string, any> = {}) => {
-    if (!engineRef.current) return;
-    
-    engineRef.current.trackFeatureUsage(userId, featureId, metadata);
-    track('feature_usage', { featureId, ...metadata });
-  }, [userId, track]);
-  
-  // Tracking de evento genérico
-  const trackEvent = useCallback((eventName: string, properties: Record<string, any> = {}) => {
-    track(eventName, properties);
-  }, [track]);
-  
-  // Criar funil
-  const createFunnel = useCallback((config: FunnelConfig) => {
-    if (!engineRef.current) return;
-    
-    engineRef.current.defineFunnel(config);
-    
-    // Atualizar estado local
-    setFunnels(prev => [
-      ...prev.filter(f => f.id !== config.id),
-      {
-        id: config.id,
-        name: config.name,
-        steps: config.steps.map(step => ({
-          name: step,
-          users: 0,
-          conversionRate: 0,
-          avgTimeSpent: 0
-        })),
-        conversionRate: 0,
-        dropOffPoints: [],
-        optimizations: []
+      performance: {
+        pageLoadTime: performance.timing?.loadEventEnd - performance.timing?.navigationStart || 0,
+        renderTime: 0,
+        interactionTime: 0,
+        memoryUsage: (performance as any).memory?.usedJSHeapSize || 0,
+        networkLatency: 0,
+        fps: 60
       }
-    ]);
-  }, []);
-  
-  // Definir funil ativo
-  const setActiveFunnel = useCallback((funnelId: string) => {
-    const funnel = funnels.find(f => f.id === funnelId) || null;
-    setActiveFunnelState(funnel);
-  }, [funnels]);
-  
-  // Gerar insights
-  const generateInsights = useCallback(async (): Promise<PerformanceInsight[]> => {
-    if (!engineRef.current) return [];
-    
-    setIsAnalyzing(true);
-    
-    try {
-      const newInsights = engineRef.current.generateInsights();
-      setInsights(newInsights);
-      
-      // Gerar recomendações baseadas nos insights
-      const newRecommendations = newInsights
-        .filter(insight => insight.automatable)
-        .map(insight => insight.recommendation);
-      
-      setRecommendations(newRecommendations);
-      
-      return newInsights;
-    } catch (error) {
-      console.error('Erro ao gerar insights:', error);
-      return [];
-    } finally {
-      setIsAnalyzing(false);
-    }
-  }, []);
-  
-  // Analisar jornada
-  const analyzeJourney = useCallback(async () => {
-    if (!engineRef.current) return;
-    
-    setIsAnalyzing(true);
-    
-    try {
-      const analysis = engineRef.current.analyzeUserJourney(userId);
-      
-      setUserJourney(analysis.journey);
-      setJourneyInsights({
-        patterns: analysis.patterns,
-        insights: analysis.insights,
-        optimizations: analysis.optimizations
-      });
-      
-      // Gerar predições se habilitado
-      if (configRef.current.enablePredictions) {
-        const behaviorPredictions = engineRef.current.predictUserBehavior(userId);
-        setPredictions(behaviorPredictions);
+    });
+  }, [trackEvent]);
+
+  /**
+   * ✏️ Tracking de edições
+   */
+  const trackEdit = useCallback((action: string, properties: Record<string, any> = {}) => {
+    trackEvent({
+      type: 'edit',
+      action,
+      category: 'content',
+      properties: {
+        ...properties,
+        timestamp: Date.now()
       }
-    } catch (error) {
-      console.error('Erro ao analisar jornada:', error);
-    } finally {
-      setIsAnalyzing(false);
-    }
-  }, [userId]);
-  
-  // Gerar relatório
-  const generateReport = useCallback(async (timeframe: 'day' | 'week' | 'month' = 'week'): Promise<AnalyticsReport> => {
-    if (!engineRef.current) {
+    });
+  }, [trackEvent]);
+
+  /**
+   * 🔍 Tracking de buscas
+   */
+  const trackSearch = useCallback((query: string, results: number = 0) => {
+    trackEvent({
+      type: 'search',
+      action: 'search_query',
+      category: 'search',
+      properties: {
+        query,
+        results,
+        queryLength: query.length
+      }
+    });
+  }, [trackEvent]);
+
+  /**
+   * 🎯 Analisa funil de conversão
+   */
+  const analyzeConversionFunnel = useCallback((steps: string[]): ConversionFunnel => {
+    if (!config.enabled) {
       return {
-        summary: {
-          totalEvents: 0,
-          uniqueUsers: 0,
-          avgSessionDuration: 0,
-          conversionRate: 0
-        },
-        insights: [],
-        recommendations: [],
-        trends: {
-          userGrowth: 0,
-          engagementTrend: 0,
-          retentionTrend: 0
-        }
+        name: 'Conversion Funnel',
+        steps,
+        conversionRates: [],
+        dropoffRates: [],
+        totalUsers: 0,
+        totalConversions: 0
       };
     }
     
-    setIsAnalyzing(true);
+    return engineRef.current.analyzeConversionFunnel(steps);
+  }, [config.enabled]);
+
+  /**
+   * 👥 Gera análise de coorte
+   */
+  const generateCohortAnalysis = useCallback((period: 'week' | 'month' = 'week'): CohortAnalysis[] => {
+    if (!config.enabled) return [];
     
-    try {
-      const report = engineRef.current.generateReport(timeframe);
-      
-      // Simular dados para demo
-      const simulatedReport: AnalyticsReport = {
-        summary: {
-          totalEvents: eventCountRef.current,
-          uniqueUsers: 1,
-          avgSessionDuration: Date.now() - sessionStartRef.current,
-          conversionRate: activeFunnel?.conversionRate || 0
-        },
-        insights: await generateInsights(),
-        recommendations: recommendations,
-        trends: {
-          userGrowth: Math.random() * 20 - 10, // -10% a +10%
-          engagementTrend: Math.random() * 30 - 15, // -15% a +15%
-          retentionTrend: Math.random() * 25 - 12.5 // -12.5% a +12.5%
-        }
+    return engineRef.current.generateCohortAnalysis(period);
+  }, [config.enabled]);
+
+  /**
+   * 📈 Obtém tendência de métrica
+   */
+  const getMetricTrend = useCallback((metric: string, period: 'hour' | 'day' | 'week' | 'month' = 'day'): MetricsTrend => {
+    if (!config.enabled) {
+      return {
+        metric,
+        period,
+        values: [],
+        trend: 'stable',
+        change: 0,
+        prediction: []
       };
-      
-      return simulatedReport;
-    } catch (error) {
-      console.error('Erro ao gerar relatório:', error);
-      throw error;
-    } finally {
-      setIsAnalyzing(false);
     }
-  }, [generateInsights, recommendations, activeFunnel]);
-  
-  // Configurar analytics
-  const configure = useCallback((config: AnalyticsConfig) => {
-    configRef.current = { ...configRef.current, ...config };
-  }, []);
-  
-  // Iniciar tracking
-  const startTracking = useCallback(() => {
-    setIsTracking(true);
-    sessionStartRef.current = Date.now();
     
-    // Track página inicial
-    if (configRef.current.trackPageViews) {
-      trackPage(window.location.pathname, { session_start: true });
-    }
-  }, [trackPage]);
-  
-  // Parar tracking
-  const stopTracking = useCallback(() => {
-    setIsTracking(false);
-  }, []);
-  
-  // Reset
-  const reset = useCallback(() => {
-    setAnalytics({
-      userJourney: [],
-      featureUsage: {},
-      performanceInsights: [],
-      conversionFunnels: [],
-      retentionMetrics: []
+    return engineRef.current.getTrends(metric, period);
+  }, [config.enabled]);
+
+  /**
+   * 🔮 Gera previsões
+   */
+  const generatePredictions = useCallback((): AnalyticsInsight[] => {
+    if (!config.enabled) return [];
+    
+    return engineRef.current.generatePredictions();
+  }, [config.enabled]);
+
+  /**
+   * 📊 Atualiza métricas manualmente
+   */
+  const refreshMetrics = useCallback((period: number = 24 * 60 * 60 * 1000) => {
+    if (!config.enabled) return;
+    
+    const newMetrics = engineRef.current.getMetrics(period);
+    setMetrics(newMetrics);
+  }, [config.enabled]);
+
+  /**
+   * 🧹 Reinicia analytics
+   */
+  const resetAnalytics = useCallback(() => {
+    if (!config.enabled) return;
+    
+    engineRef.current.reset();
+    setMetrics({
+      activeUsers: 0,
+      totalSessions: 0,
+      averageSessionDuration: 0,
+      bounceRate: 0,
+      conversionRate: 0,
+      retentionRate: 0,
+      engagementScore: 0,
+      performanceScore: 0
     });
     setInsights([]);
-    setRecommendations([]);
-    setUserJourney([]);
-    setJourneyInsights({ patterns: {}, insights: [], optimizations: [] });
-    setFunnels([]);
-    setActiveFunnelState(null);
-    setRetentionMetrics([]);
-    setPredictions({ nextActions: [], churnRisk: 0, ltv: 0, recommendedFeatures: [] });
-    eventCountRef.current = 0;
-    sessionStartRef.current = Date.now();
+    setRealtimeEvents(0);
+  }, [config.enabled]);
+
+  /**
+   * 👤 Define usuário atual
+   */
+  const setUser = useCallback((userId: string) => {
+    userIdRef.current = userId;
   }, []);
-  
-  // Atualizar métricas em tempo real
-  const updateRealTimeMetrics = useCallback(() => {
-    const now = Date.now();
-    const sessionDuration = now - sessionStartRef.current;
-    const eventsPerMinute = sessionDuration > 0 ? 
-      (eventCountRef.current / (sessionDuration / 60000)) : 0;
-    
-    setRealTimeMetrics(prev => ({
-      ...prev,
-      eventsPerMinute: Math.round(eventsPerMinute * 10) / 10,
-      engagementScore: Math.min(100, Math.max(0, prev.engagementScore + (Math.random() - 0.5) * 2))
-    }));
+
+  /**
+   * 🎫 Inicia nova sessão
+   */
+  const startSession = useCallback(() => {
+    sessionIdRef.current = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    setRealtimeEvents(0);
   }, []);
-  
-  // Análise periódica
+
+  // Inicialização da sessão
   useEffect(() => {
-    if (!isTracking) return;
-    
-    const interval = setInterval(() => {
-      // Gerar insights automaticamente
-      generateInsights();
-      
-      // Analisar jornada
-      analyzeJourney();
-      
-      // Atualizar métricas de retenção
-      if (engineRef.current) {
-        const cohorts = engineRef.current.analyzeCohorts();
-        setRetentionMetrics(cohorts);
-      }
-    }, configRef.current.flushInterval);
-    
-    return () => clearInterval(interval);
-  }, [isTracking, generateInsights, analyzeJourney]);
-  
-  // Tracking inicial na montagem
-  useEffect(() => {
-    if (configRef.current.enableAutoTracking) {
-      track('app_start', { timestamp: Date.now() });
+    if (config.enabled && !sessionIdRef.current) {
+      startSession();
     }
-  }, [track]);
-  
+  }, [config.enabled, startSession]);
+
+  // Auto-tracking de navegação
+  useEffect(() => {
+    if (!config.enabled || !config.autoTrack) return;
+
+    const handleLocationChange = () => {
+      trackView(window.location.pathname);
+    };
+
+    // Track initial page load
+    trackView(window.location.pathname);
+
+    // Listener para mudanças de rota
+    window.addEventListener('popstate', handleLocationChange);
+    
+    // Para SPAs usando history API
+    const originalPushState = history.pushState;
+    history.pushState = function(...args) {
+      originalPushState.apply(history, args);
+      setTimeout(handleLocationChange, 0);
+    };
+
+    const originalReplaceState = history.replaceState;
+    history.replaceState = function(...args) {
+      originalReplaceState.apply(history, args);
+      setTimeout(handleLocationChange, 0);
+    };
+
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+      history.pushState = originalPushState;
+      history.replaceState = originalReplaceState;
+    };
+  }, [config.enabled, config.autoTrack, trackView]);
+
+  // Auto-tracking de cliques
+  useEffect(() => {
+    if (!config.enabled || !config.autoTrack) return;
+
+    const handleClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (target) {
+        const elementId = target.id || target.className || target.tagName;
+        trackClick(elementId);
+      }
+    };
+
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, [config.enabled, config.autoTrack, trackClick]);
+
+  // Carregamento de métricas
+  useEffect(() => {
+    if (!config.enabled) return;
+
+    const loadInitialMetrics = () => {
+      const newMetrics = engineRef.current.getMetrics();
+      setMetrics(newMetrics);
+    };
+
+    loadInitialMetrics();
+
+    // Atualização periódica de métricas
+    const interval = setInterval(() => {
+      refreshMetrics();
+      
+      if (config.realTimeInsights) {
+        const newInsights = generatePredictions();
+        setInsights(newInsights);
+      }
+    }, 30000); // Atualiza a cada 30 segundos
+
+    return () => clearInterval(interval);
+  }, [config.enabled, config.realTimeInsights, refreshMetrics, generatePredictions]);
+
+  // Inicialização de sessão
+  useEffect(() => {
+    if (!config.enabled) return;
+
+    sessionIdRef.current = engineRef.current.generateSessionId();
+    userIdRef.current = engineRef.current.getCurrentUserId();
+  }, [config.enabled]);
+
+  // Cleanup na desmontagem
+  useEffect(() => {
+    return () => {
+      if (config.enabled) {
+        engineRef.current.flush();
+      }
+    };
+  }, [config.enabled]);
+
   return {
-    // Analytics principais
-    analytics,
-    
-    // Insights
-    insights,
-    recommendations,
-    
-    // Jornada
-    userJourney,
-    journeyInsights,
-    
-    // Funnels
-    funnels,
-    activeFunnel,
-    
-    // Retenção
-    retentionMetrics,
-    
-    // Predições
-    predictions,
-    
     // Estado
+    metrics,
+    insights,
     isTracking,
-    isAnalyzing,
-    lastEventTime,
+    realtimeEvents,
     
-    // Métricas em tempo real
-    realTimeMetrics,
+    // Configurações
+    config,
     
-    // Tracking
-    track,
-    trackPage,
-    trackFeature,
+    // Ações de tracking
     trackEvent,
-    
-    // Funnels
-    createFunnel,
-    setActiveFunnel,
+    trackClick,
+    trackView,
+    trackEdit,
+    trackSearch,
     
     // Análises
-    generateInsights,
-    analyzeJourney,
-    generateReport,
+    analyzeConversionFunnel,
+    generateCohortAnalysis,
+    getMetricTrend,
+    generatePredictions,
+    refreshMetrics,
     
-    // Controle
-    configure,
-    startTracking,
-    stopTracking,
-    reset
+    // Controles
+    startTracking: () => setIsTracking(true),
+    stopTracking: () => setIsTracking(false),
+    resetAnalytics: () => {
+      engineRef.current.reset();
+      setMetrics({
+        activeUsers: 0,
+        totalSessions: 0,
+        averageSessionDuration: 0,
+        bounceRate: 0,
+        conversionRate: 0,
+        retentionRate: 0,
+        engagementScore: 0,
+        performanceScore: 0
+      });
+      setInsights([]);
+      setRealtimeEvents(0);
+    },
+    
+    // Status calculados
+    hasInsights: insights.length > 0,
+    criticalInsights: insights.filter(i => i.impact === 'critical'),
+    engagementLevel: metrics.engagementScore > 70 ? 'high' : 
+                    metrics.engagementScore > 40 ? 'medium' : 'low',
+    isHealthy: metrics.performanceScore > 80
   };
 } 

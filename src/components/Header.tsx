@@ -27,6 +27,7 @@ const menuItems = [
   { name: 'Dashboard', href: '/dashboard' },
   { name: 'IA Workspace', href: '/ai' },
   { name: 'Integração Notion', href: '/notion' },
+  { name: 'Advanced Systems', href: '/systems' },
   { name: 'Performance', href: '/performance' },
 ];
 

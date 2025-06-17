@@ -117,6 +117,24 @@ const Settings = PerformanceOptimizer.createLazyComponent(
   }
 );
 
+const AdvancedSystemsDashboard = PerformanceOptimizer.createLazyComponent(
+  () => {
+    const startTime = performance.now();
+    return import('@/components/AdvancedSystemsDashboard').then(module => {
+      const loadTime = performance.now() - startTime;
+      BundleAnalyzer.trackChunkLoad('AdvancedSystemsDashboard', module.AdvancedSystemsDashboard.toString().length, loadTime);
+      return { default: module.AdvancedSystemsDashboard };
+    });
+  },
+  { 
+    chunkName: 'advanced-systems',
+    retryDelay: 1000,
+    maxRetries: 3,
+    preload: false,
+    fallback: () => <div className="flex items-center justify-center min-h-screen"><LoadingSpinner /></div>
+  }
+);
+
 // Componente para tracking de navegação
 function RouteTracker() {
   const location = useLocation();
@@ -155,6 +173,12 @@ function RouteTracker() {
             import: () => import('@/pages/Settings'), 
             priority: 5 
           };
+        case '/systems':
+          return { 
+            name: 'AdvancedSystemsDashboard', 
+            import: () => import('@/components/AdvancedSystemsDashboard'), 
+            priority: 6 
+          };
         default:
           return null;
       }
@@ -186,6 +210,7 @@ const AppContent = () => {
           <Route path="/notion" element={<NotionIntegration />} />
           <Route path="/ai" element={<AIWorkspace />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/systems" element={<AdvancedSystemsDashboard />} />
           <Route path="/performance" element={
             <Suspense fallback={<LoadingSpinner />}>
               {React.createElement(lazy(() => import('@/pages/Performance')))}
