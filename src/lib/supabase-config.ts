@@ -4,9 +4,22 @@ import { safeGetEnv } from '@/utils/env';
 // Singleton para evitar múltiplas instâncias
 let supabaseInstance: SupabaseClient | null = null;
 
-// Configuração do Supabase
+// Configuração do Supabase com logs detalhados
 const supabaseUrl = safeGetEnv('NEXT_PUBLIC_SUPABASE_URL', '');
 const supabaseAnonKey = safeGetEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', '');
+
+// Debug logs para identificar problema
+console.log('[SUPABASE DEBUG] URL obtida:', supabaseUrl ? `${supabaseUrl.substring(0, 20)}...` : 'VAZIA');
+console.log('[SUPABASE DEBUG] ANON_KEY obtida:', supabaseAnonKey ? `${supabaseAnonKey.substring(0, 20)}...` : 'VAZIA');
+console.log('[SUPABASE DEBUG] Variáveis process.env disponíveis:', Object.keys(process.env || {}).filter(k => k.includes('SUPABASE')));
+console.log('[SUPABASE DEBUG] Ambiente atual:', process.env.NODE_ENV);
+console.log('[SUPABASE DEBUG] Vercel URL:', process.env.VERCEL_URL || 'undefined');
+
+// Verificação adicional das variáveis
+if (typeof process !== 'undefined' && process.env) {
+  console.log('[SUPABASE DEBUG] NEXT_PUBLIC_SUPABASE_URL direto:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+  console.log('[SUPABASE DEBUG] NEXT_PUBLIC_SUPABASE_ANON_KEY direto:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'PRESENTE' : 'AUSENTE');
+}
 
 // Função para criar/obter instância única do Supabase
 export const getSupabaseClient = (): SupabaseClient | null => {
