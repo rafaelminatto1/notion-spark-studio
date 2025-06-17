@@ -30,14 +30,20 @@ export function safeGetEnv(key: string, defaultValue = ''): string {
   try {
     // Verificar se estamos no cliente ou servidor
     if (typeof window !== 'undefined') {
-      // Cliente
-      const windowWithEnv = window as WindowWithEnv;
-      return windowWithEnv.env?.[key] ?? process.env[key] ?? defaultValue;
+      // Cliente - Next.js expõe variáveis NEXT_PUBLIC_ no cliente
+      // Primeiro tenta process.env, depois window.env
+      const envValue = process?.env?.[key] ?? (window as WindowWithEnv).env?.[key];
+      
+      // Log de debug para verificar o que está sendo retornado
+      console.log(`[ENV DEBUG] Buscando "${key}": encontrado="${envValue}" | process.env disponível=${typeof process !== 'undefined'}`);
+      
+      return envValue ?? defaultValue;
     } else {
       // Servidor
       return process.env[key] ?? defaultValue;
     }
-  } catch {
+  } catch (error) {
+    console.log(`[ENV DEBUG] Erro ao buscar "${key}":`, error);
     return defaultValue;
   }
 }

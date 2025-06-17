@@ -4,9 +4,33 @@ import { safeGetEnv } from '@/utils/env';
 // Singleton para evitar múltiplas instâncias
 let supabaseInstance: SupabaseClient | null = null;
 
-// Configuração do Supabase com logs detalhados
-const supabaseUrl = safeGetEnv('NEXT_PUBLIC_SUPABASE_URL', '');
-const supabaseAnonKey = safeGetEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', '');
+// Configuração do Supabase com logs detalhados e fallbacks
+const getSupabaseUrl = (): string => {
+  // Múltiplos fallbacks para garantir que encontramos a URL
+  const url = safeGetEnv('NEXT_PUBLIC_SUPABASE_URL', '') || 
+             safeGetEnv('VITE_SUPABASE_URL', '') ||
+             process.env.NEXT_PUBLIC_SUPABASE_URL ||
+             process.env.SUPABASE_URL ||
+             'https://bvugljspidtqumysbegq.supabase.co';
+  
+  console.log('[SUPABASE CONFIG] URL final escolhida:', url);
+  return url;
+};
+
+const getSupabaseAnonKey = (): string => {
+  // Múltiplos fallbacks para garantir que encontramos a ANON_KEY
+  const key = safeGetEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', '') || 
+             safeGetEnv('VITE_SUPABASE_ANON_KEY', '') ||
+             process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+             process.env.SUPABASE_ANON_KEY ||
+             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2dWdsanNwaWR0cXVteXNiZWdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkxNjE4ODcsImV4cCI6MjA2NDczNzg4N30.YYZVpzyb7ZDyIV3uqaAkA5xBBzA2g7Udnt4uSqaeFAQ';
+  
+  console.log('[SUPABASE CONFIG] ANON_KEY final escolhida:', key ? `${key.substring(0, 30)}...` : 'VAZIA');
+  return key;
+};
+
+const supabaseUrl = getSupabaseUrl();
+const supabaseAnonKey = getSupabaseAnonKey();
 
 // Debug logs para identificar problema
 console.log('[SUPABASE DEBUG] URL obtida:', supabaseUrl ? `${supabaseUrl.substring(0, 20)}...` : 'VAZIA');
