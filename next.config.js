@@ -19,7 +19,7 @@ const nextConfig = {
   
   // Configurações de imagem
   images: {
-    domains: ['localhost'],
+    domains: ['localhost', 'bvugljspidtqumysbegq.supabase.co'],
     unoptimized: true
   },
   
