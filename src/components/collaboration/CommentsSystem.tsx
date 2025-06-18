@@ -297,7 +297,7 @@ export const CommentsSystem: React.FC<CommentsSystemProps> = ({
             variant="ghost"
             size="sm"
             className="h-7 w-7 p-0"
-            onClick={() => setShowEmojiPicker(showEmojiPicker === comment.id ? null : comment.id)}
+            onClick={() => { setShowEmojiPicker(showEmojiPicker === comment.id ? null : comment.id); }}
           >
             <MoreHorizontal className="w-3 h-3" />
           </Button>
@@ -316,7 +316,7 @@ export const CommentsSystem: React.FC<CommentsSystemProps> = ({
         <div className="space-y-2">
           <Textarea
             value={editContent}
-            onChange={(e) => setEditContent(e.target.value)}
+            onChange={(e) => { setEditContent(e.target.value); }}
             className="min-h-20"
             placeholder="Editar comentário..."
           />
@@ -333,7 +333,7 @@ export const CommentsSystem: React.FC<CommentsSystemProps> = ({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setEditingComment(null)}
+              onClick={() => { setEditingComment(null); }}
             >
               Cancelar
             </Button>
@@ -384,7 +384,7 @@ export const CommentsSystem: React.FC<CommentsSystemProps> = ({
             variant="ghost"
             size="sm"
             className="h-7 text-xs gap-1"
-            onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
+            onClick={() => { setReplyingTo(replyingTo === comment.id ? null : comment.id); }}
           >
             <Reply className="w-3 h-3" />
             Responder
@@ -409,7 +409,7 @@ export const CommentsSystem: React.FC<CommentsSystemProps> = ({
                 variant="ghost"
                 size="sm"
                 className="h-7 text-xs gap-1 text-red-400 hover:text-red-300"
-                onClick={() => onDeleteComment(comment.id)}
+                onClick={() => { onDeleteComment(comment.id); }}
               >
                 <Trash2 className="w-3 h-3" />
                 Excluir
@@ -423,7 +423,7 @@ export const CommentsSystem: React.FC<CommentsSystemProps> = ({
             variant="ghost"
             size="sm"
             className="h-7 text-xs"
-            onClick={() => onUpdateComment(comment.id, { isPinned: !comment.isPinned })}
+            onClick={() => { onUpdateComment(comment.id, { isPinned: !comment.isPinned }); }}
           >
             <Pin className={cn("w-3 h-3", comment.isPinned && "text-yellow-500")} />
           </Button>
@@ -432,7 +432,7 @@ export const CommentsSystem: React.FC<CommentsSystemProps> = ({
             variant="ghost"
             size="sm"
             className="h-7 text-xs"
-            onClick={() => onUpdateComment(comment.id, { isResolved: !comment.isResolved })}
+            onClick={() => { onUpdateComment(comment.id, { isResolved: !comment.isResolved }); }}
           >
             <Check className={cn("w-3 h-3", comment.isResolved && "text-green-500")} />
           </Button>
@@ -459,7 +459,7 @@ export const CommentsSystem: React.FC<CommentsSystemProps> = ({
           <div className="flex gap-2">
             <Button
               size="sm"
-              onClick={() => handleReply(comment.id)}
+              onClick={() => { handleReply(comment.id); }}
               disabled={!replyContent.trim()}
             >
               Responder
@@ -501,7 +501,7 @@ export const CommentsSystem: React.FC<CommentsSystemProps> = ({
               key={filterType}
               variant={filter === filterType ? 'default' : 'ghost'}
               size="sm"
-              onClick={() => setFilter(filterType)}
+              onClick={() => { setFilter(filterType); }}
               className="text-xs"
             >
               {filterType === 'all' && 'Todos'}

@@ -89,7 +89,7 @@ export const useAnimations = () => {
   useEffect(() => {
     return () => {
       // Cleanup all timeouts on unmount
-      timeoutRefs.current.forEach(timeout => clearTimeout(timeout));
+      timeoutRefs.current.forEach(timeout => { clearTimeout(timeout); });
       timeoutRefs.current.clear();
     };
   }, []);

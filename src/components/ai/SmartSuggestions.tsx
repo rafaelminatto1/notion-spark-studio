@@ -236,7 +236,7 @@ const useSuggestionEngine = (context: SuggestionContext, currentNoteId?: string)
 
     if (currentNoteId) {
       const currentNote = files.find(f => f.id === currentNoteId);
-      if (currentNote && currentNote.content) {
+      if (currentNote?.content) {
         const wordCount = currentNote.content.split(' ').length;
         
         if (wordCount > 500) {
@@ -667,10 +667,10 @@ export const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({
                 <SuggestionCard
                   key={suggestion.id}
                   suggestion={suggestion}
-                  onApply={() => handleApplySuggestion(suggestion)}
-                  onDismiss={() => dismissSuggestion(suggestion.id)}
+                  onApply={() => { handleApplySuggestion(suggestion); }}
+                  onDismiss={() => { dismissSuggestion(suggestion.id); }}
                   isExpanded={expandedSuggestion === suggestion.id}
-                  onToggleExpand={() => handleToggleExpand(suggestion.id)}
+                  onToggleExpand={() => { handleToggleExpand(suggestion.id); }}
                 />
               ))}
             </AnimatePresence>

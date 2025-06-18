@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Plus, ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
-import { Database, DatabaseView, DatabaseRow, DatabaseProperty } from '@/types/database';
+import type { Database, DatabaseView, DatabaseRow} from '@/types/database';
+import { DatabaseProperty } from '@/types/database';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, parseISO, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -237,7 +238,7 @@ export const DatabaseCalendar: React.FC<DatabaseCalendarProps> = ({
                             hasEvents && "bg-blue-500/10 border border-blue-500/20",
                             isSameDay(date, new Date()) && "bg-notion-purple/20 text-notion-purple font-medium"
                           )}
-                          onClick={() => setSelectedDate(date)}
+                          onClick={() => { setSelectedDate(date); }}
                         >
                           <div className="flex flex-col items-center gap-1">
                             <span>{format(date, 'd')}</span>
@@ -277,7 +278,7 @@ export const DatabaseCalendar: React.FC<DatabaseCalendarProps> = ({
                   </CardTitle>
                   <Button
                     size="sm"
-                    onClick={() => createEventForDate(selectedDate)}
+                    onClick={() => { createEventForDate(selectedDate); }}
                     className="h-6 w-6 p-0"
                   >
                     <Plus className="h-3 w-3" />

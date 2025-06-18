@@ -55,7 +55,7 @@ export const ForgotPasswordDialog: React.FC<ForgotPasswordDialogProps> = ({ chil
               type="email"
               placeholder="seu@email.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => { setEmail(e.target.value); }}
               required
               disabled={loading}
             />

@@ -463,7 +463,7 @@ class CorePerformanceService {
   // Cleanup ao destruir
   destroy(): void {
     this.stopMonitoring();
-    this.observers.forEach(observer => observer.disconnect());
+    this.observers.forEach(observer => { observer.disconnect(); });
     this.observers = [];
     CorePerformanceService.instance = null;
   }

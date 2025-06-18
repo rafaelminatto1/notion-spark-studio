@@ -268,7 +268,7 @@ export const AppleTemplateSelector: React.FC<AppleTemplateSelectorProps> = ({
             type="text"
             placeholder="Buscar templates..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => { setSearchTerm(e.target.value); }}
             className="w-full pl-12 pr-4 py-4 bg-gray-800 border border-gray-600 rounded-2xl text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent apple-body"
             style={{ minHeight: '48px' }}
           />
@@ -281,7 +281,7 @@ export const AppleTemplateSelector: React.FC<AppleTemplateSelectorProps> = ({
             return (
               <button
                 key={template.id}
-                onClick={() => handleSelectTemplate(template)}
+                onClick={() => { handleSelectTemplate(template); }}
                 className="apple-haptic-feedback text-left p-6 bg-gray-800/50 border border-gray-600 rounded-2xl hover:bg-gray-700/50 transition-all duration-200 apple-fade-in"
                 style={{ minHeight: '80px' }}
               >

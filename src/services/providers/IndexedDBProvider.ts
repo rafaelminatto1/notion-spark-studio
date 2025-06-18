@@ -1,7 +1,7 @@
 
-import { IDataProvider } from '../interfaces/IDataProvider';
+import type { IDataProvider } from '../interfaces/IDataProvider';
 import { useIndexedDB } from '@/hooks/useIndexedDB';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 export class IndexedDBProvider implements IDataProvider {
   private dbHook: ReturnType<typeof useIndexedDB>;

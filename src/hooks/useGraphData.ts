@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { GraphNode, GraphLink, GraphFilters } from '@/components/GraphView/types';
-import { FileItem } from '@/types';
+import type { GraphNode, GraphLink, GraphFilters } from '@/components/GraphView/types';
+import type { FileItem } from '@/types';
 
 interface UseGraphDataReturn {
   nodes: GraphNode[];

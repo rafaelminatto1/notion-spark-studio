@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useDataService } from './useDataService';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 interface RepositoryOptions {
   autoLoad?: boolean;
@@ -10,7 +10,7 @@ interface RepositoryOptions {
 }
 
 export const useRepository = <T = FileItem>(
-  collection: string = 'files',
+  collection = 'files',
   options: RepositoryOptions = {}
 ) => {
   const {

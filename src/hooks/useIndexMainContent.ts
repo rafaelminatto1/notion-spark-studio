@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { ViewMode } from '@/components/ViewTabs';
+import type { ViewMode } from '@/components/ViewTabs';
 import { useFileSystemContext } from '@/contexts/FileSystemContext';
 import { toast } from 'sonner';
 

@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { cn } from '@/lib/utils';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useAdvancedCache } from '@/hooks/useAdvancedCache';
@@ -90,7 +90,7 @@ export const NotesListPanel: React.FC<NotesListPanelProps> = ({
     
     const filtered = notes
       .filter(note => {
-        if (!note || !note.name || !note.id) return false;
+        if (!note?.name || !note.id) return false;
         
         // 🚀 Otimização: Busca mais eficiente
         const searchLower = debouncedSearchTerm.toLowerCase();
@@ -161,12 +161,12 @@ export const NotesListPanel: React.FC<NotesListPanelProps> = ({
   const getPreviewText = useCallback((content: string) => {
     if (!content) return 'Sem conteúdo...';
     const plainText = content.replace(/[#*`]/g, '').replace(/\n/g, ' ');
-    return plainText.length > 120 ? plainText.substring(0, 120) + '...' : plainText;
+    return plainText.length > 120 ? `${plainText.substring(0, 120)  }...` : plainText;
   }, []);
 
   // Memoized render function for better performance
   const renderNoteItem = useCallback((note: FileItem) => {
-    if (!note || !note.id || !note.name) return null;
+    if (!note?.id || !note.name) return null;
     
     const isSelected = selectedNote === note.id;
     const isFavorite = favorites.includes(note.id);
@@ -179,7 +179,7 @@ export const NotesListPanel: React.FC<NotesListPanelProps> = ({
             "flex items-center gap-3 p-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors group",
             isSelected && "bg-blue-50 border-l-4 border-l-blue-500"
           )}
-          onClick={() => handleNoteSelect(note.id)}
+          onClick={() => { handleNoteSelect(note.id); }}
         >
           <FileText className="h-4 w-4 text-gray-400 flex-shrink-0" />
           <div className="flex-1 min-w-0">
@@ -197,19 +197,19 @@ export const NotesListPanel: React.FC<NotesListPanelProps> = ({
                 variant="ghost"
                 size="sm"
                 className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 hover:bg-gray-200"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => { e.stopPropagation(); }}
               >
                 <MoreHorizontal className="h-3 w-3" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40">
-              <DropdownMenuItem onClick={() => handleToggleFavorite(note.id)}>
+              <DropdownMenuItem onClick={() => { handleToggleFavorite(note.id); }}>
                 <Star className="h-4 w-4 mr-2" />
                 {isFavorite ? 'Remover favorito' : 'Favoritar'}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 
-                onClick={() => handleDeleteNote(note.id)}
+                onClick={() => { handleDeleteNote(note.id); }}
                 className="text-red-600"
               >
                 Deletar
@@ -228,7 +228,7 @@ export const NotesListPanel: React.FC<NotesListPanelProps> = ({
             "p-4 border border-gray-200 rounded-lg cursor-pointer hover:shadow-md transition-all group bg-white",
             isSelected && "ring-2 ring-blue-500 shadow-md"
           )}
-          onClick={() => handleNoteSelect(note.id)}
+          onClick={() => { handleNoteSelect(note.id); }}
         >
           <div className="flex items-start justify-between mb-2">
             <h3 className="text-sm font-medium text-gray-800 truncate flex-1 mr-2">
@@ -242,19 +242,19 @@ export const NotesListPanel: React.FC<NotesListPanelProps> = ({
                     variant="ghost"
                     size="sm"
                     className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 hover:bg-gray-200"
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e) => { e.stopPropagation(); }}
                   >
                     <MoreHorizontal className="h-3 w-3" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-40">
-                  <DropdownMenuItem onClick={() => handleToggleFavorite(note.id)}>
+                  <DropdownMenuItem onClick={() => { handleToggleFavorite(note.id); }}>
                     <Star className="h-4 w-4 mr-2" />
                     {isFavorite ? 'Remover favorito' : 'Favoritar'}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem 
-                    onClick={() => handleDeleteNote(note.id)}
+                    onClick={() => { handleDeleteNote(note.id); }}
                     className="text-red-600"
                   >
                     Deletar
@@ -287,7 +287,7 @@ export const NotesListPanel: React.FC<NotesListPanelProps> = ({
           "p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors group",
           isSelected && "bg-blue-50 border-l-4 border-l-blue-500"
         )}
-        onClick={() => handleNoteSelect(note.id)}
+        onClick={() => { handleNoteSelect(note.id); }}
       >
         <div className="flex items-start justify-between mb-2">
           <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -302,19 +302,19 @@ export const NotesListPanel: React.FC<NotesListPanelProps> = ({
                 variant="ghost"
                 size="sm"
                 className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 hover:bg-gray-200"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => { e.stopPropagation(); }}
               >
                 <MoreHorizontal className="h-3 w-3" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40">
-              <DropdownMenuItem onClick={() => handleToggleFavorite(note.id)}>
+              <DropdownMenuItem onClick={() => { handleToggleFavorite(note.id); }}>
                 <Star className="h-4 w-4 mr-2" />
                 {isFavorite ? 'Remover favorito' : 'Favoritar'}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 
-                onClick={() => handleDeleteNote(note.id)}
+                onClick={() => { handleDeleteNote(note.id); }}
                 className="text-red-600"
               >
                 Deletar
@@ -360,7 +360,7 @@ export const NotesListPanel: React.FC<NotesListPanelProps> = ({
                   "h-6 w-6 p-0",
                   viewMode === 'list' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'
                 )}
-                onClick={() => setViewMode('list')}
+                onClick={() => { setViewMode('list'); }}
               >
                 <List className="h-3 w-3" />
               </Button>
@@ -371,7 +371,7 @@ export const NotesListPanel: React.FC<NotesListPanelProps> = ({
                   "h-6 w-6 p-0",
                   viewMode === 'cards' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'
                 )}
-                onClick={() => setViewMode('cards')}
+                onClick={() => { setViewMode('cards'); }}
               >
                 <Grid className="h-3 w-3" />
               </Button>
@@ -382,7 +382,7 @@ export const NotesListPanel: React.FC<NotesListPanelProps> = ({
                   "h-6 w-6 p-0",
                   viewMode === 'snippets' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'
                 )}
-                onClick={() => setViewMode('snippets')}
+                onClick={() => { setViewMode('snippets'); }}
               >
                 <FileText className="h-3 w-3" />
               </Button>
@@ -405,7 +405,7 @@ export const NotesListPanel: React.FC<NotesListPanelProps> = ({
             <Input
               placeholder="Buscar em notas..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => { setSearchTerm(e.target.value); }}
               className="pl-9 bg-white border-gray-200 text-sm"
             />
           </div>
@@ -421,13 +421,13 @@ export const NotesListPanel: React.FC<NotesListPanelProps> = ({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-40">
-                <DropdownMenuItem onClick={() => setSortMode('updated')}>
+                <DropdownMenuItem onClick={() => { setSortMode('updated'); }}>
                   Por atualização
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortMode('created')}>
+                <DropdownMenuItem onClick={() => { setSortMode('created'); }}>
                   Por criação
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortMode('title')}>
+                <DropdownMenuItem onClick={() => { setSortMode('title'); }}>
                   Por título
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -440,7 +440,7 @@ export const NotesListPanel: React.FC<NotesListPanelProps> = ({
                 "h-8 text-xs",
                 showFavoritesOnly && 'bg-yellow-100 text-yellow-800 border-yellow-200'
               )}
-              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+              onClick={() => { setShowFavoritesOnly(!showFavoritesOnly); }}
             >
               <Star className="h-3 w-3 mr-1" />
               Favoritos

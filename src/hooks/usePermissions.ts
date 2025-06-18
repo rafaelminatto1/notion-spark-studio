@@ -1,7 +1,7 @@
 
 import { useCallback } from 'react';
-import { User } from './useUserSystem';
-import { FileItem } from '@/types';
+import type { User } from './useUserSystem';
+import type { FileItem } from '@/types';
 
 export type Permission = 'read' | 'write' | 'delete' | 'share' | 'admin';
 

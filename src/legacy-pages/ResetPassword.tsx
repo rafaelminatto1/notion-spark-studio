@@ -79,7 +79,7 @@ const ResetPassword = () => {
                     type={showPassword ? "text" : "password"}
                     placeholder="Digite sua nova senha"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => { setPassword(e.target.value); }}
                     required
                     disabled={loading}
                     className="pr-10"
@@ -89,7 +89,7 @@ const ResetPassword = () => {
                     variant="ghost"
                     size="sm"
                     className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
+                    onClick={() => { setShowPassword(!showPassword); }}
                     disabled={loading}
                   >
                     {showPassword ? (
@@ -110,7 +110,7 @@ const ResetPassword = () => {
                     type={showConfirmPassword ? "text" : "password"}
                     placeholder="Confirme sua nova senha"
                     value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    onChange={(e) => { setConfirmPassword(e.target.value); }}
                     required
                     disabled={loading}
                     className="pr-10"
@@ -120,7 +120,7 @@ const ResetPassword = () => {
                     variant="ghost"
                     size="sm"
                     className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    onClick={() => { setShowConfirmPassword(!showConfirmPassword); }}
                     disabled={loading}
                   >
                     {showConfirmPassword ? (

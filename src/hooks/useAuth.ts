@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
-import { User } from '@supabase/supabase-js';
+import type { User } from '@supabase/supabase-js';
 import { getSupabaseClient } from '@/lib/supabase-config';
 
 export interface AuthUser extends User {

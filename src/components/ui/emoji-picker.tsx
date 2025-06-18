@@ -36,7 +36,7 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
           <Input
             placeholder="Buscar emoji..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); }}
             className="pl-8"
           />
         </div>
@@ -63,7 +63,7 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
                   <button
                     key={emoji}
                     className="flex h-8 w-8 items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground"
-                    onClick={() => onSelect(emoji)}
+                    onClick={() => { onSelect(emoji); }}
                   >
                     {emoji}
                   </button>

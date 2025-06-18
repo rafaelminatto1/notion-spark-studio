@@ -1,5 +1,5 @@
 
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -79,7 +79,7 @@ export const createDailyNotesCommands = ({
       title: 'Abrir nota de hoje',
       subtitle: format(today, "d 'de' MMMM", { locale: ptBR }),
       icon: '📝',
-      action: () => onNavigateToFile(todayNote.id),
+      action: () => { onNavigateToFile(todayNote.id); },
       type: 'daily-notes'
     });
   } else {
@@ -109,7 +109,7 @@ export const createDailyNotesCommands = ({
       title: 'Abrir nota de ontem',
       subtitle: format(yesterday, "d 'de' MMMM", { locale: ptBR }),
       icon: '📖',
-      action: () => onNavigateToFile(yesterdayNote.id),
+      action: () => { onNavigateToFile(yesterdayNote.id); },
       type: 'daily-notes'
     });
   }

@@ -79,7 +79,7 @@ export function LoginForm() {
                   type="email"
                   placeholder="seu@email.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => { setEmail(e.target.value); }}
                   required
                 />
               </div>
@@ -89,7 +89,7 @@ export function LoginForm() {
                   id="password"
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => { setPassword(e.target.value); }}
                   required
                 />
               </div>
@@ -157,7 +157,7 @@ export function LoginForm() {
                   type="text"
                   placeholder="Seu nome"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => { setName(e.target.value); }}
                   required
                 />
               </div>
@@ -168,7 +168,7 @@ export function LoginForm() {
                   type="email"
                   placeholder="seu@email.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => { setEmail(e.target.value); }}
                   required
                 />
               </div>
@@ -178,7 +178,7 @@ export function LoginForm() {
                   id="register-password"
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => { setPassword(e.target.value); }}
                   required
                 />
               </div>

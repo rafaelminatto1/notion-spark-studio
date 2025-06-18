@@ -59,7 +59,7 @@ export class PerformanceManager {
       this.intervalId = null;
     }
     
-    this.observers.forEach(observer => observer.disconnect());
+    this.observers.forEach(observer => { observer.disconnect(); });
     this.observers = [];
     this.isMonitoring = false;
     
@@ -319,8 +319,8 @@ export function usePerformanceManager() {
   const manager = PerformanceManager.getInstance();
   
   return {
-    startMonitoring: () => manager.startMonitoring(),
-    stopMonitoring: () => manager.stopMonitoring(),
+    startMonitoring: () => { manager.startMonitoring(); },
+    stopMonitoring: () => { manager.stopMonitoring(); },
     getMetrics: () => manager.getMetrics(),
     getAlerts: () => manager.getAlerts(),
     getOptimizations: () => manager.getOptimizations(),

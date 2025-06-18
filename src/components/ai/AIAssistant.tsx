@@ -144,7 +144,7 @@ const useAIEngine = () => {
       // Análise básica da query
       const queryLower = query.toLowerCase();
       let response = '';
-      let suggestions: AISuggestion[] = [];
+      const suggestions: AISuggestion[] = [];
 
       // Respostas baseadas em palavras-chave
       if (queryLower.includes('resumir') || queryLower.includes('resumo')) {
@@ -161,7 +161,7 @@ const useAIEngine = () => {
           title: 'Criar Nota de Resumo',
           description: 'Criar uma nova nota com o resumo gerado',
           icon: FileText,
-          action: () => console.log('Create summary note'),
+          action: () => { console.log('Create summary note'); },
           confidence: 0.9
         });
       }
@@ -180,7 +180,7 @@ const useAIEngine = () => {
           title: 'Aplicar Melhorias',
           description: 'Substituir texto original pelas melhorias sugeridas',
           icon: Zap,
-          action: () => console.log('Apply improvements'),
+          action: () => { console.log('Apply improvements'); },
           confidence: 0.85
         });
       }
@@ -195,7 +195,7 @@ const useAIEngine = () => {
             title: 'Criar Estrutura',
             description: 'Implementar a estrutura organizacional sugerida',
             icon: Brain,
-            action: () => console.log('Create structure'),
+            action: () => { console.log('Create structure'); },
             confidence: 0.8
           },
           {
@@ -204,7 +204,7 @@ const useAIEngine = () => {
             title: 'Sugerir Tags',
             description: 'Analisar e sugerir tags para todas as notas',
             icon: Lightbulb,
-            action: () => console.log('Suggest tags'),
+            action: () => { console.log('Suggest tags'); },
             confidence: 0.75
           }
         );
@@ -230,7 +230,7 @@ const useAIEngine = () => {
           title: 'Busca Avançada',
           description: 'Abrir ferramenta de busca semântica',
           icon: Search,
-          action: () => console.log('Open advanced search'),
+          action: () => { console.log('Open advanced search'); },
           confidence: 0.7
         });
       }
@@ -245,7 +245,7 @@ const useAIEngine = () => {
             title: 'Criar Nota de Projeto',
             description: 'Template estruturado para projetos',
             icon: FileText,
-            action: () => console.log('Create project note'),
+            action: () => { console.log('Create project note'); },
             confidence: 0.8
           },
           {
@@ -254,7 +254,7 @@ const useAIEngine = () => {
             title: 'Criar Notas de Reunião',
             description: 'Template para atas de reunião',
             icon: FileText,
-            action: () => console.log('Create meeting notes'),
+            action: () => { console.log('Create meeting notes'); },
             confidence: 0.75
           }
         );
@@ -271,7 +271,7 @@ const useAIEngine = () => {
             title: 'Analisar Conteúdo',
             description: 'Analisar suas notas em busca de insights',
             icon: Brain,
-            action: () => console.log('Analyze content'),
+            action: () => { console.log('Analyze content'); },
             confidence: 0.6
           },
           {
@@ -280,7 +280,7 @@ const useAIEngine = () => {
             title: 'Ver Capacidades',
             description: 'Mostrar tudo que posso fazer',
             icon: Sparkles,
-            action: () => console.log('Show capabilities'),
+            action: () => { console.log('Show capabilities'); },
             confidence: 0.9
           }
         );
@@ -532,7 +532,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   }, []);
 
   const handleQuickCommand = useCallback((command: string) => {
-    setMessage(command + ' ');
+    setMessage(`${command  } `);
     setShowQuickCommands(false);
     inputRef.current?.focus();
   }, []);
@@ -553,7 +553,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
               .map((cmd) => (
                 <button
                   key={cmd.command}
-                  onClick={() => handleQuickCommand(cmd.command)}
+                  onClick={() => { handleQuickCommand(cmd.command); }}
                   className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors text-left"
                 >
                   <span className="font-mono text-sm text-blue-600">
@@ -585,7 +585,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           
           {/* Voice input button */}
           <button
-            onClick={() => setIsListening(!isListening)}
+            onClick={() => { setIsListening(!isListening); }}
             className={cn(
               "absolute right-2 top-2 p-1 rounded transition-colors",
               isListening 
@@ -650,7 +650,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
             title: 'Ver Todas as Capacidades',
             description: 'Mostrar tudo que posso fazer',
             icon: Sparkles,
-            action: () => handleShowCapabilities(),
+            action: () => { handleShowCapabilities(); },
             confidence: 0.9
           },
           {
@@ -790,7 +790,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
         
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setIsMinimized(!isMinimized)}
+            onClick={() => { setIsMinimized(!isMinimized); }}
             className="p-1 hover:bg-white/20 rounded transition-colors"
             title={isMinimized ? "Expandir" : "Minimizar"}
           >

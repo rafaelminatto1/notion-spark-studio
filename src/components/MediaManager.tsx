@@ -268,7 +268,7 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
 
   React.useEffect(() => {
     document.addEventListener('paste', handlePaste);
-    return () => document.removeEventListener('paste', handlePaste);
+    return () => { document.removeEventListener('paste', handlePaste); };
   }, [handlePaste]);
 
   return (
@@ -407,7 +407,7 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
                 </label>
                 <Input
                   value={url}
-                  onChange={(e) => setUrl(e.target.value)}
+                  onChange={(e) => { setUrl(e.target.value); }}
                   placeholder="https://exemplo.com/imagem.jpg"
                   className="mt-1"
                 />
@@ -419,7 +419,7 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
                 </label>
                 <Input
                   value={altText}
-                  onChange={(e) => setAltText(e.target.value)}
+                  onChange={(e) => { setAltText(e.target.value); }}
                   placeholder="Descrição da mídia"
                   className="mt-1"
                 />
@@ -443,7 +443,7 @@ export const MediaManager: React.FC<MediaManagerProps> = ({
                   <div
                     key={media.id}
                     className="border rounded-lg p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                    onClick={() => insertRecentMedia(media)}
+                    onClick={() => { insertRecentMedia(media); }}
                   >
                     {media.type === 'image' && (
                       <img 

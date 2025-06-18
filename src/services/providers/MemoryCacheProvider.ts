@@ -1,5 +1,5 @@
 
-import { ICacheProvider } from '../interfaces/IDataProvider';
+import type { ICacheProvider } from '../interfaces/IDataProvider';
 
 interface CacheItem<T> {
   data: T;

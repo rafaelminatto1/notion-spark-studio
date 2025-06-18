@@ -97,7 +97,7 @@ const Settings: React.FC = () => {
       setBackupStats(backupSystem.getStats());
     }, 5000);
 
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, [cache, backupSystem]);
 
   const handleSaveConfig = (configType: string, config: any) => {
@@ -273,7 +273,7 @@ const Settings: React.FC = () => {
                     <Input
                       type="number"
                       value={cacheConfig.maxSize}
-                      onChange={(e) => setCacheConfig({...cacheConfig, maxSize: parseInt(e.target.value)})}
+                      onChange={(e) => { setCacheConfig({...cacheConfig, maxSize: parseInt(e.target.value)}); }}
                     />
                   </div>
 
@@ -282,7 +282,7 @@ const Settings: React.FC = () => {
                     <Input
                       type="number"
                       value={cacheConfig.maxEntries}
-                      onChange={(e) => setCacheConfig({...cacheConfig, maxEntries: parseInt(e.target.value)})}
+                      onChange={(e) => { setCacheConfig({...cacheConfig, maxEntries: parseInt(e.target.value)}); }}
                     />
                   </div>
 
@@ -291,7 +291,7 @@ const Settings: React.FC = () => {
                     <Input
                       type="number"
                       value={cacheConfig.defaultTTL}
-                      onChange={(e) => setCacheConfig({...cacheConfig, defaultTTL: parseInt(e.target.value)})}
+                      onChange={(e) => { setCacheConfig({...cacheConfig, defaultTTL: parseInt(e.target.value)}); }}
                     />
                   </div>
 
@@ -300,7 +300,7 @@ const Settings: React.FC = () => {
                       <label className="text-sm font-medium">Compressão Habilitada</label>
                       <Switch
                         checked={cacheConfig.compressionEnabled}
-                        onCheckedChange={(checked) => setCacheConfig({...cacheConfig, compressionEnabled: checked})}
+                        onCheckedChange={(checked) => { setCacheConfig({...cacheConfig, compressionEnabled: checked}); }}
                       />
                     </div>
 
@@ -308,7 +308,7 @@ const Settings: React.FC = () => {
                       <label className="text-sm font-medium">Persistir em Disco</label>
                       <Switch
                         checked={cacheConfig.persistToDisk}
-                        onCheckedChange={(checked) => setCacheConfig({...cacheConfig, persistToDisk: checked})}
+                        onCheckedChange={(checked) => { setCacheConfig({...cacheConfig, persistToDisk: checked}); }}
                       />
                     </div>
 
@@ -316,12 +316,12 @@ const Settings: React.FC = () => {
                       <label className="text-sm font-medium">Eviction Adaptativa</label>
                       <Switch
                         checked={cacheConfig.adaptiveEviction}
-                        onCheckedChange={(checked) => setCacheConfig({...cacheConfig, adaptiveEviction: checked})}
+                        onCheckedChange={(checked) => { setCacheConfig({...cacheConfig, adaptiveEviction: checked}); }}
                       />
                     </div>
                   </div>
 
-                  <Button onClick={() => handleSaveConfig('cache', cacheConfig)} className="w-full">
+                  <Button onClick={() => { handleSaveConfig('cache', cacheConfig); }} className="w-full">
                     <Save className="h-4 w-4 mr-2" />
                     Salvar Configurações
                   </Button>
@@ -374,7 +374,7 @@ const Settings: React.FC = () => {
                     <Input
                       type="number"
                       value={backupConfig.autoBackupInterval}
-                      onChange={(e) => setBackupConfig({...backupConfig, autoBackupInterval: parseInt(e.target.value)})}
+                      onChange={(e) => { setBackupConfig({...backupConfig, autoBackupInterval: parseInt(e.target.value)}); }}
                     />
                   </div>
 
@@ -383,7 +383,7 @@ const Settings: React.FC = () => {
                     <Input
                       type="number"
                       value={backupConfig.maxBackups}
-                      onChange={(e) => setBackupConfig({...backupConfig, maxBackups: parseInt(e.target.value)})}
+                      onChange={(e) => { setBackupConfig({...backupConfig, maxBackups: parseInt(e.target.value)}); }}
                     />
                   </div>
 
@@ -392,7 +392,7 @@ const Settings: React.FC = () => {
                       <label className="text-sm font-medium">Backup Automático</label>
                       <Switch
                         checked={backupConfig.autoBackupEnabled}
-                        onCheckedChange={(checked) => setBackupConfig({...backupConfig, autoBackupEnabled: checked})}
+                        onCheckedChange={(checked) => { setBackupConfig({...backupConfig, autoBackupEnabled: checked}); }}
                       />
                     </div>
 
@@ -400,7 +400,7 @@ const Settings: React.FC = () => {
                       <label className="text-sm font-medium">Compressão</label>
                       <Switch
                         checked={backupConfig.compressionEnabled}
-                        onCheckedChange={(checked) => setBackupConfig({...backupConfig, compressionEnabled: checked})}
+                        onCheckedChange={(checked) => { setBackupConfig({...backupConfig, compressionEnabled: checked}); }}
                       />
                     </div>
 
@@ -408,7 +408,7 @@ const Settings: React.FC = () => {
                       <label className="text-sm font-medium">Criptografia</label>
                       <Switch
                         checked={backupConfig.encryptionEnabled}
-                        onCheckedChange={(checked) => setBackupConfig({...backupConfig, encryptionEnabled: checked})}
+                        onCheckedChange={(checked) => { setBackupConfig({...backupConfig, encryptionEnabled: checked}); }}
                       />
                     </div>
 
@@ -416,12 +416,12 @@ const Settings: React.FC = () => {
                       <label className="text-sm font-medium">Backup em Ações Críticas</label>
                       <Switch
                         checked={backupConfig.backupOnCriticalActions}
-                        onCheckedChange={(checked) => setBackupConfig({...backupConfig, backupOnCriticalActions: checked})}
+                        onCheckedChange={(checked) => { setBackupConfig({...backupConfig, backupOnCriticalActions: checked}); }}
                       />
                     </div>
                   </div>
 
-                  <Button onClick={() => handleSaveConfig('backup', backupConfig)} className="w-full">
+                  <Button onClick={() => { handleSaveConfig('backup', backupConfig); }} className="w-full">
                     <Save className="h-4 w-4 mr-2" />
                     Salvar Configurações
                   </Button>
@@ -472,7 +472,7 @@ const Settings: React.FC = () => {
                       <Input
                         type="number"
                         value={healthConfig.monitoringInterval}
-                        onChange={(e) => setHealthConfig({...healthConfig, monitoringInterval: parseInt(e.target.value)})}
+                        onChange={(e) => { setHealthConfig({...healthConfig, monitoringInterval: parseInt(e.target.value)}); }}
                       />
                     </div>
 
@@ -481,7 +481,7 @@ const Settings: React.FC = () => {
                         <label className="text-sm font-medium">Monitoramento Ativo</label>
                         <Switch
                           checked={healthConfig.monitoringEnabled}
-                          onCheckedChange={(checked) => setHealthConfig({...healthConfig, monitoringEnabled: checked})}
+                          onCheckedChange={(checked) => { setHealthConfig({...healthConfig, monitoringEnabled: checked}); }}
                         />
                       </div>
 
@@ -489,7 +489,7 @@ const Settings: React.FC = () => {
                         <label className="text-sm font-medium">Auto-correção</label>
                         <Switch
                           checked={healthConfig.autoFixEnabled}
-                          onCheckedChange={(checked) => setHealthConfig({...healthConfig, autoFixEnabled: checked})}
+                          onCheckedChange={(checked) => { setHealthConfig({...healthConfig, autoFixEnabled: checked}); }}
                         />
                       </div>
 
@@ -497,7 +497,7 @@ const Settings: React.FC = () => {
                         <label className="text-sm font-medium">Alertas</label>
                         <Switch
                           checked={healthConfig.alertsEnabled}
-                          onCheckedChange={(checked) => setHealthConfig({...healthConfig, alertsEnabled: checked})}
+                          onCheckedChange={(checked) => { setHealthConfig({...healthConfig, alertsEnabled: checked}); }}
                         />
                       </div>
                     </div>
@@ -526,7 +526,7 @@ const Settings: React.FC = () => {
                   </div>
                 </div>
 
-                <Button onClick={() => handleSaveConfig('health', healthConfig)} className="w-full">
+                <Button onClick={() => { handleSaveConfig('health', healthConfig); }} className="w-full">
                   <Save className="h-4 w-4 mr-2" />
                   Salvar Configurações
                 </Button>
@@ -547,7 +547,7 @@ const Settings: React.FC = () => {
                       <label className="text-sm font-medium">Lazy Loading</label>
                       <Switch
                         checked={performanceConfig.lazyLoadingEnabled}
-                        onCheckedChange={(checked) => setPerformanceConfig({...performanceConfig, lazyLoadingEnabled: checked})}
+                        onCheckedChange={(checked) => { setPerformanceConfig({...performanceConfig, lazyLoadingEnabled: checked}); }}
                       />
                     </div>
 
@@ -555,7 +555,7 @@ const Settings: React.FC = () => {
                       <label className="text-sm font-medium">Code Splitting</label>
                       <Switch
                         checked={performanceConfig.codeSplittingEnabled}
-                        onCheckedChange={(checked) => setPerformanceConfig({...performanceConfig, codeSplittingEnabled: checked})}
+                        onCheckedChange={(checked) => { setPerformanceConfig({...performanceConfig, codeSplittingEnabled: checked}); }}
                       />
                     </div>
 
@@ -563,7 +563,7 @@ const Settings: React.FC = () => {
                       <label className="text-sm font-medium">Compressão</label>
                       <Switch
                         checked={performanceConfig.compressionEnabled}
-                        onCheckedChange={(checked) => setPerformanceConfig({...performanceConfig, compressionEnabled: checked})}
+                        onCheckedChange={(checked) => { setPerformanceConfig({...performanceConfig, compressionEnabled: checked}); }}
                       />
                     </div>
 
@@ -571,7 +571,7 @@ const Settings: React.FC = () => {
                       <label className="text-sm font-medium">Preload Crítico</label>
                       <Switch
                         checked={performanceConfig.preloadCritical}
-                        onCheckedChange={(checked) => setPerformanceConfig({...performanceConfig, preloadCritical: checked})}
+                        onCheckedChange={(checked) => { setPerformanceConfig({...performanceConfig, preloadCritical: checked}); }}
                       />
                     </div>
                   </div>
@@ -607,7 +607,7 @@ const Settings: React.FC = () => {
                   </div>
                 </div>
 
-                <Button onClick={() => handleSaveConfig('performance', performanceConfig)} className="w-full">
+                <Button onClick={() => { handleSaveConfig('performance', performanceConfig); }} className="w-full">
                   <Save className="h-4 w-4 mr-2" />
                   Salvar Configurações
                 </Button>

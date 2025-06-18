@@ -118,11 +118,11 @@ export const PerformanceSettings: React.FC<PerformanceSettingsProps> = ({
                   <input
                     type="number"
                     value={values.warning}
-                    onChange={(e) => handleThresholdChange(
+                    onChange={(e) => { handleThresholdChange(
                       metric as keyof PerformanceThresholds,
                       'warning',
                       Number(e.target.value)
-                    )}
+                    ); }}
                     className="flex-1 px-2 py-1 text-xs border rounded"
                   />
                 </div>
@@ -132,11 +132,11 @@ export const PerformanceSettings: React.FC<PerformanceSettingsProps> = ({
                   <input
                     type="number"
                     value={values.error}
-                    onChange={(e) => handleThresholdChange(
+                    onChange={(e) => { handleThresholdChange(
                       metric as keyof PerformanceThresholds,
                       'error',
                       Number(e.target.value)
-                    )}
+                    ); }}
                     className="flex-1 px-2 py-1 text-xs border rounded"
                   />
                 </div>

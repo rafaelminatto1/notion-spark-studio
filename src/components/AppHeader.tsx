@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { ViewTabs, ViewMode } from '@/components/ViewTabs';
+import type { ViewMode } from '@/components/ViewTabs';
+import { ViewTabs } from '@/components/ViewTabs';
 import { GlobalSearch } from '@/components/GlobalSearch';
 import { UserProfileButton } from '@/components/UserProfileButton';
 import { WorkspaceSelector } from '@/components/WorkspaceSelector';
 import { CreateWorkspaceDialog } from '@/components/CreateWorkspaceDialog';
 import { WorkspaceMembersDialog } from '@/components/WorkspaceMembersDialog';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 interface AppHeaderProps {
   activeView: ViewMode;
@@ -60,8 +61,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           {!isMobile && (
             <div className="hidden xl:block">
               <WorkspaceSelector 
-                onCreateWorkspace={() => setShowCreateWorkspace(true)}
-                onManageWorkspace={() => setShowWorkspaceMembers(true)}
+                onCreateWorkspace={() => { setShowCreateWorkspace(true); }}
+                onManageWorkspace={() => { setShowWorkspaceMembers(true); }}
               />
             </div>
           )}

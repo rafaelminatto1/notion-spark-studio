@@ -243,7 +243,7 @@ export const AdvancedMetricsDashboard: React.FC<AdvancedMetricsDashboardProps> =
       })));
     }, 30000);
 
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, [autoRefresh]);
 
   // Filtros
@@ -418,7 +418,7 @@ export const AdvancedMetricsDashboard: React.FC<AdvancedMetricsDashboardProps> =
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setAutoRefresh(!autoRefresh)}
+                onClick={() => { setAutoRefresh(!autoRefresh); }}
                 className={autoRefresh ? 'bg-green-50 border-green-200' : ''}
               >
                 <RefreshCw className={`h-4 w-4 ${autoRefresh ? 'animate-spin' : ''}`} />

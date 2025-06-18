@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Database, DatabaseView } from '@/types/database';
+import type { Database, DatabaseView } from '@/types/database';
 
 interface DatabaseGalleryProps {
   database: Database;

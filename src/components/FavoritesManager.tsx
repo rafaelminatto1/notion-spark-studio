@@ -23,7 +23,7 @@ export const FavoritesManager: React.FC<FavoritesManagerProps> = ({
     <Button
       variant="ghost"
       size="sm"
-      onClick={() => onToggleFavorite(fileId)}
+      onClick={() => { onToggleFavorite(fileId); }}
       className={cn(
         "gap-2",
         isFavorite 

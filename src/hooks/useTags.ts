@@ -1,6 +1,6 @@
 
 import { useMemo } from 'react';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 export interface TagWithCount {
   name: string;
@@ -49,14 +49,14 @@ export const useTags = (files: FileItem[]) => {
           // Get all files for this path and its children
           const allPathFiles = Array.from(allTags.entries())
             .filter(([path]) => path.startsWith(currentPath))
-            .reduce((acc, [, files]) => {
+            .reduce<FileItem[]>((acc, [, files]) => {
               files.forEach(file => {
                 if (!acc.find(f => f.id === file.id)) {
                   acc.push(file);
                 }
               });
               return acc;
-            }, [] as FileItem[]);
+            }, []);
 
           const tag: TagWithCount = {
             name: part,
@@ -127,7 +127,7 @@ export const useTags = (files: FileItem[]) => {
 
   const removeTagFromFile = (fileId: string, tag: string, updateFile: (id: string, updates: Partial<FileItem>) => void) => {
     const file = files.find(f => f.id === fileId);
-    if (file && file.tags) {
+    if (file?.tags) {
       const newTags = file.tags.filter(t => t !== tag);
       updateFile(fileId, { tags: newTags });
     }

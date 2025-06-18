@@ -93,7 +93,7 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    return () => { document.removeEventListener('keydown', handleKeyDown); };
   }, [handleKeyDown]);
 
   // Auto-hide controls
@@ -223,8 +223,8 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({
               transform: `rotate(${rotation}deg)`,
               filter: `brightness(${filters.brightness}%) contrast(${filters.contrast}%) saturate(${filters.saturate}%)`
             }}
-            onClick={() => setIsFullscreen(true)}
-            onLoad={() => setLoaded(true)}
+            onClick={() => { setIsFullscreen(true); }}
+            onLoad={() => { setLoaded(true); }}
             loading="lazy"
           />
           
@@ -338,7 +338,7 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({
                     <Button
                       variant="secondary"
                       size="sm"
-                      onClick={() => setShowMetadata(!showMetadata)}
+                      onClick={() => { setShowMetadata(!showMetadata); }}
                       className={cn(
                         "bg-white/20 text-white hover:bg-white/30",
                         showMetadata && "bg-white/40"
@@ -363,7 +363,7 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({
                     <Button
                       variant="secondary"
                       size="sm"
-                      onClick={() => setZoom(prev => Math.max(0.5, prev - 0.25))}
+                      onClick={() => { setZoom(prev => Math.max(0.5, prev - 0.25)); }}
                       className="bg-white/20 text-white hover:bg-white/30"
                       title="Zoom out (-)"
                     >
@@ -375,7 +375,7 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({
                     <Button
                       variant="secondary"
                       size="sm"
-                      onClick={() => setZoom(prev => Math.min(3, prev + 0.25))}
+                      onClick={() => { setZoom(prev => Math.min(3, prev + 0.25)); }}
                       className="bg-white/20 text-white hover:bg-white/30"
                       title="Zoom in (+)"
                     >
@@ -404,7 +404,7 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({
                           <label className="text-white text-xs">Brilho: {filters.brightness}%</label>
                           <Slider
                             value={[filters.brightness]}
-                            onValueChange={(value) => setFilters(prev => ({ ...prev, brightness: value[0] }))}
+                            onValueChange={(value) => { setFilters(prev => ({ ...prev, brightness: value[0] })); }}
                             min={50}
                             max={150}
                             step={5}
@@ -415,7 +415,7 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({
                           <label className="text-white text-xs">Contraste: {filters.contrast}%</label>
                           <Slider
                             value={[filters.contrast]}
-                            onValueChange={(value) => setFilters(prev => ({ ...prev, contrast: value[0] }))}
+                            onValueChange={(value) => { setFilters(prev => ({ ...prev, contrast: value[0] })); }}
                             min={50}
                             max={150}
                             step={5}
@@ -426,7 +426,7 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({
                           <label className="text-white text-xs">Saturação: {filters.saturate}%</label>
                           <Slider
                             value={[filters.saturate]}
-                            onValueChange={(value) => setFilters(prev => ({ ...prev, saturate: value[0] }))}
+                            onValueChange={(value) => { setFilters(prev => ({ ...prev, saturate: value[0] })); }}
                             min={0}
                             max={200}
                             step={10}
@@ -469,14 +469,14 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({
         src={src}
         className="w-full rounded-lg shadow-lg"
         controls
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
+        onPlay={() => { setIsPlaying(true); }}
+        onPause={() => { setIsPlaying(false); }}
         onVolumeChange={(e) => {
           const video = e.target as HTMLVideoElement;
           setIsMuted(video.muted);
           setVolume(video.volume * 100);
         }}
-        onLoadedData={() => setLoaded(true)}
+        onLoadedData={() => { setLoaded(true); }}
       >
         Seu navegador não suporta vídeo.
       </video>
@@ -505,7 +505,7 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => setShowMetadata(!showMetadata)}
+            onClick={() => { setShowMetadata(!showMetadata); }}
             className="bg-white/90 text-black hover:bg-white"
             title="Informações"
           >

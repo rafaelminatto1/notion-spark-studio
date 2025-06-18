@@ -283,7 +283,7 @@ class ProductionAnalytics {
     }
   }
 
-  trackFeatureUsage(featureName: string, timeSpent?: number, success: boolean = true) {
+  trackFeatureUsage(featureName: string, timeSpent?: number, success = true) {
     const existing = this.featureUsage.get(featureName) || {
       featureName,
       usageCount: 0,

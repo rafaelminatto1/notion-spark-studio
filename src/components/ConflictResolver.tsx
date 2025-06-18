@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { AlertTriangle, FileText, Clock } from 'lucide-react';
-import { useOfflineSync, ConflictResolution } from '@/hooks/useOfflineSync';
+import type { ConflictResolution } from '@/hooks/useOfflineSync';
+import { useOfflineSync } from '@/hooks/useOfflineSync';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -79,7 +80,7 @@ export const ConflictResolver: React.FC = () => {
                   <label className="text-xs font-medium">Versão Mesclada (opcional):</label>
                   <Textarea
                     value={mergedContent}
-                    onChange={(e) => setMergedContent(e.target.value)}
+                    onChange={(e) => { setMergedContent(e.target.value); }}
                     placeholder="Edite aqui uma versão mesclada do conteúdo..."
                     className="text-xs"
                     rows={4}
@@ -116,7 +117,7 @@ export const ConflictResolver: React.FC = () => {
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={() => setSelectedConflict(null)}
+                    onClick={() => { setSelectedConflict(null); }}
                   >
                     Cancelar
                   </Button>
@@ -124,7 +125,7 @@ export const ConflictResolver: React.FC = () => {
               ) : (
                 <Button
                   size="sm"
-                  onClick={() => setSelectedConflict(conflict.id)}
+                  onClick={() => { setSelectedConflict(conflict.id); }}
                 >
                   Resolver Conflito
                 </Button>

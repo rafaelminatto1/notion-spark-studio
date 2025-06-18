@@ -15,7 +15,7 @@ import {
   RotateCcw,
   Maximize2
 } from 'lucide-react';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { useGraph } from '@/hooks/useGraph';
 import { cn } from '@/lib/utils';
 
@@ -90,8 +90,8 @@ export const GraphViewEnhanced: React.FC<GraphViewEnhancedProps> = ({
 
     const filteredNodeIds = new Set(filteredNodes.map(n => n.id));
     const filteredLinks = links.filter(link => 
-      filteredNodeIds.has(link.source as string) &&
-      filteredNodeIds.has(link.target as string)
+      filteredNodeIds.has(link.source) &&
+      filteredNodeIds.has(link.target)
     );
 
     return { nodes: filteredNodes, links: filteredLinks };
@@ -201,19 +201,19 @@ export const GraphViewEnhanced: React.FC<GraphViewEnhancedProps> = ({
       selectedCircle
         .transition()
         .duration(1000)
-        .attr('r', (d: any) => ((d as any).size || 15) * 1.3)
+        .attr('r', (d: any) => ((d).size || 15) * 1.3)
         .transition()
         .duration(1000)
-        .attr('r', (d: any) => (d as any).size || 15)
+        .attr('r', (d: any) => (d).size || 15)
         .on('end', function repeat() {
           if (selectedNode) {
             d3.select(this)
               .transition()
               .duration(1000)
-              .attr('r', (d: any) => ((d as any).size || 15) * 1.3)
+              .attr('r', (d: any) => ((d).size || 15) * 1.3)
               .transition()
               .duration(1000)
-              .attr('r', (d: any) => (d as any).size || 15)
+              .attr('r', (d: any) => (d).size || 15)
               .on('end', repeat);
           }
         });
@@ -310,7 +310,7 @@ export const GraphViewEnhanced: React.FC<GraphViewEnhancedProps> = ({
     // Função para focar em um nó
     (svgRef.current as any).focusOnNode = (nodeId: string) => {
       const node = filteredData.nodes.find(n => n.id === nodeId);
-      if (!node || !node.x || !node.y) return;
+      if (!node?.x || !node.y) return;
 
       const scale = 2;
       const translate = [width / 2 - scale * node.x, height / 2 - scale * node.y];
@@ -341,7 +341,7 @@ export const GraphViewEnhanced: React.FC<GraphViewEnhancedProps> = ({
     };
 
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => { window.removeEventListener('resize', handleResize); };
   }, [renderGraph]);
 
   // Handlers
@@ -380,7 +380,7 @@ export const GraphViewEnhanced: React.FC<GraphViewEnhancedProps> = ({
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => { setSearchQuery(e.target.value); }}
               placeholder="Buscar no grafo de conhecimento..."
               className="pl-10 bg-notion-dark-hover border-notion-dark-border"
             />
@@ -399,7 +399,7 @@ export const GraphViewEnhanced: React.FC<GraphViewEnhancedProps> = ({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setFocusMode(!focusMode)}
+            onClick={() => { setFocusMode(!focusMode); }}
             className={cn("gap-2", focusMode && "bg-purple-600/20")}
           >
             <Target className="h-4 w-4" />
@@ -409,7 +409,7 @@ export const GraphViewEnhanced: React.FC<GraphViewEnhancedProps> = ({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setShowSettings(!showSettings)}
+            onClick={() => { setShowSettings(!showSettings); }}
             className="gap-2"
           >
             <Settings className="h-4 w-4" />
@@ -603,7 +603,7 @@ export const GraphViewEnhanced: React.FC<GraphViewEnhancedProps> = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setSelectedNode(null)}
+                    onClick={() => { setSelectedNode(null); }}
                   >
                     ×
                   </Button>
@@ -690,7 +690,7 @@ export const GraphViewEnhanced: React.FC<GraphViewEnhancedProps> = ({
                     <div className="flex gap-2 pt-2">
                       <Button
                         size="sm"
-                        onClick={() => onFileSelect(nodeStats.node!.id)}
+                        onClick={() => { onFileSelect(nodeStats.node!.id); }}
                         className="flex-1"
                       >
                         📖 Abrir

@@ -1,4 +1,4 @@
-import { TaskFilters as TaskFiltersType, TaskPriority, TaskStatus } from '@/types/task';
+import type { TaskFilters as TaskFiltersType, TaskPriority, TaskStatus } from '@/types/task';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
@@ -22,7 +22,7 @@ export function TaskFilters({ filters, onFilterChange }: TaskFiltersProps) {
           <Input
             placeholder="Buscar tarefas..."
             value={filters.search || ''}
-            onChange={(e) => onFilterChange({ search: e.target.value })}
+            onChange={(e) => { onFilterChange({ search: e.target.value }); }}
             className="pl-8"
           />
         </div>
@@ -30,7 +30,7 @@ export function TaskFilters({ filters, onFilterChange }: TaskFiltersProps) {
 
       <Select
         value={filters.status}
-        onValueChange={(value: TaskStatus) => onFilterChange({ status: value })}
+        onValueChange={(value: TaskStatus) => { onFilterChange({ status: value }); }}
       >
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder="Status" />
@@ -44,7 +44,7 @@ export function TaskFilters({ filters, onFilterChange }: TaskFiltersProps) {
 
       <Select
         value={filters.priority}
-        onValueChange={(value: TaskPriority) => onFilterChange({ priority: value })}
+        onValueChange={(value: TaskPriority) => { onFilterChange({ priority: value }); }}
       >
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder="Prioridade" />
@@ -74,7 +74,7 @@ export function TaskFilters({ filters, onFilterChange }: TaskFiltersProps) {
           <Calendar
             mode="single"
             selected={filters.dueDate}
-            onSelect={(date) => onFilterChange({ dueDate: date })}
+            onSelect={(date) => { onFilterChange({ dueDate: date }); }}
             initialFocus
           />
         </PopoverContent>
@@ -82,7 +82,7 @@ export function TaskFilters({ filters, onFilterChange }: TaskFiltersProps) {
 
       <Button
         variant="outline"
-        onClick={() => onFilterChange({})}
+        onClick={() => { onFilterChange({}); }}
       >
         Limpar filtros
       </Button>

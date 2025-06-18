@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { useIndexedDB } from './useIndexedDB';
 
 export const useFileSystemPersistent = () => {

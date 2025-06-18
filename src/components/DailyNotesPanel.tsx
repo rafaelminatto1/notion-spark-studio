@@ -5,7 +5,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useDailyNotes } from '@/hooks/useDailyNotes';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { 
   Calendar as CalendarIcon, 
   ChevronLeft, 

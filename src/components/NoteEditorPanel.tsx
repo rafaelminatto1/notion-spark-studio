@@ -29,7 +29,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
@@ -38,8 +38,10 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { BlockEditor, Block } from '@/components/editor/BlockEditor';
-import { TemplateSystem, Template } from '@/components/editor/TemplateSystem';
+import type { Block } from '@/components/editor/BlockEditor';
+import { BlockEditor } from '@/components/editor/BlockEditor';
+import type { Template } from '@/components/editor/TemplateSystem';
+import { TemplateSystem } from '@/components/editor/TemplateSystem';
 import { AIContentSuggestions } from './ai/AIContentSuggestions';
 import { SmartWritingAssistant } from './ai/SmartWritingAssistant';
 import { AutoTagging } from './ai/AutoTagging';
@@ -88,7 +90,7 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
 
   // Update local state when note changes
   useEffect(() => {
-    if (note && note.name !== undefined) {
+    if (note?.name !== undefined) {
       setTitle(note.name || '');
       setContent(note.content || '');
     }
@@ -96,7 +98,7 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
 
   // Auto-save functionality
   useEffect(() => {
-    if (!note || !note.id || content === note.content) return;
+    if (!note?.id || content === note.content) return;
 
     const timeoutId = setTimeout(() => {
       setIsAutoSaving(true);
@@ -105,10 +107,10 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
         updatedAt: new Date() 
       });
       setLastSaved(new Date());
-      setTimeout(() => setIsAutoSaving(false), 1000);
+      setTimeout(() => { setIsAutoSaving(false); }, 1000);
     }, 1000); // Auto-save after 1 second of inactivity
 
-    return () => clearTimeout(timeoutId);
+    return () => { clearTimeout(timeoutId); };
   }, [content, note, onUpdateNote]);
 
   const handleTitleSave = useCallback(() => {
@@ -303,7 +305,7 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
           <Button size="sm" variant="outline" className="border-[#2563eb] text-[#2563eb] dark:border-[#60a5fa] dark:text-[#60a5fa]">
             Compartilhar
           </Button>
-          <Button size="sm" variant="outline" className="border-[#22c55e] text-[#22c55e] dark:border-[#4ade80] dark:text-[#4ade80]" onClick={() => onToggleFavorite(note.id)}>
+          <Button size="sm" variant="outline" className="border-[#22c55e] text-[#22c55e] dark:border-[#4ade80] dark:text-[#4ade80]" onClick={() => { onToggleFavorite(note.id); }}>
             {isFavorite ? 'Remover dos Favoritos' : 'Favoritar'}
           </Button>
         </div>
@@ -314,7 +316,7 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
           variant="ghost"
           size="sm"
           className="h-8 w-8 p-0"
-          onClick={() => insertFormatting('bold')}
+          onClick={() => { insertFormatting('bold'); }}
           title="Negrito (Ctrl+B)"
         >
           <Bold className="h-4 w-4" />
@@ -324,7 +326,7 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
           variant="ghost"
           size="sm"
           className="h-8 w-8 p-0"
-          onClick={() => insertFormatting('italic')}
+          onClick={() => { insertFormatting('italic'); }}
           title="Itálico (Ctrl+I)"
         >
           <Italic className="h-4 w-4" />
@@ -334,7 +336,7 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
           variant="ghost"
           size="sm"
           className="h-8 w-8 p-0"
-          onClick={() => insertFormatting('code')}
+          onClick={() => { insertFormatting('code'); }}
           title="Código"
         >
           <Code className="h-4 w-4" />
@@ -362,7 +364,7 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
           variant="ghost"
           size="sm"
           className="h-8 px-3 text-xs"
-          onClick={() => setShowTemplates(true)}
+          onClick={() => { setShowTemplates(true); }}
           title="Escolher Template"
         >
           <Sparkles className="h-3 w-3 mr-1" />
@@ -374,7 +376,7 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
           variant="ghost"
           size="sm"
           className="h-8 px-3 text-xs"
-          onClick={() => setShowConditionalTemplates(true)}
+          onClick={() => { setShowConditionalTemplates(true); }}
           title="Templates Inteligentes"
         >
           <Brain className="h-3 w-3 mr-1" />
@@ -390,7 +392,7 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
               "h-8 px-3 text-xs",
               showCollaboration && "bg-blue-100 text-blue-700"
             )}
-            onClick={() => setShowCollaboration(!showCollaboration)}
+            onClick={() => { setShowCollaboration(!showCollaboration); }}
             title="Colaboração em Tempo Real"
           >
             <Layers className="h-3 w-3 mr-1" />
@@ -404,7 +406,7 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
           variant="ghost"
           size="sm"
           className="h-8 w-8 p-0"
-          onClick={() => insertFormatting('list')}
+          onClick={() => { insertFormatting('list'); }}
           title="Lista"
         >
           <List className="h-4 w-4" />
@@ -414,7 +416,7 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
           variant="ghost"
           size="sm"
           className="h-8 w-8 p-0"
-          onClick={() => insertFormatting('quote')}
+          onClick={() => { insertFormatting('quote'); }}
           title="Citação"
         >
           <Quote className="h-4 w-4" />
@@ -424,7 +426,7 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
           variant="ghost"
           size="sm"
           className="h-8 w-8 p-0"
-          onClick={() => insertFormatting('link')}
+          onClick={() => { insertFormatting('link'); }}
           title="Link"
         >
           <Link className="h-4 w-4" />
@@ -439,7 +441,7 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
             "h-8 px-3 text-xs",
             isPreviewMode && "bg-blue-100 text-blue-700"
           )}
-          onClick={() => setIsPreviewMode(!isPreviewMode)}
+          onClick={() => { setIsPreviewMode(!isPreviewMode); }}
         >
           <Eye className="h-3 w-3 mr-1" />
           Preview
@@ -479,7 +481,7 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
           <Textarea
             id="note-content"
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={(e) => { setContent(e.target.value); }}
             placeholder="Comece a escrever..."
             className="w-full h-full resize-none border-none focus:ring-0 text-base leading-relaxed bg-transparent"
             style={{ minHeight: '400px' }}
@@ -502,7 +504,7 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
                 key={tag} 
                 variant="secondary"
                 className="text-xs cursor-pointer hover:bg-red-100 hover:text-red-800"
-                onClick={() => removeTag(tag)}
+                onClick={() => { removeTag(tag); }}
               >
                 {tag} ×
               </Badge>
@@ -512,7 +514,7 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
           <div className="flex gap-2">
             <Input
               value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
+              onChange={(e) => { setNewTag(e.target.value); }}
               placeholder="Adicionar tag..."
               className="text-sm"
               onKeyPress={(e) => e.key === 'Enter' && addTag()}
@@ -534,7 +536,7 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
       {/* Template System Modal */}
       <TemplateSystem
         isOpen={showTemplates}
-        onClose={() => setShowTemplates(false)}
+        onClose={() => { setShowTemplates(false); }}
         onSelectTemplate={handleTemplateSelect}
       />
 
@@ -554,7 +556,7 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setShowAIPanel(false)}
+                  onClick={() => { setShowAIPanel(false); }}
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -634,7 +636,7 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
         variant="outline"
         size="sm"
         className="fixed right-4 top-20 z-40"
-        onClick={() => setShowAIPanel(!showAIPanel)}
+        onClick={() => { setShowAIPanel(!showAIPanel); }}
       >
         <Brain className="h-4 w-4 mr-2" />
         IA
@@ -660,7 +662,7 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setShowConditionalTemplates(false)}
+                  onClick={() => { setShowConditionalTemplates(false); }}
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -721,7 +723,7 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
           <Button
             variant={editorMode === 'text' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => setEditorMode('text')}
+            onClick={() => { setEditorMode('text'); }}
           >
             <FileText className="h-4 w-4 mr-2" />
             Texto
@@ -729,7 +731,7 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
           <Button
             variant={editorMode === 'blocks' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => setEditorMode('blocks')}
+            onClick={() => { setEditorMode('blocks'); }}
           >
             <Layers className="h-4 w-4 mr-2" />
             Blocos
@@ -737,7 +739,7 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setShowTemplates(true)}
+            onClick={() => { setShowTemplates(true); }}
           >
             <PlusCircle className="h-4 w-4 mr-2" />
             Templates
@@ -745,7 +747,7 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setShowAIPanel(true)}
+            onClick={() => { setShowAIPanel(true); }}
             className={cn(showAIPanel && "bg-blue-50 border-blue-200")}
           >
             <Brain className="h-4 w-4 mr-2" />

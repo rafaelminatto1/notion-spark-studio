@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ViewMode } from '@/components/ViewTabs';
+import type { ViewMode } from '@/components/ViewTabs';
 import { LayoutDashboard, FileText, File, GitBranch, Menu, Search, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -44,7 +44,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               key={tab.id}
               variant="ghost"
               size="sm"
-              onClick={() => handleViewChange(tab.id)}
+              onClick={() => { handleViewChange(tab.id); }}
               className={cn(
                 "flex flex-col items-center gap-1 p-3 rounded-2xl transition-all duration-300 min-w-[60px] h-16",
                 isActive

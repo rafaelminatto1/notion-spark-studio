@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { Comment } from '@/types/comments';
+import type { Comment } from '@/types/comments';
 import { ThreadedComments } from './ThreadedComments';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -27,7 +27,7 @@ export const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
 
   const handleTextSelection = useCallback(() => {
     const selection = window.getSelection();
-    if (!selection || !selection.toString().trim()) {
+    if (!selection?.toString().trim()) {
       setSelectedText('');
       return;
     }

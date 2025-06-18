@@ -41,7 +41,7 @@ import {
   Upload,
   AlertTriangle
 } from 'lucide-react';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { cn } from '@/lib/utils';
 
 interface WorkflowRule {
@@ -216,7 +216,7 @@ export const SmartWorkflowEngine: React.FC<SmartWorkflowEngineProps> = ({
       });
     }, 5000); // Check every 5 seconds
 
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, [workflows, isEngineRunning, files]);
 
   const shouldExecuteWorkflow = (workflow: WorkflowRule): boolean => {
@@ -494,7 +494,7 @@ export const SmartWorkflowEngine: React.FC<SmartWorkflowEngineProps> = ({
             </div>
           </div>
 
-          <Tabs value={activeTab} onValueChange={(value: any) => setActiveTab(value)}>
+          <Tabs value={activeTab} onValueChange={(value: any) => { setActiveTab(value); }}>
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="workflows">Workflows</TabsTrigger>
               <TabsTrigger value="executions">Execuções</TabsTrigger>
@@ -519,7 +519,7 @@ export const SmartWorkflowEngine: React.FC<SmartWorkflowEngineProps> = ({
                         </h4>
                         <Switch
                           checked={workflow.enabled}
-                          onCheckedChange={() => toggleWorkflow(workflow.id)}
+                          onCheckedChange={() => { toggleWorkflow(workflow.id); }}
                         />
                         <Badge variant={workflow.enabled ? 'default' : 'secondary'}>
                           {workflow.enabled ? 'Ativo' : 'Inativo'}
@@ -564,7 +564,7 @@ export const SmartWorkflowEngine: React.FC<SmartWorkflowEngineProps> = ({
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => runWorkflowManually(workflow)}
+                        onClick={() => { runWorkflowManually(workflow); }}
                         disabled={!isEngineRunning}
                         className="flex items-center gap-1"
                       >
@@ -574,7 +574,7 @@ export const SmartWorkflowEngine: React.FC<SmartWorkflowEngineProps> = ({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setSelectedWorkflow(workflow.id)}
+                        onClick={() => { setSelectedWorkflow(workflow.id); }}
                       >
                         <Settings className="h-4 w-4" />
                       </Button>

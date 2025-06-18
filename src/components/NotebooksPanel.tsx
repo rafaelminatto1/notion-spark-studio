@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { Plus, Book, ChevronRight, Star, Clock, Users, Edit, Share, Trash2, BarChart3, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { usePermissions } from './permissions/PermissionsEngine';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useAdvancedCache } from '@/hooks/useAdvancedCache';
@@ -140,7 +140,7 @@ export const NotebooksPanel: React.FC<NotebooksPanelProps> = ({
         <div className="flex items-center gap-2">
           {/* 🚀 Performance Stats Toggle */}
           <button
-            onClick={() => setShowPerformanceStats(!showPerformanceStats)}
+            onClick={() => { setShowPerformanceStats(!showPerformanceStats); }}
             className={cn(
               "group relative p-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95",
               showPerformanceStats 
@@ -193,7 +193,7 @@ export const NotebooksPanel: React.FC<NotebooksPanelProps> = ({
             type="text"
             placeholder="Buscar notebooks..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => { setSearchTerm(e.target.value); }}
             className="w-full pl-3 pr-8 py-2 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 dark:focus:border-emerald-400 transition-all duration-200 placeholder:text-slate-400 dark:placeholder:text-slate-500"
           />
           {/* 🚀 Indicador de busca ativa */}
@@ -239,7 +239,7 @@ export const NotebooksPanel: React.FC<NotebooksPanelProps> = ({
           visibleFiles.map((notebook) => (
             <div key={notebook.id} className="group relative">
               <button
-                onClick={() => onNotebookSelect(notebook.id)}
+                onClick={() => { onNotebookSelect(notebook.id); }}
                 className={cn(
                   "w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all duration-200 relative overflow-hidden",
                   "hover:bg-white hover:shadow-md hover:shadow-slate-200/60 dark:hover:bg-slate-800 dark:hover:shadow-slate-900/60",

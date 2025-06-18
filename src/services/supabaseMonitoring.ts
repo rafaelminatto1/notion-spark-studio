@@ -2,10 +2,10 @@
 // FASE 3/4: Conecta monitoramento local com banco de dados
 
 import { getSupabaseClient } from '@/lib/supabase-config';
-import { config, isProduction } from '@/config/environment';
+import { config } from '@/config/environment';
 import { safeGetEnv } from '@/utils/env';
 
-// Simulando types até as tabelas estarem criadas
+// Proper type definitions
 interface PerformanceMetric {
   user_id?: string | null;
   session_id: string;
@@ -15,7 +15,7 @@ interface PerformanceMetric {
   page_url?: string;
   user_agent?: string;
   device_type?: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   environment?: string;
 }
 
@@ -33,7 +33,7 @@ interface ErrorLog {
   column_number?: number;
   environment?: string;
   version?: string;
-  context?: any;
+  context?: Record<string, unknown>;
 }
 
 interface AnalyticsEvent {
@@ -51,7 +51,7 @@ interface AnalyticsEvent {
   device_type?: string;
   browser_name?: string;
   os_name?: string;
-  properties?: any;
+  properties?: Record<string, unknown>;
   environment?: string;
   version?: string;
 }
@@ -83,11 +83,23 @@ interface AnalyticsData {
   properties?: Record<string, unknown>;
 }
 
+// Type for performance entries
+interface TypedPerformanceEntry extends PerformanceEntry {
+  processingStart?: number;
+  hadRecentInput?: boolean;
+  value?: number;
+}
+
+interface QueueItem {
+  type: 'metric' | 'error' | 'analytics';
+  data: PerformanceMetric | ErrorLog | AnalyticsEvent;
+}
+
 class SupabaseMonitoringService {
   private sessionId: string;
   private userId: string | null = null;
   private isEnabled: boolean;
-  private queue: Array<{ type: 'metric' | 'error' | 'analytics'; data: any }> = [];
+  private queue: QueueItem[] = [];
   private flushTimeout: NodeJS.Timeout | null = null;
 
   constructor() {
@@ -98,7 +110,7 @@ class SupabaseMonitoringService {
     this.setupErrorTracking();
     
     if (this.isEnabled) {
-      this.startBatchFlush();
+      void this.startBatchFlush();
       console.log('📊 Supabase Monitoring enabled');
     } else {
       console.log('📊 Supabase Monitoring disabled (development mode)');
@@ -106,7 +118,7 @@ class SupabaseMonitoringService {
   }
 
   private generateSessionId(): string {
-    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
   }
 
   private async setupUserTracking(): Promise<void> {
@@ -118,11 +130,11 @@ class SupabaseMonitoringService {
       }
 
       const { data: { user } } = await supabase.auth.getUser();
-      this.userId = user?.id || null;
+      this.userId = user?.id ?? null;
       
       // Listen for auth changes
-      supabase.auth.onAuthStateChange((event, session) => {
-        this.userId = session?.user?.id || null;
+      supabase.auth.onAuthStateChange((_event, session) => {
+        this.userId = session?.user?.id ?? null;
       });
     } catch (error) {
       console.warn('Failed to setup user tracking:', error);
@@ -150,7 +162,8 @@ class SupabaseMonitoringService {
       // First Input Delay
       const fidObserver = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          const fidValue = (entry as any).processingStart - entry.startTime;
+          const typedEntry = entry as TypedPerformanceEntry;
+          const fidValue = (typedEntry.processingStart ?? 0) - entry.startTime;
           this.recordWebVital({
             name: 'fid',
             value: fidValue,
@@ -166,13 +179,14 @@ class SupabaseMonitoringService {
       let clsValue = 0;
       const clsObserver = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          if (!(entry as any).hadRecentInput) {
-            clsValue += (entry as any).value;
+          const typedEntry = entry as TypedPerformanceEntry;
+          if (!typedEntry.hadRecentInput) {
+            clsValue += typedEntry.value ?? 0;
           }
         }
         
         if (clsValue > 0) {
-          this.recordWebVital({
+          void this.recordWebVital({
             name: 'cls',
             value: clsValue,
             rating: clsValue < 0.1 ? 'good' : clsValue < 0.25 ? 'needs-improvement' : 'poor',
@@ -187,10 +201,10 @@ class SupabaseMonitoringService {
       window.addEventListener('load', () => {
         const navTiming = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
         
-        if (navTiming) {
+        if (navTiming?.domContentLoadedEventEnd) {
           // First Contentful Paint (aproximação)
           const fcpValue = navTiming.domContentLoadedEventEnd - navTiming.startTime;
-          this.recordWebVital({
+          void this.recordWebVital({
             name: 'fcp',
             value: fcpValue,
             rating: fcpValue < 1800 ? 'good' : fcpValue < 3000 ? 'needs-improvement' : 'poor',
@@ -200,7 +214,7 @@ class SupabaseMonitoringService {
 
           // Time to Interactive (aproximação)
           const ttiValue = navTiming.loadEventEnd - navTiming.startTime;
-          this.recordWebVital({
+          void this.recordWebVital({
             name: 'tti',
             value: ttiValue,
             rating: ttiValue < 3800 ? 'good' : ttiValue < 7300 ? 'needs-improvement' : 'poor',
@@ -211,53 +225,46 @@ class SupabaseMonitoringService {
       });
 
     } catch (error) {
-      console.warn('Failed to setup Web Vitals monitoring:', error);
+      console.warn('Failed to setup Web Vitals:', error);
     }
   }
 
   private setupErrorTracking(): void {
-    // Global error handler
     window.addEventListener('error', (event) => {
-      this.recordError({
-        message: event.message || 'Unknown error',
-        stack: event.error?.stack,
+      void this.recordError({
+        message: event.message,
+        stack: event.error?.stack as string,
         filename: event.filename,
         lineno: event.lineno,
         colno: event.colno,
         severity: 'high',
         context: {
-          type: 'javascript_error',
           url: window.location.href,
-          userAgent: navigator.userAgent
+          userAgent: navigator.userAgent,
+          timestamp: Date.now()
         }
       });
     });
 
-    // Unhandled promise rejections
     window.addEventListener('unhandledrejection', (event) => {
-      this.recordError({
-        message: `Unhandled Promise Rejection: ${event.reason}`,
-        stack: event.reason?.stack,
-        severity: 'high',
+      void this.recordError({
+        message: `Unhandled Promise Rejection: ${String(event.reason)}`,
+        stack: (event.reason as Error)?.stack,
+        severity: 'critical',
         context: {
-          type: 'unhandled_promise_rejection',
-          reason: String(event.reason),
-          url: window.location.href
+          url: window.location.href,
+          userAgent: navigator.userAgent,
+          timestamp: Date.now()
         }
       });
     });
   }
 
   private generateId(): string {
-    return Math.random().toString(36).substr(2, 9);
+    return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
   }
 
   private async recordWebVital(vital: WebVitalMetric): Promise<void> {
-    if (!this.isEnabled) {
-      console.debug('Web Vital recorded (dev):', vital);
-      return;
-    }
-
     const metric: PerformanceMetric = {
       user_id: this.userId,
       session_id: this.sessionId,
@@ -269,10 +276,10 @@ class SupabaseMonitoringService {
       device_type: this.getDeviceType(),
       metadata: {
         rating: vital.rating,
-        id: vital.id,
-        delta: vital.delta
+        delta: vital.delta,
+        id: vital.id
       },
-      environment: config.NODE_ENV
+      environment: safeGetEnv('NODE_ENV', 'development')
     };
 
     this.queue.push({ type: 'metric', data: metric });
@@ -280,10 +287,6 @@ class SupabaseMonitoringService {
   }
 
   async recordError(error: ErrorData): Promise<void> {
-    console.error('Error recorded:', error);
-
-    if (!this.isEnabled) return;
-
     const errorLog: ErrorLog = {
       user_id: this.userId,
       session_id: this.sessionId,
@@ -296,26 +299,16 @@ class SupabaseMonitoringService {
       file_name: error.filename,
       line_number: error.lineno,
       column_number: error.colno,
-      environment: config.NODE_ENV,
-      version: config.APP_VERSION,
-      context: error.context || {}
+      environment: safeGetEnv('NODE_ENV', 'development'),
+      version: config.version ?? '1.0.0',
+      context: error.context
     };
 
     this.queue.push({ type: 'error', data: errorLog });
     this.scheduleFlush();
-
-    // Send critical errors immediately
-    if (error.severity === 'critical') {
-      await this.flush();
-    }
   }
 
   async recordAnalytics(analytics: AnalyticsData): Promise<void> {
-    if (!this.isEnabled || !config.ENABLE_ANALYTICS) {
-      console.debug('Analytics recorded (dev):', analytics);
-      return;
-    }
-
     const event: AnalyticsEvent = {
       user_id: this.userId,
       session_id: this.sessionId,
@@ -331,9 +324,9 @@ class SupabaseMonitoringService {
       device_type: this.getDeviceType(),
       browser_name: this.getBrowserName(),
       os_name: this.getOSName(),
-      properties: analytics.properties || {},
-      environment: config.NODE_ENV,
-      version: config.APP_VERSION
+      properties: analytics.properties,
+      environment: safeGetEnv('NODE_ENV', 'development'),
+      version: config.version ?? '1.0.0'
     };
 
     this.queue.push({ type: 'analytics', data: event });
@@ -341,118 +334,100 @@ class SupabaseMonitoringService {
   }
 
   private getDeviceType(): string {
-    const userAgent = navigator.userAgent;
-    if (/tablet|ipad|playbook|silk/i.test(userAgent)) return 'tablet';
-    if (/mobile|iphone|ipod|android|blackberry|opera|mini|windows\sce|palm|smartphone|iemobile/i.test(userAgent)) return 'mobile';
+    const userAgent = navigator.userAgent.toLowerCase();
+    if (/mobile|android|iphone|ipad|phone/i.test(userAgent)) {
+      return 'mobile';
+    }
+    if (/tablet|ipad/i.test(userAgent)) {
+      return 'tablet';
+    }
     return 'desktop';
   }
 
   private getBrowserName(): string {
-    const userAgent = navigator.userAgent;
-    if (userAgent.includes('Chrome')) return 'Chrome';
-    if (userAgent.includes('Firefox')) return 'Firefox';
-    if (userAgent.includes('Safari')) return 'Safari';
-    if (userAgent.includes('Edge')) return 'Edge';
-    return 'Unknown';
+    const userAgent = navigator.userAgent.toLowerCase();
+    if (userAgent.includes('chrome')) return 'chrome';
+    if (userAgent.includes('firefox')) return 'firefox';
+    if (userAgent.includes('safari')) return 'safari';
+    if (userAgent.includes('edge')) return 'edge';
+    return 'unknown';
   }
 
   private getOSName(): string {
-    const userAgent = navigator.userAgent;
-    if (userAgent.includes('Windows')) return 'Windows';
-    if (userAgent.includes('Mac')) return 'macOS';
-    if (userAgent.includes('Linux')) return 'Linux';
-    if (userAgent.includes('Android')) return 'Android';
-    if (userAgent.includes('iOS')) return 'iOS';
-    return 'Unknown';
+    const userAgent = navigator.userAgent.toLowerCase();
+    if (userAgent.includes('windows')) return 'windows';
+    if (userAgent.includes('mac')) return 'macos';
+    if (userAgent.includes('linux')) return 'linux';
+    if (userAgent.includes('android')) return 'android';
+    if (userAgent.includes('ios')) return 'ios';
+    return 'unknown';
   }
 
   private scheduleFlush(): void {
-    if (this.flushTimeout) return;
-
+    if (this.flushTimeout) {
+      clearTimeout(this.flushTimeout);
+    }
     this.flushTimeout = setTimeout(() => {
-      this.flush();
-    }, 5000); // Flush every 5 seconds
+      void this.flush();
+    }, 5000); // Flush after 5 seconds
   }
 
   private async flush(): Promise<void> {
-    if (this.flushTimeout) {
-      clearTimeout(this.flushTimeout);
-      this.flushTimeout = null;
-    }
-
-    if (this.queue.length === 0) return;
-
-    const toFlush = [...this.queue];
-    this.queue = [];
+    if (this.queue.length === 0 || !this.isEnabled) return;
 
     try {
-      // Simular inserção no banco (as tabelas ainda não existem)
-      const metrics = toFlush.filter(item => item.type === 'metric').map(item => item.data);
-      const errors = toFlush.filter(item => item.type === 'error').map(item => item.data);
-      const analytics = toFlush.filter(item => item.type === 'analytics').map(item => item.data);
+      const metrics: PerformanceMetric[] = [];
+      const errors: ErrorLog[] = [];
+      const analytics: AnalyticsEvent[] = [];
 
-      // Em desenvolvimento, apenas log
+      for (const item of this.queue) {
+        switch (item.type) {
+          case 'metric':
+            metrics.push(item.data as PerformanceMetric);
+            break;
+          case 'error':
+            errors.push(item.data as ErrorLog);
+            break;
+          case 'analytics':
+            analytics.push(item.data as AnalyticsEvent);
+            break;
+        }
+      }
+
+      // Parallel batch inserts for better performance
+      const promises: Promise<void>[] = [];
+      
       if (metrics.length > 0) {
-        console.debug(`📊 Would insert ${metrics.length} performance metrics:`, metrics);
+        promises.push(this.insertPerformanceMetrics(metrics));
       }
-
       if (errors.length > 0) {
-        console.debug(`🚨 Would insert ${errors.length} error logs:`, errors);
+        promises.push(this.insertErrorLogs(errors));
       }
-
       if (analytics.length > 0) {
-        console.debug(`📈 Would insert ${analytics.length} analytics events:`, analytics);
+        promises.push(this.insertAnalyticsEvents(analytics));
       }
 
-      // TODO: Quando as tabelas estiverem criadas, usar estas queries:
-      /*
-      if (metrics.length > 0) {
-        const { error: metricsError } = await supabase
-          .from('performance_metrics')
-          .insert(metrics);
-        
-        if (metricsError) {
-          console.error('Failed to insert performance metrics:', metricsError);
-        }
-      }
-
-      if (errors.length > 0) {
-        const { error: errorsError } = await supabase
-          .from('error_logs')
-          .insert(errors);
-        
-        if (errorsError) {
-          console.error('Failed to insert error logs:', errorsError);
-        }
-      }
-
-      if (analytics.length > 0) {
-        const { error: analyticsError } = await supabase
-          .from('analytics_events')
-          .insert(analytics);
-        
-        if (analyticsError) {
-          console.error('Failed to insert analytics events:', analyticsError);
-        }
-      }
-      */
-
+      await Promise.all(promises);
+      
+      // Clear queue after successful flush
+      this.queue = [];
+      
     } catch (error) {
-      console.error('Failed to flush monitoring data:', error);
-      // Re-queue the failed items
-      this.queue.unshift(...toFlush);
+      console.warn('Failed to flush monitoring data:', error);
+      // Keep queue for retry
     }
   }
 
-  // Public methods for components
+  // Public API methods
   async trackPageView(page: string): Promise<void> {
     await this.recordAnalytics({
       event_name: 'page_view',
       event_category: 'navigation',
+      event_action: 'view',
       event_label: page,
       properties: {
-        page_path: window.location.pathname,
-        page_search: window.location.search
+        page_path: page,
+        referrer: document.referrer
       }
     });
   }
@@ -469,135 +444,117 @@ class SupabaseMonitoringService {
 
   async trackPerformance(component: string, operation: string, duration: number): Promise<void> {
     await this.recordAnalytics({
-      event_name: 'performance',
-      event_category: 'timing',
-      event_action: `${component}_${operation}`,
+      event_name: 'performance_metric',
+      event_category: 'performance',
+      event_action: operation,
+      event_label: component,
       event_value: duration,
       properties: {
         component,
         operation,
-        duration_ms: duration
+        duration: duration.toString(),
+        performance_score: duration < 100 ? 'good' : duration < 300 ? 'fair' : 'poor'
       }
     });
   }
 
-  // Get current session metrics
-  getSessionMetrics() {
+  getSessionMetrics(): {
+    sessionId: string;
+    userId: string | null;
+    queueSize: number;
+    isEnabled: boolean;
+  } {
     return {
       sessionId: this.sessionId,
       userId: this.userId,
       queueSize: this.queue.length,
-      environment: config.NODE_ENV,
       isEnabled: this.isEnabled
     };
   }
 
-  // Cleanup on destroy
   destroy(): void {
     if (this.flushTimeout) {
       clearTimeout(this.flushTimeout);
     }
-    
-    // Final flush
-    this.flush();
+    void this.flush(); // Final flush
   }
 
+  // Private batch insert methods
   private async startBatchFlush(): Promise<void> {
-    const supabase = getSupabaseClient();
-    
-    if (!supabase) {
-      console.warn('[Monitoring] Supabase não disponível, dados em cache');
-      return;
-    }
+    // Start periodic flushing every 30 seconds
+    const interval = setInterval(() => {
+      void this.flush();
+    }, 30000);
 
-    try {
-      // Flush performance metrics
-      if (this.queue.length > 0) {
-        const metrics = this.queue.splice(0, 10);
-        await this.insertPerformanceMetrics(metrics);
-      }
-
-      // Flush error logs
-      if (this.queue.length > 0) {
-        const errors = this.queue.splice(0, 10);
-        await this.insertErrorLogs(errors);
-      }
-
-      // Flush analytics events
-      if (this.queue.length > 0) {
-        const analytics = this.queue.splice(0, 10);
-        await this.insertAnalyticsEvents(analytics);
-      }
-    } catch (error) {
-      console.error('Failed to flush monitoring data:', error);
-    }
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      clearInterval(interval);
+      void this.flush();
+    });
   }
 
   private async insertPerformanceMetrics(metrics: PerformanceMetric[]): Promise<void> {
-    const supabase = getSupabaseClient();
-    
-    if (!supabase) {
-      console.warn('[Monitoring] Supabase não disponível, dados em cache');
-      return;
-    }
-
     try {
-      const { error: metricsError } = await supabase
+      const supabase = getSupabaseClient();
+      if (!supabase) {
+        console.warn('Supabase client not available');
+        return;
+      }
+
+      const { error } = await supabase
         .from('performance_metrics')
         .insert(metrics);
-      
-      if (metricsError) {
-        console.error('Failed to insert performance metrics:', metricsError);
+
+      if (error) {
+        console.warn('Failed to insert performance metrics:', error);
       }
     } catch (error) {
-      console.error('Failed to insert performance metrics:', error);
+      console.warn('Error inserting performance metrics:', error);
     }
   }
 
   private async insertErrorLogs(errors: ErrorLog[]): Promise<void> {
-    const supabase = getSupabaseClient();
-    
-    if (!supabase) {
-      console.warn('[Monitoring] Supabase não disponível, dados em cache');
-      return;
-    }
-
     try {
-      const { error: errorsError } = await supabase
+      const supabase = getSupabaseClient();
+      if (!supabase) {
+        console.warn('Supabase client not available');
+        return;
+      }
+
+      const { error } = await supabase
         .from('error_logs')
         .insert(errors);
-      
-      if (errorsError) {
-        console.error('Failed to insert error logs:', errorsError);
+
+      if (error) {
+        console.warn('Failed to insert error logs:', error);
       }
     } catch (error) {
-      console.error('Failed to insert error logs:', error);
+      console.warn('Error inserting error logs:', error);
     }
   }
 
   private async insertAnalyticsEvents(events: AnalyticsEvent[]): Promise<void> {
-    const supabase = getSupabaseClient();
-    
-    if (!supabase) {
-      console.warn('[Monitoring] Supabase não disponível, dados em cache');
-      return;
-    }
-
     try {
-      const { error: analyticsError } = await supabase
+      const supabase = getSupabaseClient();
+      if (!supabase) {
+        console.warn('Supabase client not available');
+        return;
+      }
+
+      const { error } = await supabase
         .from('analytics_events')
         .insert(events);
-      
-      if (analyticsError) {
-        console.error('Failed to insert analytics events:', analyticsError);
+
+      if (error) {
+        console.warn('Failed to insert analytics events:', error);
       }
     } catch (error) {
-      console.error('Failed to insert analytics events:', error);
+      console.warn('Error inserting analytics events:', error);
     }
   }
 }
 
-// Singleton instance
+// Export singleton instance
 export const supabaseMonitoring = new SupabaseMonitoringService();
 
 // Export for use in components

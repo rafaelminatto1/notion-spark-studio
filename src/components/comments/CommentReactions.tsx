@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { CommentReaction } from '@/types/comments';
+import type { CommentReaction } from '@/types/comments';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { EmojiPicker } from '@/components/ui/emoji-picker';
@@ -25,13 +25,13 @@ export const CommentReactions: React.FC<CommentReactionsProps> = ({
   const { user } = useAuth();
   const [showPicker, setShowPicker] = useState(false);
 
-  const groupedReactions = reactions.reduce((acc, reaction) => {
+  const groupedReactions = reactions.reduce<Record<string, CommentReaction[]>>((acc, reaction) => {
     if (!acc[reaction.emoji]) {
       acc[reaction.emoji] = [];
     }
     acc[reaction.emoji].push(reaction);
     return acc;
-  }, {} as Record<string, CommentReaction[]>);
+  }, {});
 
   const handleReactionClick = useCallback((emoji: string) => {
     const userReaction = reactions.find(
@@ -58,7 +58,7 @@ export const CommentReactions: React.FC<CommentReactionsProps> = ({
           variant={reactions.some(r => r.userId === user?.id) ? 'default' : 'outline'}
           size="sm"
           className="h-8 px-2"
-          onClick={() => handleReactionClick(emoji)}
+          onClick={() => { handleReactionClick(emoji); }}
         >
           <span className="mr-1">{emoji}</span>
           <span className="text-sm">{reactions.length}</span>

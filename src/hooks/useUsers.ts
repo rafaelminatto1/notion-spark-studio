@@ -9,7 +9,7 @@ interface User {
   role?: string;
 }
 
-export const useUsers = (searchQuery: string = '') => {
+export const useUsers = (searchQuery = '') => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);

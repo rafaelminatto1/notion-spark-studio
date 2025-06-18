@@ -92,9 +92,9 @@ const SignupForm = ({
               type="text"
               placeholder="Seu nome completo"
               value={signupName}
-              onChange={(e) => handleNameChange(e.target.value)}
-              onFocus={() => setIsFormFocused(true)}
-              onBlur={() => setIsFormFocused(false)}
+              onChange={(e) => { handleNameChange(e.target.value); }}
+              onFocus={() => { setIsFormFocused(true); }}
+              onBlur={() => { setIsFormFocused(false); }}
               className={`pl-10 h-12 transition-all duration-200 ${
                 nameError ? 'border-red-500 focus:border-red-500' : 'focus:border-green-500 hover:border-green-300'
               }`}
@@ -121,9 +121,9 @@ const SignupForm = ({
               type="email"
               placeholder="seu@email.com"
               value={signupEmail}
-              onChange={(e) => handleEmailChange(e.target.value)}
-              onFocus={() => setIsFormFocused(true)}
-              onBlur={() => setIsFormFocused(false)}
+              onChange={(e) => { handleEmailChange(e.target.value); }}
+              onFocus={() => { setIsFormFocused(true); }}
+              onBlur={() => { setIsFormFocused(false); }}
               className={`pl-10 h-12 transition-all duration-200 ${
                 emailError ? 'border-red-500 focus:border-red-500' : 'focus:border-green-500 hover:border-green-300'
               }`}
@@ -150,9 +150,9 @@ const SignupForm = ({
               type={showSignupPassword ? 'text' : 'password'}
               placeholder="Crie uma senha forte"
               value={signupPassword}
-              onChange={(e) => handlePasswordChange(e.target.value)}
-              onFocus={() => setIsFormFocused(true)}
-              onBlur={() => setIsFormFocused(false)}
+              onChange={(e) => { handlePasswordChange(e.target.value); }}
+              onFocus={() => { setIsFormFocused(true); }}
+              onBlur={() => { setIsFormFocused(false); }}
               className={`pl-10 pr-12 h-12 transition-all duration-200 ${
                 passwordError ? 'border-red-500 focus:border-red-500' : 'focus:border-green-500 hover:border-green-300'
               }`}
@@ -162,7 +162,7 @@ const SignupForm = ({
             />
             <button
               type="button"
-              onClick={() => setShowSignupPassword(!showSignupPassword)}
+              onClick={() => { setShowSignupPassword(!showSignupPassword); }}
               className="absolute right-3 top-3.5 h-5 w-5 text-muted-foreground hover:text-foreground transition-all duration-200 hover:scale-110"
               disabled={isSubmitting}
             >
@@ -191,9 +191,9 @@ const SignupForm = ({
               type={showConfirmPassword ? 'text' : 'password'}
               placeholder="Confirme sua senha"
               value={confirmPassword}
-              onChange={(e) => handleConfirmPasswordChange(e.target.value)}
-              onFocus={() => setIsFormFocused(true)}
-              onBlur={() => setIsFormFocused(false)}
+              onChange={(e) => { handleConfirmPasswordChange(e.target.value); }}
+              onFocus={() => { setIsFormFocused(true); }}
+              onBlur={() => { setIsFormFocused(false); }}
               className={`pl-10 pr-12 h-12 transition-all duration-200 ${
                 confirmPasswordError ? 'border-red-500 focus:border-red-500' : 'focus:border-green-500 hover:border-green-300'
               }`}
@@ -202,7 +202,7 @@ const SignupForm = ({
             />
             <button
               type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              onClick={() => { setShowConfirmPassword(!showConfirmPassword); }}
               className="absolute right-3 top-3.5 h-5 w-5 text-muted-foreground hover:text-foreground transition-all duration-200 hover:scale-110"
               disabled={isSubmitting}
             >

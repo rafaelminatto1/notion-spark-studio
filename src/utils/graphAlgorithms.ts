@@ -1,4 +1,4 @@
-import { GraphNode, GraphLink, GraphCluster, CentralityMetrics, Community, PathResult } from '@/components/GraphView/types';
+import type { GraphNode, GraphLink, GraphCluster, CentralityMetrics, Community, PathResult } from '@/components/GraphView/types';
 
 export const performClustering = (nodes: GraphNode[]): GraphCluster[] => {
   const clusters: GraphCluster[] = [];

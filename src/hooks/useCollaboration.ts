@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { CollaboratorCursor } from '@/components/collaboration/LiveCursors';
-import { Operation } from '@/components/collaboration/OperationalTransform';
-import { Comment } from '@/components/collaboration/CommentsSystem';
+import type { CollaboratorCursor } from '@/components/collaboration/LiveCursors';
+import type { Operation } from '@/components/collaboration/OperationalTransform';
+import type { Comment } from '@/components/collaboration/CommentsSystem';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from './useAuth';
 import { useRealtime } from './useRealtime';
@@ -396,7 +396,7 @@ export const useCollaboration = ({
   }, [userId, sendMessage]);
 
   // Presence management
-  const updatePresence = useCallback((isTyping: boolean, isViewing: boolean = true) => {
+  const updatePresence = useCallback((isTyping: boolean, isViewing = true) => {
     sendMessage({
       type: 'presence-update',
       data: {
@@ -439,7 +439,7 @@ export const useCollaboration = ({
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    return () => { document.removeEventListener('visibilitychange', handleVisibilityChange); };
   }, [updatePresence]);
 
   // Auto-cleanup inactive cursors
@@ -452,7 +452,7 @@ export const useCollaboration = ({
       }));
     }, 60000); // Check every minute
 
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, []);
 
   // Inscrever-se em comentários

@@ -162,7 +162,7 @@ const MentionSelector: React.FC<MentionSelectorProps> = ({ query, onSelect, onCl
           {filteredUsers.map(user => (
             <button
               key={user.id}
-              onClick={() => onSelect(user.id, user.name)}
+              onClick={() => { onSelect(user.id, user.name); }}
               className="flex items-center gap-2 w-full p-2 text-left hover:bg-gray-50 rounded"
             >
               <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-xs text-white">
@@ -323,7 +323,7 @@ const CommentEditor: React.FC<CommentEditorProps> = ({
           <MentionSelector
             query={mentionQuery}
             onSelect={handleMentionSelect}
-            onClose={() => setShowMentions(false)}
+            onClose={() => { setShowMentions(false); }}
             users={mockUsers}
           />
         )}
@@ -382,8 +382,8 @@ const CommentItem: React.FC<CommentItemProps> = ({
         isReply && "ml-8 mt-2",
         !isRead && "bg-blue-50/30"
       )}
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => setShowActions(false)}
+      onMouseEnter={() => { setShowActions(true); }}
+      onMouseLeave={() => { setShowActions(false); }}
     >
       <div className="flex gap-3">
         {/* Avatar */}
@@ -447,7 +447,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
               {reactions.map(([emoji, userIds]) => (
                 <button
                   key={emoji}
-                  onClick={() => onReact(emoji)}
+                  onClick={() => { onReact(emoji); }}
                   className={cn(
                     "flex items-center gap-1 px-2 py-1 text-xs rounded-full border transition-colors",
                     userIds.includes(currentUserId)
@@ -480,7 +480,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                 </button>
                 
                 <button
-                  onClick={() => onReact('👍')}
+                  onClick={() => { onReact('👍'); }}
                   className="flex items-center gap-1 hover:text-blue-600 transition-colors"
                 >
                   <Heart className="h-3 w-3" />
@@ -589,7 +589,7 @@ export const ThreadedComments: React.FC<ThreadedCommentsProps> = ({
         
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setShowResolved(!showResolved)}
+            onClick={() => { setShowResolved(!showResolved); }}
             className={cn(
               "flex items-center gap-1 px-3 py-1 text-sm border rounded-lg transition-colors",
               showResolved
@@ -616,11 +616,11 @@ export const ThreadedComments: React.FC<ThreadedCommentsProps> = ({
                 key={`pinned-${comment.id}`}
                 comment={comment}
                 currentUserId={currentUserId}
-                onReply={() => startReply(comment.id)}
-                onEdit={() => startEdit(comment.id)}
-                onDelete={() => onDeleteComment(comment.id)}
-                onReact={(emoji) => onReactToComment(comment.id, emoji)}
-                onPin={() => onPinComment(comment.id)}
+                onReply={() => { startReply(comment.id); }}
+                onEdit={() => { startEdit(comment.id); }}
+                onDelete={() => { onDeleteComment(comment.id); }}
+                onReact={(emoji) => { onReactToComment(comment.id, emoji); }}
+                onPin={() => { onPinComment(comment.id); }}
               />
             ))}
           </div>
@@ -650,7 +650,7 @@ export const ThreadedComments: React.FC<ThreadedCommentsProps> = ({
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => toggleThread(thread.id)}
+                    onClick={() => { toggleThread(thread.id); }}
                     className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
                   >
                     <MessageCircle className="h-4 w-4" />
@@ -675,7 +675,7 @@ export const ThreadedComments: React.FC<ThreadedCommentsProps> = ({
                     </div>
                   ) : (
                     <button
-                      onClick={() => onResolveThread(thread.id)}
+                      onClick={() => { onResolveThread(thread.id); }}
                       className="text-xs text-gray-500 hover:text-green-600 transition-colors"
                     >
                       Marcar como resolvido
@@ -688,11 +688,11 @@ export const ThreadedComments: React.FC<ThreadedCommentsProps> = ({
               <CommentItem
                 comment={rootComment}
                 currentUserId={currentUserId}
-                onReply={() => startReply(rootComment.id)}
-                onEdit={() => startEdit(rootComment.id)}
-                onDelete={() => onDeleteComment(rootComment.id)}
-                onReact={(emoji) => onReactToComment(rootComment.id, emoji)}
-                onPin={() => onPinComment(rootComment.id)}
+                onReply={() => { startReply(rootComment.id); }}
+                onEdit={() => { startEdit(rootComment.id); }}
+                onDelete={() => { onDeleteComment(rootComment.id); }}
+                onReact={(emoji) => { onReactToComment(rootComment.id, emoji); }}
+                onPin={() => { onPinComment(rootComment.id); }}
               />
 
               {/* Respostas */}
@@ -710,11 +710,11 @@ export const ThreadedComments: React.FC<ThreadedCommentsProps> = ({
                         comment={reply}
                         isReply
                         currentUserId={currentUserId}
-                        onReply={() => startReply(reply.id)}
-                        onEdit={() => startEdit(reply.id)}
-                        onDelete={() => onDeleteComment(reply.id)}
-                        onReact={(emoji) => onReactToComment(reply.id, emoji)}
-                        onPin={() => onPinComment(reply.id)}
+                        onReply={() => { startReply(reply.id); }}
+                        onEdit={() => { startEdit(reply.id); }}
+                        onDelete={() => { onDeleteComment(reply.id); }}
+                        onReact={(emoji) => { onReactToComment(reply.id, emoji); }}
+                        onPin={() => { onPinComment(reply.id); }}
                       />
                     ))}
                   </motion.div>

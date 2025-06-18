@@ -214,7 +214,7 @@ const useCommandChaining = () => {
 
   const executeChain = useCallback(() => {
     commandChain.forEach((command, index) => {
-      setTimeout(() => command.action(), index * 500);
+      setTimeout(() => { command.action(); }, index * 500);
     });
     setCommandChain([]);
     setIsChaining(false);
@@ -564,12 +564,12 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 
   // Agrupar comandos por categoria
   const groupedCommands = useMemo(() => {
-    const groups = filteredCommands.reduce((acc, command) => {
+    const groups = filteredCommands.reduce<Record<string, Command[]>>((acc, command) => {
       const category = command.category;
       if (!acc[category]) acc[category] = [];
       acc[category].push(command);
       return acc;
-    }, {} as Record<string, Command[]>);
+    }, {});
 
     // Ordem das categorias
     const categoryOrder = ['search', 'recent', 'create', 'ai', 'navigate', 'actions'];
@@ -715,7 +715,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
               <Input
                 ref={inputRef}
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => { setQuery(e.target.value); }}
                 onKeyDown={handleKeyDown}
                 placeholder={
                   isListening 
@@ -798,7 +798,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                                 ? "bg-blue-600 text-white" 
                                 : "hover:bg-slate-800 text-slate-300 hover:text-white"
                             )}
-                            onClick={() => executeCommand(command)}
+                            onClick={() => { executeCommand(command); }}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: commandIndex * 0.02 }}

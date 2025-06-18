@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Comment } from '@/types/comments';
+import type { Comment } from '@/types/comments';
 import { useSupabase } from '@/hooks/useSupabase';
 import { useRealtime } from '@/hooks/useRealtime';
 

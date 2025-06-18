@@ -2,7 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { GraphNode } from './types';
+import type { GraphNode } from './types';
 import { FileText, Folder, Database, Tag, Clock, Link, Users } from 'lucide-react';
 
 interface GraphTooltipProps {

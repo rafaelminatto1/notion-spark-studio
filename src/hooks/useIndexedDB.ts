@@ -143,8 +143,8 @@ export const useIndexedDB = (config: IndexedDBConfig = DEFAULT_CONFIG) => {
       const store = transaction.objectStore(storeName);
       const request = store.get(key);
 
-      request.onsuccess = () => resolve(request.result || null);
-      request.onerror = () => reject(request.error);
+      request.onsuccess = () => { resolve(request.result || null); };
+      request.onerror = () => { reject(request.error); };
     });
   }, [db]);
 
@@ -156,8 +156,8 @@ export const useIndexedDB = (config: IndexedDBConfig = DEFAULT_CONFIG) => {
       const store = transaction.objectStore(storeName);
       const request = store.getAll();
 
-      request.onsuccess = () => resolve(request.result || []);
-      request.onerror = () => reject(request.error);
+      request.onsuccess = () => { resolve(request.result || []); };
+      request.onerror = () => { reject(request.error); };
     });
   }, [db]);
 
@@ -169,8 +169,8 @@ export const useIndexedDB = (config: IndexedDBConfig = DEFAULT_CONFIG) => {
       const store = transaction.objectStore(storeName);
       const request = store.put(data);
 
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
+      request.onsuccess = () => { resolve(); };
+      request.onerror = () => { reject(request.error); };
     });
   }, [db]);
 
@@ -182,8 +182,8 @@ export const useIndexedDB = (config: IndexedDBConfig = DEFAULT_CONFIG) => {
       const store = transaction.objectStore(storeName);
       const request = store.delete(key);
 
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
+      request.onsuccess = () => { resolve(); };
+      request.onerror = () => { reject(request.error); };
     });
   }, [db]);
 
@@ -195,8 +195,8 @@ export const useIndexedDB = (config: IndexedDBConfig = DEFAULT_CONFIG) => {
       const store = transaction.objectStore(storeName);
       const request = store.clear();
 
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
+      request.onsuccess = () => { resolve(); };
+      request.onerror = () => { reject(request.error); };
     });
   }, [db]);
 
@@ -219,8 +219,8 @@ export const useIndexedDB = (config: IndexedDBConfig = DEFAULT_CONFIG) => {
         request = query ? store.getAll(query) : store.getAll();
       }
 
-      request.onsuccess = () => resolve(request.result || []);
-      request.onerror = () => reject(request.error);
+      request.onsuccess = () => { resolve(request.result || []); };
+      request.onerror = () => { reject(request.error); };
     });
   }, [db]);
 

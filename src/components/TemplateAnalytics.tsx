@@ -119,7 +119,7 @@ export const TemplateAnalytics: React.FC<TemplateAnalyticsProps> = ({
         {/* Navigation */}
         <div className="flex border-b border-white/10 bg-workspace-surface/30">
           <Button
-            onClick={() => setViewMode('overview')}
+            onClick={() => { setViewMode('overview'); }}
             variant={viewMode === 'overview' ? 'default' : 'ghost'}
             className="rounded-none border-b-2 border-transparent data-[active=true]:border-purple-500"
             data-active={viewMode === 'overview'}
@@ -128,7 +128,7 @@ export const TemplateAnalytics: React.FC<TemplateAnalyticsProps> = ({
             Visão Geral
           </Button>
           <Button
-            onClick={() => setViewMode('categories')}
+            onClick={() => { setViewMode('categories'); }}
             variant={viewMode === 'categories' ? 'default' : 'ghost'}
             className="rounded-none border-b-2 border-transparent data-[active=true]:border-purple-500"
             data-active={viewMode === 'categories'}
@@ -137,7 +137,7 @@ export const TemplateAnalytics: React.FC<TemplateAnalyticsProps> = ({
             Categorias
           </Button>
           <Button
-            onClick={() => setViewMode('templates')}
+            onClick={() => { setViewMode('templates'); }}
             variant={viewMode === 'templates' ? 'default' : 'ghost'}
             className="rounded-none border-b-2 border-transparent data-[active=true]:border-purple-500"
             data-active={viewMode === 'templates'}

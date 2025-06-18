@@ -261,7 +261,7 @@ const AIWorkspace: React.FC = () => {
               <Textarea
                 placeholder="Cole ou digite seu texto aqui para processar com IA..."
                 value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
+                onChange={(e) => { setInputText(e.target.value); }}
                 className="min-h-[300px] resize-none"
               />
               <div className="flex justify-between text-sm text-muted-foreground">
@@ -269,7 +269,7 @@ const AIWorkspace: React.FC = () => {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => setInputText('')}
+                  onClick={() => { setInputText(''); }}
                   disabled={!inputText}
                 >
                   Limpar
@@ -307,7 +307,7 @@ const AIWorkspace: React.FC = () => {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => setOutputText('')}
+                    onClick={() => { setOutputText(''); }}
                     disabled={!outputText}
                   >
                     Limpar

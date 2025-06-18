@@ -106,7 +106,7 @@ const useOperationalTransform = (
     };
 
     const interval = setInterval(simulateRemoteOperations, 10000);
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, [documentId]);
 
   // Aplicar operação local
@@ -258,7 +258,7 @@ const checkForConflicts = (operation: TextOperation, activeOperations: TextOpera
 
 // Transformar operação baseada em operações concorrentes
 const transformOperation = (operation: TextOperation, concurrentOps: TextOperation[]): TextOperation => {
-  let transformedOp = { ...operation };
+  const transformedOp = { ...operation };
   
   // Ajustar posição baseado em operações anteriores
   for (const concurrentOp of concurrentOps) {

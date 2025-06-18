@@ -1,6 +1,6 @@
 
 import { useCallback } from 'react';
-import { WorkspaceLayout, PanelConfig, WorkspaceSettings } from '@/types/workspace';
+import type { WorkspaceLayout, PanelConfig, WorkspaceSettings } from '@/types/workspace';
 
 interface UseWorkspaceActionsProps {
   currentWorkspace: WorkspaceLayout;
@@ -97,7 +97,7 @@ export const useWorkspaceActions = ({
     
     if (workspace) {
       const dataStr = JSON.stringify(workspace, null, 2);
-      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+      const dataUri = `data:application/json;charset=utf-8,${ encodeURIComponent(dataStr)}`;
       
       const exportFileDefaultName = `workspace-${workspace.name.toLowerCase().replace(/\s+/g, '-')}.json`;
       

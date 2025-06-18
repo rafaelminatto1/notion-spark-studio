@@ -386,7 +386,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             {(['24h', '7d', '30d', '90d'] as const).map((range) => (
               <button
                 key={range}
-                onClick={() => onTimeRangeChange(range)}
+                onClick={() => { onTimeRangeChange(range); }}
                 className={cn(
                   "px-3 py-1 text-sm rounded transition-colors",
                   timeRange === range
@@ -415,7 +415,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         ].map(({ id, label, icon: Icon }) => (
           <button
             key={id}
-            onClick={() => setActiveTab(id as any)}
+            onClick={() => { setActiveTab(id as any); }}
             className={cn(
               "flex items-center gap-2 px-4 py-2 text-sm rounded transition-colors",
               activeTab === id

@@ -1,6 +1,6 @@
 import { getSupabaseClient } from '@/lib/supabase-config';
 import { useState, useEffect, useCallback } from 'react';
-import { FileItem } from '@/types/FileItem';
+import type { FileItem } from '@/types/FileItem';
 import { useToast } from '@/hooks/use-toast';
 
 export const useSupabaseFiles = () => {
@@ -144,7 +144,7 @@ export const useSupabaseFiles = () => {
       };
 
       let result;
-      if (file.id && file.id.startsWith('dev-')) {
+      if (file.id?.startsWith('dev-')) {
         // Creating new file (development ID)
         const { data, error } = await supabase
           .from('files')

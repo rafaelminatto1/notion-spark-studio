@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { taskService } from '@/services/taskService';
-import { Task, TaskFilters } from '@/types/task';
+import type { Task, TaskFilters } from '@/types/task';
 import { useToast } from '@/hooks/use-toast';
 
 export function useTasks(initialFilters?: TaskFilters) {

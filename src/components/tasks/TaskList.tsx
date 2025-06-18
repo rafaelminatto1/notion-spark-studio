@@ -23,7 +23,7 @@ export function TaskList() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Minhas Tarefas</h2>
-        <Button onClick={() => setIsDialogOpen(true)}>
+        <Button onClick={() => { setIsDialogOpen(true); }}>
           <Plus className="w-4 h-4 mr-2" />
           Nova Tarefa
         </Button>

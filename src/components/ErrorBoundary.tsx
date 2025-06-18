@@ -1,4 +1,5 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import type { ErrorInfo, ReactNode } from 'react';
+import React, { Component } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
 import { Button } from './ui/button';
 import { AlertTriangle, RefreshCw, Home, Bug, Mail } from 'lucide-react';
@@ -219,7 +220,7 @@ class EnhancedErrorBoundary extends Component<Props, State> {
 
   componentWillUnmount() {
     // Limpar timeouts
-    this.retryTimeouts.forEach(timeout => clearTimeout(timeout));
+    this.retryTimeouts.forEach(timeout => { clearTimeout(timeout); });
   }
 
   render() {
@@ -262,7 +263,7 @@ class EnhancedErrorBoundary extends Component<Props, State> {
               <div className="space-y-2">
                 {this.props.enableRetry !== false && (
                   <Button 
-                    onClick={() => this.handleRetry()} 
+                    onClick={() => { this.handleRetry(); }} 
                     className="w-full"
                     disabled={this.state.isRetrying}
                   >

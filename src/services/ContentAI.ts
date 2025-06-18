@@ -1,4 +1,4 @@
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 export interface AIAnalysis {
   tags: string[];
@@ -141,7 +141,7 @@ export class ContentIntelligence {
   async findSimilarDocuments(
     targetDocument: FileItem, 
     allDocuments: FileItem[], 
-    threshold: number = 0.3
+    threshold = 0.3
   ): Promise<SimilarityResult[]> {
     const results: SimilarityResult[] = [];
     const targetAnalysis = await this.analyzeContent(targetDocument.content || '', targetDocument.name);
@@ -390,7 +390,7 @@ export class ContentIntelligence {
       .filter(s => s.length > 20);
 
     if (sentences.length === 0) return 'Conteúdo muito breve para gerar resumo.';
-    if (sentences.length <= 2) return sentences.join('. ') + '.';
+    if (sentences.length <= 2) return `${sentences.join('. ')  }.`;
 
     // Take first sentence, longest sentence, and last sentence
     const firstSentence = sentences[0];
@@ -405,7 +405,7 @@ export class ContentIntelligence {
       summary.push(lastSentence);
     }
 
-    return summary.join('. ') + '.';
+    return `${summary.join('. ')  }.`;
   }
 
   private generateSuggestions(content: string, keywords: string[]): string[] {

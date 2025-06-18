@@ -121,7 +121,7 @@ export const BreadcrumbsNav: React.FC<BreadcrumbsNavProps> = ({
           return (
             <React.Fragment key={item.id}>
               <button
-                onClick={() => handleBreadcrumbClick(item, index)}
+                onClick={() => { handleBreadcrumbClick(item, index); }}
                 disabled={!isClickable}
                 className={cn(
                   "flex items-center gap-2 px-2 py-1 rounded-lg transition-all duration-200",

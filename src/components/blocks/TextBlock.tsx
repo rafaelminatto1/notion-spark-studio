@@ -1,7 +1,7 @@
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { Textarea } from '@/components/ui/textarea';
-import { Block } from '@/types';
+import type { Block } from '@/types';
 import { cn } from '@/lib/utils';
 import { MediaManagerEnhanced } from '@/components/MediaManagerEnhanced';
 import { TemplateSelector } from '@/components/TemplateSelector';
@@ -41,9 +41,9 @@ export const TextBlock: React.FC<TextBlockProps> = ({
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const newContent = 
-      block.content.substring(0, start) + 
-      '\n' + markdown + '\n' + 
-      block.content.substring(end);
+      `${block.content.substring(0, start)  
+      }\n${  markdown  }\n${  
+      block.content.substring(end)}`;
     
     onUpdate({ content: newContent });
     
@@ -122,7 +122,7 @@ export const TextBlock: React.FC<TextBlockProps> = ({
         <TemplateQuickActions
           onSelectTemplate={(templateContent) => {
             onUpdate({ content: templateContent });
-            setTimeout(() => adjustHeight(), 100);
+            setTimeout(() => { adjustHeight(); }, 100);
             toast.success('Template rápido aplicado! ⚡');
           }}
           className="opacity-60 hover:opacity-100 transition-opacity"
@@ -130,7 +130,7 @@ export const TextBlock: React.FC<TextBlockProps> = ({
         <TemplateSelector
           onSelectTemplate={(templateContent) => {
             onUpdate({ content: templateContent });
-            setTimeout(() => adjustHeight(), 100);
+            setTimeout(() => { adjustHeight(); }, 100);
             toast.success('Template aplicado! 🎉');
           }}
           className="opacity-60 hover:opacity-100 transition-opacity"

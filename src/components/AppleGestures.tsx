@@ -1,4 +1,5 @@
-import React, { useRef, useEffect, useState, ReactNode } from 'react';
+import type { ReactNode } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useAppleDevice } from '@/hooks/useAppleDevice';
 

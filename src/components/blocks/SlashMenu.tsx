@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Block } from '@/types';
+import type { Block } from '@/types';
 import { 
   Type, Hash, List, Code, Quote, Image, Table, 
   Info, ToggleLeft, Calendar, Calculator, Database,
@@ -190,12 +190,12 @@ export const SlashMenu: React.FC<SlashMenuProps> = ({
   });
 
   // Group items by category
-  const groupedItems = filteredItems.reduce((acc, item) => {
+  const groupedItems = filteredItems.reduce<Record<string, typeof filteredItems>>((acc, item) => {
     const category = item.category || 'básico';
     if (!acc[category]) acc[category] = [];
     acc[category].push(item);
     return acc;
-  }, {} as Record<string, typeof filteredItems>);
+  }, {});
 
   const categoryOrder = ['básico', 'mídia', 'embed', 'avançado'];
   const categoryLabels = {
@@ -238,7 +238,7 @@ export const SlashMenu: React.FC<SlashMenuProps> = ({
                     <Button
                       key={`${item.type}-${index}`}
                       variant="ghost"
-                      onClick={() => onSelect(item.type, item.properties)}
+                      onClick={() => { onSelect(item.type, item.properties); }}
                       className="w-full justify-start gap-3 h-auto p-3 text-left hover:bg-notion-purple/20"
                     >
                       <Icon className="h-4 w-4 text-gray-400 flex-shrink-0" />

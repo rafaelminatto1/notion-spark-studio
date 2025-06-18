@@ -16,7 +16,7 @@ import {
   Eye,
   Link
 } from 'lucide-react';
-import { GraphNode, GraphLink } from '@/types/graph';
+import type { GraphNode, GraphLink } from '@/types/graph';
 import { useGraphAnalytics } from '@/hooks/useGraphAnalytics';
 
 interface GraphAnalyticsProps {
@@ -156,7 +156,7 @@ export const GraphAnalytics: React.FC<GraphAnalyticsProps> = ({
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.1 }}
               className="flex items-center justify-between p-3 rounded-lg bg-notion-dark/50 hover:bg-notion-purple/10 transition-colors cursor-pointer"
-              onClick={() => onNodeSelect(node.id)}
+              onClick={() => { onNodeSelect(node.id); }}
             >
               <div className="flex items-center space-x-3">
                 <Badge variant="outline" className="text-xs">
@@ -206,7 +206,7 @@ export const GraphAnalytics: React.FC<GraphAnalyticsProps> = ({
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.1 }}
               className="flex items-center justify-between p-3 rounded-lg bg-notion-dark/50 hover:bg-notion-purple/10 transition-colors cursor-pointer"
-              onClick={() => onNodeSelect(node.id)}
+              onClick={() => { onNodeSelect(node.id); }}
             >
               <div className="flex items-center space-x-3">
                 <Badge variant="outline" className="text-xs">
@@ -311,7 +311,7 @@ export const GraphAnalytics: React.FC<GraphAnalyticsProps> = ({
                     key={node.id}
                     variant="outline"
                     size="sm"
-                    onClick={() => onPathFind(selectedNode, node.id)}
+                    onClick={() => { onPathFind(selectedNode, node.id); }}
                     disabled={node.id === selectedNode}
                     className="text-xs"
                   >

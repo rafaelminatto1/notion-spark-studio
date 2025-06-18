@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Database, DatabaseView, DatabaseRow } from '@/types/database';
+import type { Database, DatabaseView, DatabaseRow } from '@/types/database';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, MoreHorizontal } from 'lucide-react';
@@ -21,7 +21,7 @@ export const DatabaseKanban: React.FC<DatabaseKanbanProps> = ({
     p.type === 'select' && view.groupBy === p.id
   );
 
-  if (!groupProperty || !groupProperty.options?.selectOptions) {
+  if (!groupProperty?.options?.selectOptions) {
     return (
       <div className="p-8 text-center text-gray-400">
         <p>Configure um campo Select para agrupar as colunas do Kanban</p>
@@ -118,7 +118,7 @@ export const DatabaseKanban: React.FC<DatabaseKanbanProps> = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => addCardToColumn(column.id)}
+                  onClick={() => { addCardToColumn(column.id); }}
                   className="h-6 w-6 p-0"
                 >
                   <Plus className="h-3 w-3" />

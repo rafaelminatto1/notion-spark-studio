@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Database, DatabaseView, DatabaseProperty, DatabaseRow } from '@/types/database';
+import type { Database, DatabaseView, DatabaseProperty, DatabaseRow } from '@/types/database';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -63,7 +63,7 @@ export const DatabaseTable: React.FC<DatabaseTableProps> = ({
     return (
       <div
         className="p-2 min-h-[40px] flex items-center cursor-pointer hover:bg-notion-dark-hover rounded"
-        onClick={() => setEditingCell({ rowId: row.id, propertyId: property.id })}
+        onClick={() => { setEditingCell({ rowId: row.id, propertyId: property.id }); }}
       >
         {renderCellContent(property, value)}
       </div>
@@ -89,7 +89,7 @@ export const DatabaseTable: React.FC<DatabaseTableProps> = ({
         return selectOption ? (
           <span 
             className="px-2 py-1 rounded text-sm"
-            style={{ backgroundColor: selectOption.color + '20', color: selectOption.color }}
+            style={{ backgroundColor: `${selectOption.color  }20`, color: selectOption.color }}
           >
             {selectOption.name}
           </span>
@@ -104,7 +104,7 @@ export const DatabaseTable: React.FC<DatabaseTableProps> = ({
                 <span
                   key={optionId}
                   className="px-2 py-1 rounded text-xs"
-                  style={{ backgroundColor: option.color + '20', color: option.color }}
+                  style={{ backgroundColor: `${option.color  }20`, color: option.color }}
                 >
                   {option.name}
                 </span>
@@ -132,8 +132,8 @@ export const DatabaseTable: React.FC<DatabaseTableProps> = ({
         return (
           <Input
             value={value || ''}
-            onChange={(e) => updateRowProperty(row.id, property.id, e.target.value)}
-            onBlur={() => setEditingCell(null)}
+            onChange={(e) => { updateRowProperty(row.id, property.id, e.target.value); }}
+            onBlur={() => { setEditingCell(null); }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === 'Escape') {
                 setEditingCell(null);
@@ -149,8 +149,8 @@ export const DatabaseTable: React.FC<DatabaseTableProps> = ({
           <Input
             type="number"
             value={value || ''}
-            onChange={(e) => updateRowProperty(row.id, property.id, e.target.value ? Number(e.target.value) : null)}
-            onBlur={() => setEditingCell(null)}
+            onChange={(e) => { updateRowProperty(row.id, property.id, e.target.value ? Number(e.target.value) : null); }}
+            onBlur={() => { setEditingCell(null); }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === 'Escape') {
                 setEditingCell(null);
@@ -165,7 +165,7 @@ export const DatabaseTable: React.FC<DatabaseTableProps> = ({
         return (
           <Checkbox
             checked={Boolean(value)}
-            onCheckedChange={(checked) => updateRowProperty(row.id, property.id, checked)}
+            onCheckedChange={(checked) => { updateRowProperty(row.id, property.id, checked); }}
           />
         );
       
@@ -173,7 +173,7 @@ export const DatabaseTable: React.FC<DatabaseTableProps> = ({
         return (
           <Select
             value={value || ''}
-            onValueChange={(newValue) => updateRowProperty(row.id, property.id, newValue)}
+            onValueChange={(newValue) => { updateRowProperty(row.id, property.id, newValue); }}
           >
             <SelectTrigger className="h-8">
               <SelectValue />
@@ -220,8 +220,8 @@ export const DatabaseTable: React.FC<DatabaseTableProps> = ({
         return (
           <Input
             value={value || ''}
-            onChange={(e) => updateRowProperty(row.id, property.id, e.target.value)}
-            onBlur={() => setEditingCell(null)}
+            onChange={(e) => { updateRowProperty(row.id, property.id, e.target.value); }}
+            onBlur={() => { setEditingCell(null); }}
             autoFocus
             className="h-8"
           />
@@ -254,7 +254,7 @@ export const DatabaseTable: React.FC<DatabaseTableProps> = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => deleteRow(row.id)}
+                  onClick={() => { deleteRow(row.id); }}
                   className="h-6 w-6 p-0 text-gray-400 hover:text-red-400"
                 >
                   <MoreHorizontal className="h-3 w-3" />

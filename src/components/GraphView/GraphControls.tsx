@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
-import { GraphFilters } from './types';
+import type { GraphFilters } from './types';
 import { cn } from '@/lib/utils';
 
 interface GraphControlsProps {
@@ -71,7 +71,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 value={filters.searchQuery}
-                onChange={(e) => onFiltersChange({ ...filters, searchQuery: e.target.value })}
+                onChange={(e) => { onFiltersChange({ ...filters, searchQuery: e.target.value }); }}
                 placeholder="🔍 Buscar arquivos, tags..."
                 className="graph-search pl-10"
               />
@@ -103,7 +103,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onShowPathFindingChange(!showPathFinding)}
+                onClick={() => { onShowPathFindingChange(!showPathFinding); }}
                 className={cn(
                   "graph-button text-white p-2",
                   showPathFinding && "active"
@@ -130,7 +130,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setShowSettings(!showSettings)}
+                onClick={() => { setShowSettings(!showSettings); }}
                 className={cn("graph-button text-white p-2", showSettings && "active")}
                 title="Configurações avançadas"
               >
@@ -155,7 +155,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
               <Switch
                 checked={layoutSettings.physics}
                 onCheckedChange={(physics) => 
-                  onLayoutSettingsChange({ ...layoutSettings, physics })
+                  { onLayoutSettingsChange({ ...layoutSettings, physics }); }
                 }
               />
             </div>
@@ -167,7 +167,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
               <Slider
                 value={[layoutSettings.linkDistance]}
                 onValueChange={([value]) => 
-                  onLayoutSettingsChange({ ...layoutSettings, linkDistance: value })
+                  { onLayoutSettingsChange({ ...layoutSettings, linkDistance: value }); }
                 }
                 max={300}
                 min={50}
@@ -189,7 +189,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
                     <Button
                       variant={viewMode === mode ? "default" : "outline"}
                       size="sm"
-                      onClick={() => onViewModeChange(mode)}
+                      onClick={() => { onViewModeChange(mode); }}
                       className={cn(
                         "graph-button text-xs h-auto py-3 px-4 flex flex-col gap-1 w-full",
                         viewMode === mode && "active"
@@ -212,7 +212,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
                 <Slider
                   value={[filters.minConnections]}
                   onValueChange={([value]) => 
-                    onFiltersChange({ ...filters, minConnections: value })
+                    { onFiltersChange({ ...filters, minConnections: value }); }
                   }
                   max={20}
                   min={0}
@@ -225,7 +225,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
                 <Switch
                   checked={filters.showOrphans}
                   onCheckedChange={(showOrphans) => 
-                    onFiltersChange({ ...filters, showOrphans })
+                    { onFiltersChange({ ...filters, showOrphans }); }
                   }
                 />
               </div>

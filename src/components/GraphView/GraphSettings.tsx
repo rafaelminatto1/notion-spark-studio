@@ -24,7 +24,7 @@ import {
   Monitor,
   Smartphone
 } from 'lucide-react';
-import { LayoutSettings, GraphFilters } from './types';
+import type { LayoutSettings, GraphFilters } from './types';
 import { toast } from '@/components/ui/use-toast';
 
 interface GraphSettingsProps {
@@ -144,7 +144,7 @@ export const GraphSettings: React.FC<GraphSettingsProps> = ({
     const settings = {
       layout: layoutSettings,
       advanced: advancedSettings,
-      filters: filters,
+      filters,
       timestamp: new Date().toISOString()
     };
 
@@ -192,7 +192,7 @@ export const GraphSettings: React.FC<GraphSettingsProps> = ({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setShowAdvanced(!showAdvanced)}
+            onClick={() => { setShowAdvanced(!showAdvanced); }}
             className="gap-2"
           >
             <Cpu className="h-4 w-4" />
@@ -245,7 +245,7 @@ export const GraphSettings: React.FC<GraphSettingsProps> = ({
                     <Label className="text-sm">Tipo de Layout</Label>
                     <Select 
                       value={layoutSettings.type} 
-                      onValueChange={(value) => handleLayoutChange('type', value)}
+                      onValueChange={(value) => { handleLayoutChange('type', value); }}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -264,7 +264,7 @@ export const GraphSettings: React.FC<GraphSettingsProps> = ({
                       <Label className="text-sm">Física</Label>
                       <Switch 
                         checked={layoutSettings.physics} 
-                        onCheckedChange={(checked) => handleLayoutChange('physics', checked)}
+                        onCheckedChange={(checked) => { handleLayoutChange('physics', checked); }}
                       />
                     </div>
                   </div>
@@ -277,7 +277,7 @@ export const GraphSettings: React.FC<GraphSettingsProps> = ({
                     </Label>
                     <Slider
                       value={[layoutSettings.forceStrength]}
-                      onValueChange={([value]) => handleLayoutChange('forceStrength', value)}
+                      onValueChange={([value]) => { handleLayoutChange('forceStrength', value); }}
                       min={0.1}
                       max={3}
                       step={0.1}
@@ -291,7 +291,7 @@ export const GraphSettings: React.FC<GraphSettingsProps> = ({
                     </Label>
                     <Slider
                       value={[layoutSettings.linkDistance]}
-                      onValueChange={([value]) => handleLayoutChange('linkDistance', value)}
+                      onValueChange={([value]) => { handleLayoutChange('linkDistance', value); }}
                       min={50}
                       max={300}
                       step={10}
@@ -305,7 +305,7 @@ export const GraphSettings: React.FC<GraphSettingsProps> = ({
                     </Label>
                     <Slider
                       value={[layoutSettings.collisionRadius]}
-                      onValueChange={([value]) => handleLayoutChange('collisionRadius', value)}
+                      onValueChange={([value]) => { handleLayoutChange('collisionRadius', value); }}
                       min={5}
                       max={50}
                       step={1}
@@ -331,7 +331,7 @@ export const GraphSettings: React.FC<GraphSettingsProps> = ({
                     {colorSchemes.map((scheme) => (
                       <button
                         key={scheme.value}
-                        onClick={() => handleAdvancedChange('visual', 'colorScheme', scheme.value)}
+                        onClick={() => { handleAdvancedChange('visual', 'colorScheme', scheme.value); }}
                         className={`p-3 rounded-lg border-2 transition-all flex items-center gap-3 ${
                           advancedSettings.visual.colorScheme === scheme.value
                             ? 'border-blue-500 bg-blue-50 dark:bg-blue-950'
@@ -352,7 +352,7 @@ export const GraphSettings: React.FC<GraphSettingsProps> = ({
                   <Label className="text-sm">Efeito Glow nos Nós</Label>
                   <Switch 
                     checked={advancedSettings.visual.nodeGlowEffect} 
-                    onCheckedChange={(checked) => handleAdvancedChange('visual', 'nodeGlowEffect', checked)}
+                    onCheckedChange={(checked) => { handleAdvancedChange('visual', 'nodeGlowEffect', checked); }}
                   />
                 </div>
 
@@ -360,7 +360,7 @@ export const GraphSettings: React.FC<GraphSettingsProps> = ({
                   <Label className="text-sm">Animações</Label>
                   <Switch 
                     checked={advancedSettings.visual.enableAnimations} 
-                    onCheckedChange={(checked) => handleAdvancedChange('visual', 'enableAnimations', checked)}
+                    onCheckedChange={(checked) => { handleAdvancedChange('visual', 'enableAnimations', checked); }}
                   />
                 </div>
               </CardContent>
@@ -391,7 +391,7 @@ export const GraphSettings: React.FC<GraphSettingsProps> = ({
                       <Label>Força de Centralização: {layoutSettings.centeringStrength}</Label>
                       <Slider
                         value={[layoutSettings.centeringStrength]}
-                        onValueChange={([value]) => handleLayoutChange('centeringStrength', value)}
+                        onValueChange={([value]) => { handleLayoutChange('centeringStrength', value); }}
                         min={0}
                         max={1}
                         step={0.1}
@@ -411,7 +411,7 @@ export const GraphSettings: React.FC<GraphSettingsProps> = ({
                       <Label>Velocidade das Animações: {advancedSettings.visual.animationSpeed}x</Label>
                       <Slider
                         value={[advancedSettings.visual.animationSpeed]}
-                        onValueChange={([value]) => handleAdvancedChange('visual', 'animationSpeed', value)}
+                        onValueChange={([value]) => { handleAdvancedChange('visual', 'animationSpeed', value); }}
                         min={0.1}
                         max={3}
                         step={0.1}
@@ -422,7 +422,7 @@ export const GraphSettings: React.FC<GraphSettingsProps> = ({
                       <Label>Sistema de Partículas</Label>
                       <Switch 
                         checked={advancedSettings.visual.particleSystem} 
-                        onCheckedChange={(checked) => handleAdvancedChange('visual', 'particleSystem', checked)}
+                        onCheckedChange={(checked) => { handleAdvancedChange('visual', 'particleSystem', checked); }}
                       />
                     </div>
 
@@ -430,7 +430,7 @@ export const GraphSettings: React.FC<GraphSettingsProps> = ({
                       <Label>Glow nas Conexões</Label>
                       <Switch 
                         checked={advancedSettings.visual.edgeGlowEffect} 
-                        onCheckedChange={(checked) => handleAdvancedChange('visual', 'edgeGlowEffect', checked)}
+                        onCheckedChange={(checked) => { handleAdvancedChange('visual', 'edgeGlowEffect', checked); }}
                       />
                     </div>
                   </CardContent>
@@ -447,7 +447,7 @@ export const GraphSettings: React.FC<GraphSettingsProps> = ({
                       <Label>Virtualização de Nós</Label>
                       <Switch 
                         checked={advancedSettings.performance.enableVirtualization} 
-                        onCheckedChange={(checked) => handleAdvancedChange('performance', 'enableVirtualization', checked)}
+                        onCheckedChange={(checked) => { handleAdvancedChange('performance', 'enableVirtualization', checked); }}
                       />
                     </div>
 
@@ -455,7 +455,7 @@ export const GraphSettings: React.FC<GraphSettingsProps> = ({
                       <Label>Máximo de Nós Visíveis: {advancedSettings.performance.maxVisibleNodes}</Label>
                       <Slider
                         value={[advancedSettings.performance.maxVisibleNodes]}
-                        onValueChange={([value]) => handleAdvancedChange('performance', 'maxVisibleNodes', value)}
+                        onValueChange={([value]) => { handleAdvancedChange('performance', 'maxVisibleNodes', value); }}
                         min={100}
                         max={5000}
                         step={100}
@@ -466,7 +466,7 @@ export const GraphSettings: React.FC<GraphSettingsProps> = ({
                       <Label>WebGL (Experimental)</Label>
                       <Switch 
                         checked={advancedSettings.performance.enableWebGL} 
-                        onCheckedChange={(checked) => handleAdvancedChange('performance', 'enableWebGL', checked)}
+                        onCheckedChange={(checked) => { handleAdvancedChange('performance', 'enableWebGL', checked); }}
                       />
                     </div>
 
@@ -474,7 +474,7 @@ export const GraphSettings: React.FC<GraphSettingsProps> = ({
                       <Label>Level of Detail (LOD)</Label>
                       <Switch 
                         checked={advancedSettings.performance.enableLOD} 
-                        onCheckedChange={(checked) => handleAdvancedChange('performance', 'enableLOD', checked)}
+                        onCheckedChange={(checked) => { handleAdvancedChange('performance', 'enableLOD', checked); }}
                       />
                     </div>
                   </CardContent>
@@ -494,7 +494,7 @@ export const GraphSettings: React.FC<GraphSettingsProps> = ({
                       </div>
                       <Switch 
                         checked={advancedSettings.ai.enableSmartLayout} 
-                        onCheckedChange={(checked) => handleAdvancedChange('ai', 'enableSmartLayout', checked)}
+                        onCheckedChange={(checked) => { handleAdvancedChange('ai', 'enableSmartLayout', checked); }}
                       />
                     </div>
 
@@ -505,7 +505,7 @@ export const GraphSettings: React.FC<GraphSettingsProps> = ({
                       </div>
                       <Switch 
                         checked={advancedSettings.ai.enableCommunityDetection} 
-                        onCheckedChange={(checked) => handleAdvancedChange('ai', 'enableCommunityDetection', checked)}
+                        onCheckedChange={(checked) => { handleAdvancedChange('ai', 'enableCommunityDetection', checked); }}
                       />
                     </div>
 
@@ -516,7 +516,7 @@ export const GraphSettings: React.FC<GraphSettingsProps> = ({
                       </div>
                       <Switch 
                         checked={advancedSettings.ai.enablePathSuggestions} 
-                        onCheckedChange={(checked) => handleAdvancedChange('ai', 'enablePathSuggestions', checked)}
+                        onCheckedChange={(checked) => { handleAdvancedChange('ai', 'enablePathSuggestions', checked); }}
                       />
                     </div>
 
@@ -528,7 +528,7 @@ export const GraphSettings: React.FC<GraphSettingsProps> = ({
                       </div>
                       <Switch 
                         checked={advancedSettings.ai.enableSemanticClustering} 
-                        onCheckedChange={(checked) => handleAdvancedChange('ai', 'enableSemanticClustering', checked)}
+                        onCheckedChange={(checked) => { handleAdvancedChange('ai', 'enableSemanticClustering', checked); }}
                       />
                     </div>
                   </CardContent>

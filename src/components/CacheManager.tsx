@@ -71,7 +71,7 @@ export const CacheManager: React.FC<CacheManagerProps> = ({
         animate={{ scale: 1 }}
       >
         <Button
-          onClick={() => setIsVisible(true)}
+          onClick={() => { setIsVisible(true); }}
           variant="outline"
           size="sm"
           className="bg-notion-dark border-notion-dark-border text-gray-300 hover:text-white"
@@ -108,7 +108,7 @@ export const CacheManager: React.FC<CacheManagerProps> = ({
               Cache Manager
             </CardTitle>
             <Button
-              onClick={() => setIsVisible(false)}
+              onClick={() => { setIsVisible(false); }}
               variant="ghost"
               size="sm"
               className="text-gray-400 hover:text-white h-6 w-6 p-0"
@@ -125,7 +125,7 @@ export const CacheManager: React.FC<CacheManagerProps> = ({
             ].map(({ key, label, icon: Icon }) => (
               <Button
                 key={key}
-                onClick={() => setSelectedCache(key as any)}
+                onClick={() => { setSelectedCache(key as any); }}
                 variant={selectedCache === key ? "default" : "ghost"}
                 size="sm"
                 className={cn(
@@ -287,8 +287,8 @@ export const useCacheManager = () => {
   
   return {
     isVisible,
-    show: () => setIsVisible(true),
-    hide: () => setIsVisible(false),
-    toggle: () => setIsVisible(prev => !prev)
+    show: () => { setIsVisible(true); },
+    hide: () => { setIsVisible(false); },
+    toggle: () => { setIsVisible(prev => !prev); }
   };
 };

@@ -1,6 +1,6 @@
 
 import { useState, useCallback } from 'react';
-import { ViewMode } from '@/components/ViewTabs';
+import type { ViewMode } from '@/components/ViewTabs';
 
 export const useNavigation = () => {
   const [history, setHistory] = useState<string[]>([]);

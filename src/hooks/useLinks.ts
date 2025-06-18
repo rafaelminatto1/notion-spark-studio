@@ -1,6 +1,6 @@
 
 import { useMemo } from 'react';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { parseLinks, findBacklinks } from '@/utils/linkParser';
 
 export const useLinks = (files: FileItem[], currentFile?: FileItem) => {

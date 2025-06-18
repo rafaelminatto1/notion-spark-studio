@@ -1,4 +1,5 @@
-import React, { Suspense, lazy, ComponentType, LazyExoticComponent } from 'react';
+import type { ComponentType, LazyExoticComponent } from 'react';
+import React, { Suspense, lazy } from 'react';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 
 // Tipos para otimização
@@ -27,29 +28,29 @@ interface OptimizationSuggestion {
 }
 
 // Cache para componentes lazy
-const componentCache = new Map<string, LazyExoticComponent<any>>();
+const componentCache = new Map<string, LazyExoticComponent<ComponentType>>();
 const preloadCache = new Set<string>();
 
 /**
  * Cria um componente lazy com retry automático e cache
  */
-export function createLazyComponent<T extends ComponentType<any>>(
+export function createLazyComponent<T extends ComponentType>(
   importFn: () => Promise<{ default: T }>,
   options: LazyComponentOptions = {}
 ): LazyExoticComponent<T> {
   const {
-    fallback = LoadingSpinner,
     retryDelay = 1000,
     maxRetries = 3,
     preload = false,
     chunkName
   } = options;
 
-  const cacheKey = chunkName || importFn.toString();
+  const cacheKey = chunkName ?? importFn.toString();
 
   // Verificar cache
   if (componentCache.has(cacheKey)) {
-    return componentCache.get(cacheKey)!;
+    const cached = componentCache.get(cacheKey);
+    if (cached) return cached;
   }
 
   // Função de import com retry
@@ -58,7 +59,7 @@ export function createLazyComponent<T extends ComponentType<any>>(
       return await importFn();
     } catch (error) {
       if (retryCount < maxRetries) {
-        console.warn(`Failed to load component, retrying... (${retryCount + 1}/${maxRetries})`);
+        console.warn(`Failed to load component, retrying... (${(retryCount + 1).toString()}/${maxRetries.toString()})`);
         await new Promise(resolve => setTimeout(resolve, retryDelay * Math.pow(2, retryCount)));
         return importWithRetry(retryCount + 1);
       }
@@ -100,8 +101,8 @@ export function withLazyLoading<P extends object>(
  * Hook para preload de componentes
  */
 export function usePreloadComponent(
-  importFn: () => Promise<any>,
-  condition: boolean = true
+  importFn: () => Promise<unknown>,
+  condition = true
 ) {
   React.useEffect(() => {
     if (condition) {
@@ -109,7 +110,7 @@ export function usePreloadComponent(
         importFn().catch(console.error);
       }, 100); // Pequeno delay para não bloquear renderização inicial
 
-      return () => clearTimeout(preloadTimer);
+      return () => { clearTimeout(preloadTimer); };
     }
   }, [importFn, condition]);
 }
@@ -155,7 +156,7 @@ export function IntersectionLazy({
       observer.observe(ref.current);
     }
 
-    return () => observer.disconnect();
+    return () => { observer.disconnect(); };
   }, [rootMargin, threshold, triggerOnce, hasTriggered]);
 
   return (
@@ -265,9 +266,10 @@ export class PerformanceAnalyzer {
         priority: 'high',
         description: 'Bundle muito grande detectado',
         impact: 'Reduzir tempo de carregamento inicial em até 50%',
-        implementation: async () => {
+        implementation: () => {
           console.log('Implementando code splitting...');
           // Lógica de implementação
+          return Promise.resolve();
         }
       });
     }
@@ -278,9 +280,10 @@ export class PerformanceAnalyzer {
         priority: 'critical',
         description: 'Tempo de carregamento muito alto',
         impact: 'Melhorar tempo de carregamento em até 60%',
-        implementation: async () => {
+        implementation: () => {
           console.log('Implementando lazy loading...');
           // Lógica de implementação
+          return Promise.resolve();
         }
       });
     }
@@ -291,9 +294,10 @@ export class PerformanceAnalyzer {
         priority: 'medium',
         description: 'Alto uso de memória detectado',
         impact: 'Reduzir uso de memória em até 30%',
-        implementation: async () => {
+        implementation: () => {
           console.log('Otimizando cache...');
           // Lógica de implementação
+          return Promise.resolve();
         }
       });
     }
@@ -304,9 +308,10 @@ export class PerformanceAnalyzer {
         priority: 'medium',
         description: 'Taxa de cache baixa',
         impact: 'Melhorar performance de navegação em até 40%',
-        implementation: async () => {
+        implementation: () => {
           console.log('Melhorando estratégia de cache...');
           // Lógica de implementação
+          return Promise.resolve();
         }
       });
     }
@@ -337,7 +342,7 @@ export function usePerformanceMonitoring() {
     // Análise periódica
     const interval = setInterval(analyzePerformance, 30000); // A cada 30s
 
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, []);
 
   const applyOptimization = async (suggestion: OptimizationSuggestion) => {
@@ -573,7 +578,7 @@ export class AdvancedCacheManager {
     }
   }
   
-  static async preloadCriticalResources() {
+  static preloadCriticalResources() {
     const criticalResources = [
       '/api/user/profile',
       '/api/templates/recent',

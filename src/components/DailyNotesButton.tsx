@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Calendar, Plus } from 'lucide-react';
 import { useDailyNotes } from '@/hooks/useDailyNotes';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { format } from 'date-fns';
 
 interface DailyNotesButtonProps {

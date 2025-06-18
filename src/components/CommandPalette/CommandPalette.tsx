@@ -74,7 +74,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       keywords: ['home', 'início', 'principal'],
       icon: <BookOpen className="w-4 h-4" />,
       category: 'navigation',
-      action: () => console.log('Navigate to home'),
+      action: () => { console.log('Navigate to home'); },
       shortcut: 'Ctrl+H',
       priority: 8
     },
@@ -85,7 +85,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       keywords: ['search', 'busca', 'encontrar', 'procurar'],
       icon: <Search className="w-4 h-4" />,
       category: 'navigation',
-      action: () => console.log('Open global search'),
+      action: () => { console.log('Open global search'); },
       shortcut: 'Ctrl+/',
       priority: 9
     },
@@ -96,7 +96,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       keywords: ['recent', 'recente', 'último', 'histórico'],
       icon: <Clock className="w-4 h-4" />,
       category: 'navigation',
-      action: () => console.log('Show recent files'),
+      action: () => { console.log('Show recent files'); },
       shortcut: 'Ctrl+R',
       priority: 7
     },
@@ -109,7 +109,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       keywords: ['novo', 'criar', 'documento', 'arquivo'],
       icon: <FileText className="w-4 h-4" />,
       category: 'creation',
-      action: () => console.log('Create new document'),
+      action: () => { console.log('Create new document'); },
       shortcut: 'Ctrl+N',
       priority: 10,
       context: ['editor', 'global']
@@ -121,7 +121,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       keywords: ['pasta', 'folder', 'criar', 'organizar'],
       icon: <FolderPlus className="w-4 h-4" />,
       category: 'creation',
-      action: () => console.log('Create new folder'),
+      action: () => { console.log('Create new folder'); },
       shortcut: 'Ctrl+Shift+N',
       priority: 8
     },
@@ -132,7 +132,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       keywords: ['database', 'banco', 'dados', 'tabela'],
       icon: <Database className="w-4 h-4" />,
       category: 'creation',
-      action: () => console.log('Create new database'),
+      action: () => { console.log('Create new database'); },
       priority: 6
     },
 
@@ -144,7 +144,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       keywords: ['copy', 'copiar', 'duplicar'],
       icon: <Copy className="w-4 h-4" />,
       category: 'editing',
-      action: () => console.log('Copy content'),
+      action: () => { console.log('Copy content'); },
       shortcut: 'Ctrl+C',
       priority: 9,
       context: ['editor']
@@ -156,7 +156,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       keywords: ['rename', 'renomear', 'editar', 'nome'],
       icon: <Edit3 className="w-4 h-4" />,
       category: 'editing',
-      action: () => console.log('Rename item'),
+      action: () => { console.log('Rename item'); },
       shortcut: 'F2',
       priority: 7
     },
@@ -167,7 +167,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       keywords: ['delete', 'excluir', 'remover', 'lixeira'],
       icon: <Trash className="w-4 h-4" />,
       category: 'editing',
-      action: () => console.log('Delete item'),
+      action: () => { console.log('Delete item'); },
       shortcut: 'Delete',
       priority: 5
     },
@@ -180,7 +180,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       keywords: ['share', 'compartilhar', 'colaborar'],
       icon: <Share className="w-4 h-4" />,
       category: 'collaboration',
-      action: () => console.log('Share content'),
+      action: () => { console.log('Share content'); },
       priority: 8
     },
     {
@@ -190,7 +190,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       keywords: ['invite', 'convidar', 'colaborador', 'equipe'],
       icon: <Users className="w-4 h-4" />,
       category: 'collaboration',
-      action: () => console.log('Invite collaborators'),
+      action: () => { console.log('Invite collaborators'); },
       priority: 6
     },
 
@@ -202,7 +202,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       keywords: ['settings', 'configurações', 'preferências'],
       icon: <Settings className="w-4 h-4" />,
       category: 'settings',
-      action: () => console.log('Open settings'),
+      action: () => { console.log('Open settings'); },
       shortcut: 'Ctrl+,',
       priority: 4
     }
@@ -224,7 +224,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         keywords: ['manhã', 'tarefas', 'revisar'],
         icon: <Lightbulb className="w-4 h-4" />,
         category: 'suggestion',
-        action: () => console.log('Show morning tasks'),
+        action: () => { console.log('Show morning tasks'); },
         priority: 8
       });
     }
@@ -237,7 +237,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         keywords: ['foco', 'tarde', 'concentração'],
         icon: <Zap className="w-4 h-4" />,
         category: 'suggestion',
-        action: () => console.log('Enable focus mode'),
+        action: () => { console.log('Enable focus mode'); },
         priority: 7
       });
     }
@@ -251,7 +251,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         keywords: ['formatação', 'melhorar', 'estilo'],
         icon: <Edit3 className="w-4 h-4" />,
         category: 'suggestion',
-        action: () => console.log('Suggest formatting'),
+        action: () => { console.log('Suggest formatting'); },
         priority: 9
       });
     }
@@ -265,7 +265,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         keywords: ['continuar', 'anterior', 'trabalho'],
         icon: <History className="w-4 h-4" />,
         category: 'suggestion',
-        action: () => console.log('Continue previous work'),
+        action: () => { console.log('Continue previous work'); },
         priority: 8
       });
     }
@@ -425,7 +425,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     };
 
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    return () => { document.removeEventListener('keydown', handleKeyDown); };
   }, [isOpen, filteredCommands, selectedIndex, category, categories, executeCommand, onClose]);
 
   // Auto scroll para comando selecionado
@@ -467,7 +467,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
           initial={{ opacity: 0, scale: 0.9, y: -20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: -20 }}
-          onClick={e => e.stopPropagation()}
+          onClick={e => { e.stopPropagation(); }}
           className={`w-full max-w-2xl mx-4 bg-white dark:bg-gray-800 rounded-xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700 ${className}`}
         >
           {/* Header com busca */}
@@ -478,7 +478,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                 ref={inputRef}
                 type="text"
                 value={query}
-                onChange={e => setQuery(e.target.value)}
+                onChange={e => { setQuery(e.target.value); }}
                 placeholder="Digite um comando ou busque algo..."
                 className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-gray-100 placeholder-gray-500"
               />
@@ -516,7 +516,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    onClick={() => executeCommand(command)}
+                    onClick={() => { executeCommand(command); }}
                     className={`w-full p-3 rounded-lg text-left transition-all duration-150 mb-1 ${
                       index === selectedIndex
                         ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700'

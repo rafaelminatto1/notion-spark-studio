@@ -16,7 +16,7 @@ export interface DebounceSearchOptions {
 }
 
 export const useDebounceSearch = (
-  initialQuery: string = '',
+  initialQuery = '',
   options: DebounceSearchOptions = {}
 ) => {
   const {
@@ -127,7 +127,7 @@ export const useDebounceSearch = (
     
     try {
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Search timeout')), timeoutMs);
+        setTimeout(() => { reject(new Error('Search timeout')); }, timeoutMs);
       });
 
       const searchPromise = searchFn(debouncedQuery, cancelToken.signal);

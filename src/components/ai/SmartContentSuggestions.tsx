@@ -13,7 +13,7 @@ import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import AITaggingService, { TagSuggestion } from '@/services/AITaggingService';
 
 // Tipos para sugestões inteligentes
@@ -144,7 +144,7 @@ export const SmartContentSuggestions: React.FC<SmartContentSuggestionsProps> = (
         generateInsights();
       }, 30000); // A cada 30 segundos
 
-      return () => clearInterval(interval);
+      return () => { clearInterval(interval); };
     }
   }, [autoRefresh, generateSuggestions, generateInsights]);
 
@@ -331,7 +331,7 @@ export const SmartContentSuggestions: React.FC<SmartContentSuggestionsProps> = (
   const generateTemplateSuggestions = (): ContentSuggestion[] => {
     const suggestions: ContentSuggestion[] = [];
 
-    if (currentFile && currentFile.content && currentFile.content.length < 100) {
+    if (currentFile?.content && currentFile.content.length < 100) {
       suggestions.push({
         id: 'apply-template',
         type: 'template',
@@ -486,7 +486,7 @@ export const SmartContentSuggestions: React.FC<SmartContentSuggestionsProps> = (
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setAutoRefresh(!autoRefresh)}
+            onClick={() => { setAutoRefresh(!autoRefresh); }}
             className={cn(autoRefresh && "bg-blue-50 border-blue-200")}
           >
             {autoRefresh ? 'Auto ON' : 'Auto OFF'}
@@ -595,7 +595,7 @@ export const SmartContentSuggestions: React.FC<SmartContentSuggestionsProps> = (
                         <div className="flex flex-col gap-2">
                           <Button
                             size="sm"
-                            onClick={() => handleApplySuggestion(suggestion)}
+                            onClick={() => { handleApplySuggestion(suggestion); }}
                             className="w-24"
                           >
                             Aplicar
@@ -603,9 +603,9 @@ export const SmartContentSuggestions: React.FC<SmartContentSuggestionsProps> = (
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setSuggestions(prev => 
+                            onClick={() => { setSuggestions(prev => 
                               prev.filter(s => s.id !== suggestion.id)
-                            )}
+                            ); }}
                           >
                             <X className="h-4 w-4" />
                           </Button>

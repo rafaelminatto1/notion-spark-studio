@@ -47,7 +47,7 @@ export const LazyMedia: React.FC<LazyMediaProps> = ({
       observer.observe(elementRef.current);
     }
 
-    return () => observer.disconnect();
+    return () => { observer.disconnect(); };
   }, []);
 
   const handleLoad = () => {

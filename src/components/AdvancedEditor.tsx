@@ -5,7 +5,7 @@ import { LinkAutocomplete } from '@/components/LinkAutocomplete';
 import { LinkPreview } from '@/components/LinkPreview';
 import { MediaManager } from '@/components/MediaManager';
 import { useLinkAutocomplete } from '@/hooks/useLinkAutocomplete';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { parseLinks } from '@/utils/linkParser';
 import { cn } from '@/lib/utils';
 
@@ -54,7 +54,7 @@ export const AdvancedEditor: React.FC<AdvancedEditorProps> = ({
     if (textarea) {
       textarea.style.height = 'auto';
       const newHeight = Math.max(textarea.scrollHeight, 200);
-      textarea.style.height = newHeight + 'px';
+      textarea.style.height = `${newHeight  }px`;
     }
   }, []);
 
@@ -67,7 +67,7 @@ export const AdvancedEditor: React.FC<AdvancedEditorProps> = ({
 
     const textarea = textareaRef.current;
     const start = textarea.selectionStart;
-    const newContent = content.substring(0, start) + '\n' + markdown + '\n' + content.substring(start);
+    const newContent = `${content.substring(0, start)  }\n${  markdown  }\n${  content.substring(start)}`;
     
     onChange(newContent);
 
@@ -143,7 +143,7 @@ Use o botão 'Mídia' para inserir imagens e vídeos
                       "pointer-events-auto cursor-pointer underline",
                       fileExists ? "text-blue-400 hover:text-blue-300" : "text-red-400 hover:text-red-300"
                     )}
-                    onMouseEnter={(e) => handleMouseEnter(e, linkText)}
+                    onMouseEnter={(e) => { handleMouseEnter(e, linkText); }}
                     onMouseLeave={handleMouseLeave}
                     onClick={() => {
                       const file = files.find(f => f.name === linkText && f.type === 'file');

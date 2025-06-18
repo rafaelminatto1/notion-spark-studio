@@ -132,7 +132,7 @@ export class PerformanceService {
       this.intervalId = null;
     }
     
-    this.observers.forEach(observer => observer.disconnect());
+    this.observers.forEach(observer => { observer.disconnect(); });
     this.observers = [];
     
     console.log('⏹️ Performance Service parado');

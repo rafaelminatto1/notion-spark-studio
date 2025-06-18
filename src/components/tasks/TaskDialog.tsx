@@ -1,4 +1,4 @@
-import { Task } from '@/types/task';
+import type { Task } from '@/types/task';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -77,7 +77,7 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
             <Input
               id="title"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => { setTitle(e.target.value); }}
               required
             />
           </div>
@@ -87,7 +87,7 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
             <Textarea
               id="description"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => { setDescription(e.target.value); }}
               rows={3}
             />
           </div>
@@ -97,7 +97,7 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
               <Label>Prioridade</Label>
               <Select
                 value={priority}
-                onValueChange={(value: Task['priority']) => setPriority(value)}
+                onValueChange={(value: Task['priority']) => { setPriority(value); }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a prioridade" />
@@ -114,7 +114,7 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
               <Label>Status</Label>
               <Select
                 value={status}
-                onValueChange={(value: Task['status']) => setStatus(value)}
+                onValueChange={(value: Task['status']) => { setStatus(value); }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o status" />
@@ -160,7 +160,7 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
             <div className="flex gap-2">
               <Input
                 value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
+                onChange={(e) => { setNewTag(e.target.value); }}
                 placeholder="Adicionar tag"
               />
               <Button
@@ -177,7 +177,7 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
                   key={tag}
                   variant="secondary"
                   size="sm"
-                  onClick={() => handleRemoveTag(tag)}
+                  onClick={() => { handleRemoveTag(tag); }}
                 >
                   {tag}
                   <span className="ml-1">×</span>
@@ -190,7 +190,7 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => { onOpenChange(false); }}
             >
               Cancelar
             </Button>

@@ -106,10 +106,10 @@ export function useTemplateMetrics(): UseTemplateMetricsReturn {
   }, [metrics]);
 
   const getUsageByCategory = useCallback(() => {
-    return metrics.reduce((acc, metric) => {
+    return metrics.reduce<Record<string, number>>((acc, metric) => {
       acc[metric.category] = (acc[metric.category] || 0) + metric.usageCount;
       return acc;
-    }, {} as Record<string, number>);
+    }, {});
   }, [metrics]);
 
   const resetMetrics = useCallback(() => {

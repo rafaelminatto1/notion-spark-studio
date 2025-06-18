@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Textarea } from '@/components/ui/textarea';
-import { Block } from '@/types';
+import type { Block } from '@/types';
 import { cn } from '@/lib/utils';
 import { Info, AlertTriangle, AlertCircle, CheckCircle } from 'lucide-react';
 
@@ -66,7 +66,7 @@ export const CalloutBlock: React.FC<CalloutBlockProps> = ({
       <Icon className={cn("h-5 w-5 mt-1 flex-shrink-0", config.iconColor)} />
       <Textarea
         value={block.content}
-        onChange={(e) => onUpdate({ content: e.target.value })}
+        onChange={(e) => { onUpdate({ content: e.target.value }); }}
         onFocus={onFocus}
         placeholder="Escreva um callout..."
         className="w-full bg-transparent border-none resize-none focus:ring-0 focus:outline-none text-foreground min-h-[2rem]"

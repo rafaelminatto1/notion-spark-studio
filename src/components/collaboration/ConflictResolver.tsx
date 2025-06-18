@@ -195,11 +195,11 @@ const performSideBySideMerge = (operations: TextOperation[], originalContent: st
   if (insertOperations.length === 0) return { content: originalContent, confidence: 0.5 };
   
   // Agrupar inserções por usuário
-  const userGroups = insertOperations.reduce((groups, op) => {
+  const userGroups = insertOperations.reduce<Record<string, TextOperation[]>>((groups, op) => {
     if (!groups[op.userId]) groups[op.userId] = [];
     groups[op.userId].push(op);
     return groups;
-  }, {} as Record<string, TextOperation[]>);
+  }, {});
   
   // Inserir comentários separando as contribuições
   let mergedContent = originalContent;
@@ -376,7 +376,7 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
           <div
             key={conflict.id}
             className="p-4 border rounded-lg hover:bg-accent cursor-pointer"
-            onClick={() => handleConflictClick(conflict)}
+            onClick={() => { handleConflictClick(conflict); }}
           >
             <div className="flex items-center space-x-2 mb-2">
               <Avatar src={conflict.userAvatar} alt={conflict.userName} size="sm" />
@@ -429,18 +429,18 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
               <div className="flex justify-end space-x-2">
                 <Button
                   variant="outline"
-                  onClick={() => handleResolve('discard')}
+                  onClick={() => { handleResolve('discard'); }}
                 >
                   Descartar
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => handleResolve('merge')}
+                  onClick={() => { handleResolve('merge'); }}
                 >
                   Mesclar
                 </Button>
                 <Button
-                  onClick={() => handleResolve('keep')}
+                  onClick={() => { handleResolve('keep'); }}
                 >
                   Manter
                 </Button>

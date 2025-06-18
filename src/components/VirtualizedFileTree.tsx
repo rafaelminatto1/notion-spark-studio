@@ -1,7 +1,7 @@
 import React, { memo, useMemo, useCallback, useState, useRef, useEffect } from 'react';
 import { FixedSizeList as List } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { cn } from '@/lib/utils';
 import { ChevronRight, ChevronDown, File, Folder, Database, Search } from 'lucide-react';
 import { motion } from 'framer-motion';

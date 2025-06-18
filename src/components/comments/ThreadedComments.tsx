@@ -1,7 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useComments } from '@/hooks/useComments';
-import { Comment, CommentThread } from '@/types/comments';
+import type { Comment} from '@/types/comments';
+import { CommentThread } from '@/types/comments';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -91,7 +92,7 @@ export const ThreadedComments: React.FC<ThreadedCommentsProps> = ({
             <Button
               variant="link"
               size="sm"
-              onClick={() => setReplyingTo(comment.id)}
+              onClick={() => { setReplyingTo(comment.id); }}
             >
               Responder
             </Button>
@@ -111,7 +112,7 @@ export const ThreadedComments: React.FC<ThreadedCommentsProps> = ({
       <form onSubmit={handleSubmit} className="space-y-4">
         <Textarea
           value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
+          onChange={(e) => { setNewComment(e.target.value); }}
           placeholder={replyingTo ? "Escreva sua resposta..." : "Adicione um comentário..."}
           className="min-h-[100px]"
         />
@@ -120,7 +121,7 @@ export const ThreadedComments: React.FC<ThreadedCommentsProps> = ({
             <Button
               type="button"
               variant="ghost"
-              onClick={() => setReplyingTo(null)}
+              onClick={() => { setReplyingTo(null); }}
             >
               Cancelar
             </Button>

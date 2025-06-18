@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { FileText, ExternalLink } from 'lucide-react';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { cn } from '@/lib/utils';
 
 interface LinkPreviewProps {
@@ -41,7 +41,7 @@ export const LinkPreview: React.FC<LinkPreviewProps> = ({
           {file.name}
         </h3>
         <button
-          onClick={() => onNavigate(file.id)}
+          onClick={() => { onNavigate(file.id); }}
           className="text-gray-400 hover:text-white"
           title="Abrir arquivo"
         >

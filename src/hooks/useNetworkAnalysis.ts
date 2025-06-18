@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { GraphNode, GraphLink } from '@/components/GraphView/types';
+import type { GraphNode, GraphLink } from '@/components/GraphView/types';
 
 export interface NetworkMetrics {
   // Centralidade
@@ -126,7 +126,7 @@ export function useNetworkAnalysis(nodes: GraphNode[], links: GraphLink[]) {
 
   // Função para análise de vizinhança
   const analyzeNeighborhood = useMemo(() => {
-    return (nodeId: string, depth: number = 2) => {
+    return (nodeId: string, depth = 2) => {
       const visited = new Set<string>();
       const levels = new Map<number, string[]>();
       const queue: Array<{id: string, level: number}> = [{id: nodeId, level: 0}];

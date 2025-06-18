@@ -1,6 +1,6 @@
 
 import { useState, useCallback, useEffect } from 'react';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 export interface QuickSwitcherCommand {
   id: string;
@@ -129,7 +129,7 @@ export const useQuickSwitcher = (
         category: (!query && recentFiles.includes(file.id)) ? 'recent' as const : 'file' as const,
         score: query ? fuzzyMatch(file.name, query) : 1
       }))
-      .filter(cmd => !query || cmd.score! > 0)
+      .filter(cmd => !query || cmd.score > 0)
       .sort((a, b) => (b.score || 0) - (a.score || 0));
   }, [files, query, onFileSelect, close, addToRecent, recentFiles]);
 
@@ -140,9 +140,9 @@ export const useQuickSwitcher = (
     return systemCommands
       .map(command => ({
         ...command,
-        score: query ? fuzzyMatch(command.label + ' ' + (command.description || ''), query) : 1
+        score: query ? fuzzyMatch(`${command.label  } ${  command.description || ''}`, query) : 1
       }))
-      .filter(command => !query || command.score! > 0)
+      .filter(command => !query || command.score > 0)
       .sort((a, b) => (b.score || 0) - (a.score || 0));
   }, [query]);
 
@@ -209,7 +209,7 @@ export const useQuickSwitcher = (
     };
 
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    return () => { document.removeEventListener('keydown', handleKeyDown); };
   }, [toggle, isOpen, close]);
 
   return {

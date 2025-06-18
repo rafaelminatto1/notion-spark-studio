@@ -21,7 +21,7 @@ export const LinkRenderer: React.FC<LinkRendererProps> = ({
     <Button
       variant="ghost"
       size="sm"
-      onClick={() => onNavigate(target)}
+      onClick={() => { onNavigate(target); }}
       className={cn(
         "inline-flex items-center gap-1 h-auto p-1 text-sm font-normal",
         fileExists 

@@ -65,7 +65,7 @@ export const useConnectionStatus = () => {
     if (isOnline) {
       checkSupabaseConnection();
       const interval = setInterval(checkSupabaseConnection, 30000); // Check every 30 seconds
-      return () => clearInterval(interval);
+      return () => { clearInterval(interval); };
     }
   }, [isOnline, isSupabaseConnected, toast]);
 

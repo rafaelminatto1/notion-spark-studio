@@ -1,6 +1,6 @@
 
 import { useState, useMemo, useCallback } from 'react';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 export interface SearchFilters {
   type?: 'all' | 'file' | 'folder';
@@ -27,7 +27,7 @@ export const useAdvancedSearch = (files: FileItem[]) => {
       const matchesQuery = !query || 
         file.name.toLowerCase().includes(query.toLowerCase()) ||
         (file.content && file.content.toLowerCase().includes(query.toLowerCase())) ||
-        (file.description && file.description.toLowerCase().includes(query.toLowerCase()));
+        (file.description?.toLowerCase().includes(query.toLowerCase()));
 
       // Type filter
       const matchesType = filters.type === 'all' || file.type === filters.type;

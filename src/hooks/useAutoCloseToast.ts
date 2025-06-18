@@ -31,7 +31,7 @@ export const useAutoCloseToast = ({
         toastInstance.dismiss();
       }, duration);
 
-      return () => clearTimeout(timer);
+      return () => { clearTimeout(timer); };
     }
   }, [trigger, message, type, duration, toast]);
 };

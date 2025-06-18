@@ -90,7 +90,7 @@ export const FocusModeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
 
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    return () => { document.removeEventListener('keydown', handleKeyDown); };
   }, [isFocusMode, isZenMode, toggleFocusMode, toggleZenMode, exitFocusMode]);
 
   // Auto-save focus mode preference

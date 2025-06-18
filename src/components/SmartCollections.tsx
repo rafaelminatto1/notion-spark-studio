@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 interface SmartCollection {
   id: string;
@@ -210,7 +210,7 @@ export const SmartCollections: React.FC<SmartCollectionsProps> = ({
               "cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-105",
               selectedCollectionId === collection.id && "ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20"
             )}
-            onClick={() => handleCollectionClick(collection)}
+            onClick={() => { handleCollectionClick(collection); }}
           >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -351,10 +351,10 @@ export const SmartCollections: React.FC<SmartCollectionsProps> = ({
             </div>
             <div className="text-center">
               <div className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                {Object.keys(files.reduce((acc, f) => {
+                {Object.keys(files.reduce<Record<string, boolean>>((acc, f) => {
                   f.tags?.forEach(tag => acc[tag] = true);
                   return acc;
-                }, {} as Record<string, boolean>)).length}
+                }, {})).length}
               </div>
               <div className="text-xs text-slate-500">Tags únicas</div>
             </div>

@@ -71,7 +71,7 @@ export function AdvancedSystemsDashboard() {
       })));
     }, refreshRate);
 
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, [refreshRate]);
 
   const getStatusColor = (status: string) => {
@@ -311,9 +311,9 @@ export function AdvancedSystemsDashboard() {
               size="sm" 
               className="w-full"
               variant={collaboration.isConnected ? "outline" : "default"}
-              onClick={() => collaboration.isConnected ? 
+              onClick={() => { collaboration.isConnected ? 
                 collaboration.leaveDocument() : 
-                collaboration.reconnect()
+                collaboration.reconnect(); }
               }
             >
               <Users className="h-4 w-4 mr-2" />
@@ -408,7 +408,7 @@ export function AdvancedSystemsDashboard() {
             <Button 
               size="sm" 
               className="w-full"
-              onClick={() => analytics.refreshMetrics()}
+              onClick={() => { analytics.refreshMetrics(); }}
             >
               <TrendingUp className="h-4 w-4 mr-2" />
               Refresh Analytics

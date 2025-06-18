@@ -1,5 +1,6 @@
 
-import React, { useState, KeyboardEvent } from 'react';
+import type { KeyboardEvent } from 'react';
+import React, { useState } from 'react';
 import { X, Plus, Hash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -65,7 +66,7 @@ export const TagInput: React.FC<TagInputProps> = ({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => removeTag(tag)}
+            onClick={() => { removeTag(tag); }}
             className="h-4 w-4 p-0 ml-1 hover:bg-notion-purple/40"
           >
             <X className="h-3 w-3" />
@@ -76,7 +77,7 @@ export const TagInput: React.FC<TagInputProps> = ({
       {isInputVisible ? (
         <Input
           value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
+          onChange={(e) => { setInputValue(e.target.value); }}
           onKeyDown={handleKeyDown}
           onBlur={() => {
             if (inputValue.trim()) {
@@ -93,7 +94,7 @@ export const TagInput: React.FC<TagInputProps> = ({
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => setIsInputVisible(true)}
+          onClick={() => { setIsInputVisible(true); }}
           className="h-6 px-2 text-xs text-gray-400 hover:text-white hover:bg-notion-dark-hover"
         >
           <Plus className="h-3 w-3 mr-1" />

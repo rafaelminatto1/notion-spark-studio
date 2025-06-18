@@ -4,7 +4,7 @@ import { MessageCircle, Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CommentItem } from '@/components/CommentItem';
-import { Comment } from '@/types';
+import type { Comment } from '@/types';
 import { cn } from '@/lib/utils';
 
 interface CommentsPanelProps {
@@ -93,7 +93,7 @@ export const CommentsPanel: React.FC<CommentsPanelProps> = ({
             <div className="space-y-2">
               <Input
                 value={newCommentContent}
-                onChange={(e) => setNewCommentContent(e.target.value)}
+                onChange={(e) => { setNewCommentContent(e.target.value); }}
                 placeholder="Adicionar comentário..."
                 className="text-sm"
                 onKeyDown={(e) => {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowUpLeft, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 interface BacklinksProps {
   backlinks: FileItem[];
@@ -41,7 +41,7 @@ export const Backlinks: React.FC<BacklinksProps> = ({
             key={file.id}
             variant="ghost"
             size="sm"
-            onClick={() => onNavigate(file.id)}
+            onClick={() => { onNavigate(file.id); }}
             className="backlink-item w-full justify-start gap-2 h-auto p-2 text-left hover:bg-notion-dark-hover"
           >
             <div className="flex items-center gap-2 min-w-0 flex-1">

@@ -148,7 +148,7 @@ const Auth = () => {
         }
       } else {
         setSuccess('Login realizado com sucesso! Redirecionando...');
-        setTimeout(() => navigate('/'), 1500);
+        setTimeout(() => { navigate('/'); }, 1500);
       }
     } catch (error) {
       setError('Erro inesperado. Tente novamente.');
@@ -198,7 +198,7 @@ const Auth = () => {
         setCurrentSignupPassword('');
         setCurrentConfirmPassword('');
         // Switch to login tab after 3 seconds
-        setTimeout(() => setActiveTab('login'), 3000);
+        setTimeout(() => { setActiveTab('login'); }, 3000);
       }
     } catch (error) {
       setError('Erro inesperado. Tente novamente.');

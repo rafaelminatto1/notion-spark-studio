@@ -15,7 +15,7 @@ import {
   Star,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { cn } from '@/lib/utils';
 import { SubItemCreator } from '@/components/SubItemCreator';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
@@ -67,12 +67,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const fileTree = getFileTree();
 
   useKeyboardNavigation({
-    files: files,
-    currentFileId: currentFileId,
-    onFileSelect: onFileSelect,
+    files,
+    currentFileId,
+    onFileSelect,
     onCreateFile: () => onCreateFile('Nova Nota', undefined, 'file'),
     onCreateFolder: () => onCreateFile('Nova Pasta', undefined, 'folder'),
-    onDeleteFile: onDeleteFile,
+    onDeleteFile,
     enabled: true
   });
 
@@ -176,10 +176,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 data-file-item={item.id}
                 data-file-name={item.name}
                 draggable={onMoveFile !== undefined}
-                onDragStart={(e) => handleDragStart(e, item)}
-                onDragOver={(e) => handleDragOver(e, item)}
+                onDragStart={(e) => { handleDragStart(e, item); }}
+                onDragOver={(e) => { handleDragOver(e, item); }}
                 onDragLeave={handleDragLeave}
-                onDrop={(e) => handleDrop(e, item)}
+                onDrop={(e) => { handleDrop(e, item); }}
                 onDragEnd={handleDragEnd}
                 className={cn(
                   "flex items-center gap-2 px-3 py-2.5 text-sm rounded-xl cursor-pointer group transition-all duration-300 hover:bg-gradient-to-r hover:from-purple-500/10 hover:to-blue-500/10 hover:scale-[1.02] hover:shadow-lg hover:shadow-purple-500/10 relative",

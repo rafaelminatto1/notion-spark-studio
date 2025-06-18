@@ -1,4 +1,4 @@
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 // Tipos para o sistema de AI Tagging
 export interface TagSuggestion {
@@ -89,7 +89,7 @@ export class AITaggingService {
   }
 
   // Analisar conteúdo e sugerir tags
-  async suggestTags(content: string, title: string = '', existingTags: string[] = []): Promise<TagSuggestion[]> {
+  async suggestTags(content: string, title = '', existingTags: string[] = []): Promise<TagSuggestion[]> {
     const analysis = await this.analyzeContent(content, title);
     const suggestions: TagSuggestion[] = [];
 
@@ -212,7 +212,7 @@ export class AITaggingService {
   // Métodos privados
   private async analyzeContent(content: string, title: string): Promise<ContentAnalysis> {
     const normalizedContent = this.normalizeText(content);
-    const keywords = this.extractKeywords(normalizedContent + ' ' + title);
+    const keywords = this.extractKeywords(`${normalizedContent  } ${  title}`);
     const entities = this.extractEntities(normalizedContent);
     const topics = this.extractTopics(normalizedContent);
     const sentiment = this.analyzeSentiment(normalizedContent);
@@ -470,18 +470,18 @@ export class AITaggingService {
     );
 
     // Remover duplicatas
-    const unique = filtered.reduce((acc, curr) => {
+    const unique = filtered.reduce<TagSuggestion[]>((acc, curr) => {
       const existing = acc.find(s => s.tag === curr.tag);
       if (!existing || curr.confidence > existing.confidence) {
         return [...acc.filter(s => s.tag !== curr.tag), curr];
       }
       return acc;
-    }, [] as TagSuggestion[]);
+    }, []);
 
     // Ordenar por confiança
     return unique
       .sort((a, b) => b.confidence - a.confidence)
-      .slice(0, this.options.maxSuggestionsPerFile!);
+      .slice(0, this.options.maxSuggestionsPerFile);
   }
 
   private clusterFiles(similarities: Array<{ file1: FileItem; file2: FileItem; similarity: number }>, files: FileItem[]): FileItem[][] {

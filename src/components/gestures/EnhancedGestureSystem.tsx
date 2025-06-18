@@ -331,7 +331,7 @@ export const EnhancedGestureHandler: React.FC<EnhancedGestureHandlerProps> = ({
     };
 
     document.addEventListener('keydown', handleKeydown);
-    return () => document.removeEventListener('keydown', handleKeydown);
+    return () => { document.removeEventListener('keydown', handleKeydown); };
   }, [accessibilityMode, onGesture]);
 
   return (
@@ -365,7 +365,7 @@ export const GestureCustomizer: React.FC<GestureCustomizerProps> = ({
   const { gestures, updateGesture } = useGestureSystem();
   const gesture = gestures[gestureId];
 
-  if (!gesture || !gesture.customizable) {
+  if (!gesture?.customizable) {
     return null;
   }
 
@@ -381,7 +381,7 @@ export const GestureCustomizer: React.FC<GestureCustomizerProps> = ({
           <input
             type="checkbox"
             checked={gesture.enabled}
-            onChange={(e) => updateGesture(gestureId, { enabled: e.target.checked })}
+            onChange={(e) => { updateGesture(gestureId, { enabled: e.target.checked }); }}
             className="rounded"
           />
         </div>
@@ -390,9 +390,9 @@ export const GestureCustomizer: React.FC<GestureCustomizerProps> = ({
           <label className="text-sm text-gray-700 dark:text-gray-300">Feedback Háptico</label>
           <select
             value={gesture.hapticFeedback}
-            onChange={(e) => updateGesture(gestureId, { 
+            onChange={(e) => { updateGesture(gestureId, { 
               hapticFeedback: e.target.value as any 
-            })}
+            }); }}
             className="text-sm rounded border px-2 py-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
           >
             <option value="none">Nenhum</option>
@@ -409,9 +409,9 @@ export const GestureCustomizer: React.FC<GestureCustomizerProps> = ({
               <input
                 type="number"
                 value={gesture.minDistance || 50}
-                onChange={(e) => updateGesture(gestureId, { 
+                onChange={(e) => { updateGesture(gestureId, { 
                   minDistance: parseInt(e.target.value) 
-                })}
+                }); }}
                 className="text-sm rounded border px-2 py-1 w-20 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
                 min="10"
                 max="200"
@@ -423,9 +423,9 @@ export const GestureCustomizer: React.FC<GestureCustomizerProps> = ({
               <input
                 type="number"
                 value={gesture.maxTime || 300}
-                onChange={(e) => updateGesture(gestureId, { 
+                onChange={(e) => { updateGesture(gestureId, { 
                   maxTime: parseInt(e.target.value) 
-                })}
+                }); }}
                 className="text-sm rounded border px-2 py-1 w-20 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
                 min="100"
                 max="1000"

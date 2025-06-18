@@ -156,7 +156,7 @@ class CollaborationService {
         });
 
         this.startPingPong();
-        this.listeners.connected.forEach(fn => fn());
+        this.listeners.connected.forEach(fn => { fn(); });
         
         // Track analytics
         supabaseMonitoring.trackUserAction('collaboration_connect', 'collaboration', roomId);
@@ -174,7 +174,7 @@ class CollaborationService {
       this.ws.onclose = (event) => {
         console.log('🔌 WebSocket disconnected:', event.code, event.reason);
         this.stopPingPong();
-        this.listeners.disconnected.forEach(fn => fn());
+        this.listeners.disconnected.forEach(fn => { fn(); });
         
         if (!event.wasClean && this.reconnectAttempts < this.maxReconnectAttempts) {
           this.scheduleReconnect();
@@ -183,7 +183,7 @@ class CollaborationService {
 
       this.ws.onerror = (error) => {
         console.error('WebSocket error:', error);
-        this.listeners.error.forEach(fn => fn('Connection error'));
+        this.listeners.error.forEach(fn => { fn('Connection error'); });
         
         // Track error
         supabaseMonitoring.recordError({
@@ -267,16 +267,16 @@ class CollaborationService {
         this.handleCursorEvent(event);
         break;
       case 'edit':
-        this.listeners.edit.forEach(fn => fn(event));
+        this.listeners.edit.forEach(fn => { fn(event); });
         break;
       case 'selection':
-        this.listeners.selection.forEach(fn => fn(event));
+        this.listeners.selection.forEach(fn => { fn(event); });
         break;
       case 'presence':
         this.handlePresenceEvent(event);
         break;
       case 'notification':
-        this.listeners.notification.forEach(fn => fn(event));
+        this.listeners.notification.forEach(fn => { fn(event); });
         break;
     }
   }
@@ -292,7 +292,7 @@ class CollaborationService {
     };
 
     this.cursors.set(event.userId, cursor);
-    this.listeners.cursor.forEach(fn => fn(cursor));
+    this.listeners.cursor.forEach(fn => { fn(cursor); });
 
     // Auto-cleanup old cursors
     setTimeout(() => {
@@ -306,10 +306,10 @@ class CollaborationService {
     const { user, action } = event.data;
 
     if (action === 'join') {
-      this.listeners.userJoined.forEach(fn => fn(user));
+      this.listeners.userJoined.forEach(fn => { fn(user); });
       console.log('👋 User joined:', user.name);
     } else if (action === 'leave') {
-      this.listeners.userLeft.forEach(fn => fn(user.id));
+      this.listeners.userLeft.forEach(fn => { fn(user.id); });
       this.cursors.delete(user.id);
       console.log('👋 User left:', user.name);
     }
@@ -465,7 +465,7 @@ class CollaborationService {
   // Cleanup
   destroy(): void {
     this.disconnect();
-    Object.values(this.listeners).forEach(set => set.clear());
+    Object.values(this.listeners).forEach(set => { set.clear(); });
   }
 }
 

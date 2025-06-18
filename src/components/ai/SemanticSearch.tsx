@@ -186,7 +186,7 @@ const useSemanticSearch = () => {
           results.push({
             id: file.id,
             title: file.name,
-            content: content,
+            content,
             type: file.type === 'folder' ? 'notebook' : 'note',
             author: 'Usuário Atual',
             createdAt: new Date(file.createdAt),
@@ -549,7 +549,7 @@ export const SemanticSearch: React.FC<SemanticSearchProps> = ({
           value={query}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          onFocus={() => setIsOpen(true)}
+          onFocus={() => { setIsOpen(true); }}
           placeholder={placeholder}
           className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
         />
@@ -557,7 +557,7 @@ export const SemanticSearch: React.FC<SemanticSearchProps> = ({
         <div className="absolute inset-y-0 right-0 flex items-center">
           {query && (
             <button
-              onClick={() => setQuery('')}
+              onClick={() => { setQuery(''); }}
               className="p-2 text-gray-400 hover:text-gray-600"
             >
               <X className="h-4 w-4" />
@@ -565,7 +565,7 @@ export const SemanticSearch: React.FC<SemanticSearchProps> = ({
           )}
           
           <button
-            onClick={() => setShowFilters(!showFilters)}
+            onClick={() => { setShowFilters(!showFilters); }}
             className={cn(
               "p-2 text-gray-400 hover:text-gray-600 mr-1",
               showFilters && "text-blue-600"
@@ -598,7 +598,7 @@ export const SemanticSearch: React.FC<SemanticSearchProps> = ({
                   <SearchSuggestionItem
                     key={suggestion.id}
                     suggestion={suggestion}
-                    onClick={() => handleSuggestionClick(suggestion)}
+                    onClick={() => { handleSuggestionClick(suggestion); }}
                     isHighlighted={index === selectedIndex}
                   />
                 ))}
@@ -633,7 +633,7 @@ export const SemanticSearch: React.FC<SemanticSearchProps> = ({
                     <SearchResultItem
                       key={result.id}
                       result={result}
-                      onClick={() => handleResultClick(result)}
+                      onClick={() => { handleResultClick(result); }}
                       query={query}
                     />
                   ))}
@@ -713,7 +713,7 @@ export const SemanticSearch: React.FC<SemanticSearchProps> = ({
       {isOpen && (
         <div
           className="fixed inset-0 z-40"
-          onClick={() => setIsOpen(false)}
+          onClick={() => { setIsOpen(false); }}
         />
       )}
     </div>

@@ -395,7 +395,7 @@ export const ConditionalTemplates: React.FC<ConditionalTemplatesProps> = ({
         return (
           <Input
             value={value || ''}
-            onChange={(e) => handleVariableChange(variable.id, e.target.value)}
+            onChange={(e) => { handleVariableChange(variable.id, e.target.value); }}
             placeholder={`Digite ${variable.name.toLowerCase()}`}
           />
         );
@@ -405,7 +405,7 @@ export const ConditionalTemplates: React.FC<ConditionalTemplatesProps> = ({
           <Input
             type="number"
             value={value || ''}
-            onChange={(e) => handleVariableChange(variable.id, Number(e.target.value))}
+            onChange={(e) => { handleVariableChange(variable.id, Number(e.target.value)); }}
             min={variable.validation?.min}
             max={variable.validation?.max}
           />
@@ -415,7 +415,7 @@ export const ConditionalTemplates: React.FC<ConditionalTemplatesProps> = ({
         return (
           <Switch
             checked={value || false}
-            onCheckedChange={(checked) => handleVariableChange(variable.id, checked)}
+            onCheckedChange={(checked) => { handleVariableChange(variable.id, checked); }}
           />
         );
 
@@ -423,7 +423,7 @@ export const ConditionalTemplates: React.FC<ConditionalTemplatesProps> = ({
         return (
           <select
             value={value || ''}
-            onChange={(e) => handleVariableChange(variable.id, e.target.value)}
+            onChange={(e) => { handleVariableChange(variable.id, e.target.value); }}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             {variable.options?.map(option => (
@@ -437,7 +437,7 @@ export const ConditionalTemplates: React.FC<ConditionalTemplatesProps> = ({
           <Input
             type="date"
             value={value || ''}
-            onChange={(e) => handleVariableChange(variable.id, e.target.value)}
+            onChange={(e) => { handleVariableChange(variable.id, e.target.value); }}
           />
         );
 
@@ -463,7 +463,7 @@ export const ConditionalTemplates: React.FC<ConditionalTemplatesProps> = ({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setIsCreating(!isCreating)}
+              onClick={() => { setIsCreating(!isCreating); }}
             >
               <Zap className="h-4 w-4 mr-2" />
               Criar
@@ -478,7 +478,7 @@ export const ConditionalTemplates: React.FC<ConditionalTemplatesProps> = ({
                   "cursor-pointer transition-all duration-200 hover:shadow-md",
                   selectedTemplate?.id === template.id && "ring-2 ring-blue-500"
                 )}
-                onClick={() => handleTemplateSelect(template)}
+                onClick={() => { handleTemplateSelect(template); }}
               >
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm">{template.name}</CardTitle>
@@ -510,7 +510,7 @@ export const ConditionalTemplates: React.FC<ConditionalTemplatesProps> = ({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setShowPreview(!showPreview)}
+                onClick={() => { setShowPreview(!showPreview); }}
               >
                 {showPreview ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </Button>

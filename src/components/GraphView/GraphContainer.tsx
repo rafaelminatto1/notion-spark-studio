@@ -11,8 +11,9 @@ import { GraphViewRevolutionary } from '../GraphViewRevolutionary';
 import { useGraphData } from '@/hooks/useGraphData';
 import { useNetworkAnalysis } from '@/hooks/useNetworkAnalysis';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
-import { GraphFilters, GraphNode, LayoutSettings, ViewMode } from './types';
-import { FileItem } from '@/types';
+import type { GraphFilters, LayoutSettings, ViewMode } from './types';
+import { GraphNode } from './types';
+import type { FileItem } from '@/types';
 import { findShortestPath } from '@/utils/graphAlgorithms';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from '@/components/ui/use-toast';
@@ -127,10 +128,10 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
 
       // Análise de tags
       const allTags = nodes.flatMap(node => node.metadata?.tags || []);
-      const tagCounts = allTags.reduce((acc, tag) => {
+      const tagCounts = allTags.reduce<Record<string, number>>((acc, tag) => {
         acc[tag] = (acc[tag] || 0) + 1;
         return acc;
-      }, {} as Record<string, number>);
+      }, {});
       
       const popularTags = Object.entries(tagCounts)
         .sort(([,a], [,b]) => b - a)
@@ -169,7 +170,7 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
     };
 
     const timeoutId = setTimeout(runAIAnalysis, 1000); // Delay para evitar análises muito frequentes
-    return () => clearTimeout(timeoutId);
+    return () => { clearTimeout(timeoutId); };
   }, [nodes, networkMetrics, aiAnalysisEnabled]);
 
   const [sidebarSearch, setSidebarSearch] = useState('');
@@ -197,13 +198,13 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
         description: "Filtros e visualização resetados",
       });
     },
-    onTogglePathFinding: () => setShowPathFinding(!showPathFinding),
-    onToggleSettings: () => setShowSettings(!showSettings),
-    onToggleMinimap: () => setShowMinimap(!showMinimap),
-    onToggleAnalytics: () => setShowAnalytics(!showAnalytics),
-    onToggleHelp: () => setShowHelp(!showHelp),
-    onTogglePerformance: () => setShowPerformance(!showPerformance),
-    onChangeLayout: (layout) => setLayoutSettings({...layoutSettings, type: layout as LayoutSettings['type']}),
+    onTogglePathFinding: () => { setShowPathFinding(!showPathFinding); },
+    onToggleSettings: () => { setShowSettings(!showSettings); },
+    onToggleMinimap: () => { setShowMinimap(!showMinimap); },
+    onToggleAnalytics: () => { setShowAnalytics(!showAnalytics); },
+    onToggleHelp: () => { setShowHelp(!showHelp); },
+    onTogglePerformance: () => { setShowPerformance(!showPerformance); },
+    onChangeLayout: (layout) => { setLayoutSettings({...layoutSettings, type: layout as LayoutSettings['type']}); },
     onZoomIn: () => graphRef.current?.zoom(graphRef.current.zoom() * 1.2),
     onZoomOut: () => graphRef.current?.zoom(graphRef.current.zoom() * 0.8),
     onZoomFit: () => graphRef.current?.zoomToFit(400),
@@ -363,7 +364,7 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setUseRevolutionary(false)}
+            onClick={() => { setUseRevolutionary(false); }}
             className="bg-notion-dark-hover border-notion-dark-border text-white gap-2"
           >
             <Network className="h-4 w-4" />
@@ -396,7 +397,7 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
         <div className="p-4 border-b border-[#e3e8f0] dark:border-[#232b3b]">
           <Input
             value={sidebarSearch}
-            onChange={e => setSidebarSearch(e.target.value)}
+            onChange={e => { setSidebarSearch(e.target.value); }}
             placeholder="Buscar nós..."
             className="rounded-lg bg-[#f7faff] dark:bg-[#232b3b] border border-[#e3e8f0] dark:border-[#232b3b] focus:ring-2 focus:ring-[#2563eb]"
             aria-label="Buscar nós no grafo"
@@ -493,7 +494,7 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
               filters={filters}
               onFiltersChange={setFilters}
               viewMode={layoutSettings.type}
-              onViewModeChange={(mode) => setViewMode(mode as ViewMode)}
+              onViewModeChange={(mode) => { setViewMode(mode as ViewMode); }}
               layoutSettings={layoutSettings}
               onLayoutSettingsChange={setLayoutSettings}
               showPathFinding={showPathFinding}
@@ -551,7 +552,7 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setAiAnalysisEnabled(false)}
+                    onClick={() => { setAiAnalysisEnabled(false); }}
                     className="text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-200"
                   >
                     ✕
@@ -618,7 +619,7 @@ export const GraphContainer: React.FC<GraphContainerProps> = ({
                     onClick={() => {
                       // Forçar nova análise
                       setAiAnalysisEnabled(false);
-                      setTimeout(() => setAiAnalysisEnabled(true), 100);
+                      setTimeout(() => { setAiAnalysisEnabled(true); }, 100);
                     }}
                     className="text-xs"
                   >

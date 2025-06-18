@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { MessageCircle, Trash2, Edit2, Check, X, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Comment } from '@/types';
+import type { Comment } from '@/types';
 import { cn } from '@/lib/utils';
 
 interface CommentItemProps {
@@ -51,7 +51,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setIsEditing(true)}
+                onClick={() => { setIsEditing(true); }}
                 className="h-6 w-6 p-0 text-gray-400 hover:text-white"
               >
                 <Edit2 className="h-3 w-3" />
@@ -59,7 +59,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onDelete(comment.id)}
+                onClick={() => { onDelete(comment.id); }}
                 className="h-6 w-6 p-0 text-gray-400 hover:text-red-400"
               >
                 <Trash2 className="h-3 w-3" />
@@ -74,7 +74,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
         <div className="space-y-2">
           <Input
             value={editContent}
-            onChange={(e) => setEditContent(e.target.value)}
+            onChange={(e) => { setEditContent(e.target.value); }}
             className="text-sm"
             placeholder="Editar comentário..."
             onKeyDown={(e) => {

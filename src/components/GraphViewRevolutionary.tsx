@@ -24,7 +24,7 @@ import {
   Eye,
   EyeOff
 } from 'lucide-react';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { useGraph } from '@/hooks/useGraph';
 import { useGraphWorker } from '@/hooks/useGraphWorker';
 import { useMicroInteractions } from '@/components/ui/MicroInteractions';
@@ -127,8 +127,8 @@ export const GraphViewRevolutionary: React.FC<GraphViewRevolutionaryProps> = ({
 
     const filteredNodeIds = new Set(filteredNodes.map(n => n.id));
     const filteredLinks = links.filter(link => 
-      filteredNodeIds.has(link.source as string) &&
-      filteredNodeIds.has(link.target as string)
+      filteredNodeIds.has(link.source) &&
+      filteredNodeIds.has(link.target)
     );
 
     return { nodes: filteredNodes, links: filteredLinks };
@@ -415,7 +415,7 @@ export const GraphViewRevolutionary: React.FC<GraphViewRevolutionaryProps> = ({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setIsPlaying(!isPlaying)}
+              onClick={() => { setIsPlaying(!isPlaying); }}
               className={cn("gap-2", isPlaying && "bg-green-600/20")}
             >
               {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
@@ -441,7 +441,7 @@ export const GraphViewRevolutionary: React.FC<GraphViewRevolutionaryProps> = ({
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => { setSearchQuery(e.target.value); }}
               placeholder="Buscar no grafo..."
               className="pl-10 bg-notion-dark-hover border-notion-dark-border"
             />
@@ -450,7 +450,7 @@ export const GraphViewRevolutionary: React.FC<GraphViewRevolutionaryProps> = ({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setFocusMode(!focusMode)}
+            onClick={() => { setFocusMode(!focusMode); }}
             className={cn("gap-2", focusMode && "bg-purple-600/20")}
           >
             <Target className="h-4 w-4" />
@@ -460,7 +460,7 @@ export const GraphViewRevolutionary: React.FC<GraphViewRevolutionaryProps> = ({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setShowOrphans(!showOrphans)}
+            onClick={() => { setShowOrphans(!showOrphans); }}
             className={cn("gap-2", !showOrphans && "bg-red-600/20")}
           >
             {showOrphans ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
@@ -539,7 +539,7 @@ export const GraphViewRevolutionary: React.FC<GraphViewRevolutionaryProps> = ({
 
         {/* Painel lateral com tabs */}
         <div className="w-96 border-l border-notion-dark-border bg-notion-dark-hover">
-          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} className="h-full">
+          <Tabs value={activeTab} onValueChange={(value) => { setActiveTab(value as any); }} className="h-full">
             <TabsList className="grid w-full grid-cols-4 bg-notion-dark">
               <TabsTrigger value="graph" className="text-xs">
                 <Network className="h-3 w-3 mr-1" />
@@ -615,7 +615,7 @@ export const GraphViewRevolutionary: React.FC<GraphViewRevolutionaryProps> = ({
                       </div>
                       <Button 
                         size="sm" 
-                        onClick={() => onFileSelect(nodeStats.node!.id)} 
+                        onClick={() => { onFileSelect(nodeStats.node!.id); }} 
                         className="w-full"
                       >
                         Abrir Arquivo

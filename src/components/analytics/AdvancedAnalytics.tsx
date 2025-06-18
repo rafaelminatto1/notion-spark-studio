@@ -210,7 +210,7 @@ export const AdvancedAnalytics: React.FC<AdvancedAnalyticsProps> = ({
       setIsLoading(false);
     }, 500);
 
-    return () => clearTimeout(timer);
+    return () => { clearTimeout(timer); };
   }, [timeRange]);
 
   const refreshData = useCallback(() => {

@@ -73,7 +73,7 @@ export function useAdvancedAnalytics(config: AnalyticsConfig = {
       page: event.category || 'unknown',
       metadata: event.properties || {},
       timestamp: Date.now(),
-      sessionId: sessionId
+      sessionId
     };
     
     console.log('🔍 [DEBUG] Calling engine trackEvent with:', { userId, eventData });
@@ -89,7 +89,7 @@ export function useAdvancedAnalytics(config: AnalyticsConfig = {
   /**
    * 🎯 Tracking automático de cliques
    */
-  const trackClick = useCallback((elementId: string, category: string = 'ui') => {
+  const trackClick = useCallback((elementId: string, category = 'ui') => {
     trackEvent({
       type: 'click',
       action: 'click',
@@ -109,7 +109,7 @@ export function useAdvancedAnalytics(config: AnalyticsConfig = {
   /**
    * 👁️ Tracking de visualizações
    */
-  const trackView = useCallback((pagePath: string, category: string = 'page') => {
+  const trackView = useCallback((pagePath: string, category = 'page') => {
     trackEvent({
       type: 'view',
       action: 'page_view',
@@ -148,7 +148,7 @@ export function useAdvancedAnalytics(config: AnalyticsConfig = {
   /**
    * 🔍 Tracking de buscas
    */
-  const trackSearch = useCallback((query: string, results: number = 0) => {
+  const trackSearch = useCallback((query: string, results = 0) => {
     trackEvent({
       type: 'search',
       action: 'search_query',
@@ -315,7 +315,7 @@ export function useAdvancedAnalytics(config: AnalyticsConfig = {
     };
 
     document.addEventListener('click', handleClick);
-    return () => document.removeEventListener('click', handleClick);
+    return () => { document.removeEventListener('click', handleClick); };
   }, [config.enabled, config.autoTrack, trackClick]);
 
   // Carregamento de métricas
@@ -339,7 +339,7 @@ export function useAdvancedAnalytics(config: AnalyticsConfig = {
       }
     }, 30000); // Atualiza a cada 30 segundos
 
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, [config.enabled, config.realTimeInsights, refreshMetrics, generatePredictions]);
 
   // Inicialização de sessão
@@ -384,8 +384,8 @@ export function useAdvancedAnalytics(config: AnalyticsConfig = {
     refreshMetrics,
     
     // Controles
-    startTracking: () => setIsTracking(true),
-    stopTracking: () => setIsTracking(false),
+    startTracking: () => { setIsTracking(true); },
+    stopTracking: () => { setIsTracking(false); },
     resetAnalytics: () => {
       engineRef.current.reset();
       setMetrics({

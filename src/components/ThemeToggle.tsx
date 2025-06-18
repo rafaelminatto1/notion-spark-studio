@@ -117,11 +117,11 @@ export const ThemeToggle: React.FC = () => {
                     </div>
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent>
-                    <DropdownMenuItem onClick={() => setCustomTheme(availableTheme)}>
+                    <DropdownMenuItem onClick={() => { setCustomTheme(availableTheme); }}>
                       <Palette className="mr-2 h-4 w-4" />
                       Aplicar Tema
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleEditTheme(availableTheme)}>
+                    <DropdownMenuItem onClick={() => { handleEditTheme(availableTheme); }}>
                       <Edit className="mr-2 h-4 w-4" />
                       Editar Tema
                     </DropdownMenuItem>
@@ -142,7 +142,7 @@ export const ThemeToggle: React.FC = () => {
           
           {customTheme && (
             <DropdownMenuItem 
-              onClick={() => handleEditTheme(customTheme)}
+              onClick={() => { handleEditTheme(customTheme); }}
               className="cursor-pointer transition-all duration-200 rounded-md hover:bg-purple-500/10 focus:bg-purple-500/10"
             >
               <Edit className="mr-2 h-4 w-4 text-purple-500" />
@@ -154,7 +154,7 @@ export const ThemeToggle: React.FC = () => {
 
       <ThemeEditor
         isOpen={isEditorOpen}
-        onClose={() => setIsEditorOpen(false)}
+        onClose={() => { setIsEditorOpen(false); }}
         selectedTheme={editingTheme}
       />
     </>

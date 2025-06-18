@@ -50,7 +50,7 @@ export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
 
     if (isVisible) {
       const animation = requestAnimationFrame(updateFps);
-      return () => cancelAnimationFrame(animation);
+      return () => { cancelAnimationFrame(animation); };
     }
   }, [frameCount, lastTime, isVisible]);
 
@@ -73,7 +73,7 @@ export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
   if (!isVisible) {
     return (
       <motion.button
-        onClick={() => setIsVisible(true)}
+        onClick={() => { setIsVisible(true); }}
         className={`graph-button p-2 ${className}`}
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -110,7 +110,7 @@ export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setIsVisible(false)}
+            onClick={() => { setIsVisible(false); }}
             className="graph-button p-1 text-gray-400"
           >
             <EyeOff className="h-4 w-4" />

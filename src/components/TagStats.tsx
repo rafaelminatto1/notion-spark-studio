@@ -2,7 +2,7 @@
 import React from 'react';
 import { Hash, FileText, Folder } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { TagWithCount } from '@/hooks/useTags';
+import type { TagWithCount } from '@/hooks/useTags';
 
 interface TagStatsProps {
   tags: TagWithCount[];

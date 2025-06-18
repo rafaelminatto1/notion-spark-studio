@@ -77,7 +77,7 @@ export class ApplicationHealthMonitor {
     return ApplicationHealthMonitor.instance;
   }
 
-  startMonitoring(intervalMs: number = 30000): void {
+  startMonitoring(intervalMs = 30000): void {
     if (this.monitoringInterval) {
       clearInterval(this.monitoringInterval);
     }
@@ -215,7 +215,7 @@ export class ApplicationHealthMonitor {
       unit: '%',
       status: localStorageUsage.percentage <= 70 ? 'healthy' : localStorageUsage.percentage <= 90 ? 'warning' : 'critical',
       threshold: { warning: 70, critical: 90 },
-      description: `${localStorageUsage.used}KB de ${localStorageUsage.total}KB usados`,
+      description: `${localStorageUsage.used.toString()}KB de ${localStorageUsage.total.toString()}KB usados`,
       lastUpdated: new Date()
     });
 
@@ -228,7 +228,7 @@ export class ApplicationHealthMonitor {
       unit: '%',
       status: sessionStorageUsage.percentage <= 70 ? 'healthy' : sessionStorageUsage.percentage <= 90 ? 'warning' : 'critical',
       threshold: { warning: 70, critical: 90 },
-      description: `${sessionStorageUsage.used}KB de ${sessionStorageUsage.total}KB usados`,
+      description: `${sessionStorageUsage.used.toString()}KB de ${sessionStorageUsage.total.toString()}KB usados`,
       lastUpdated: new Date()
     });
   }
@@ -398,7 +398,7 @@ export class ApplicationHealthMonitor {
     const storage = window[storageType];
     let used = 0;
     
-    for (let key in storage) {
+    for (const key in storage) {
       if (storage.hasOwnProperty(key)) {
         used += storage[key].length + key.length;
       }
@@ -416,7 +416,7 @@ export class ApplicationHealthMonitor {
     const now = Date.now();
     const oneWeek = 7 * 24 * 60 * 60 * 1000;
     
-    for (let key in localStorage) {
+    for (const key in localStorage) {
       if (key.startsWith('cache_')) {
         try {
           const data = JSON.parse(localStorage[key]);
@@ -437,7 +437,7 @@ export class ApplicationHealthMonitor {
 
   private notifyObservers(): void {
     const health = this.getSystemHealth();
-    this.observers.forEach(observer => observer(health));
+    this.observers.forEach(observer => { observer(health); });
   }
 
   getSystemHealth(): SystemHealth {
@@ -470,7 +470,7 @@ export class ApplicationHealthMonitor {
 
   async autoFix(issueId: string): Promise<boolean> {
     const issue = this.issues.find(i => i.id === issueId);
-    if (!issue || !issue.autoFixable) return false;
+    if (!issue?.autoFixable) return false;
     
     try {
       if (issueId.includes('local_storage') || issueId.includes('session_storage')) {

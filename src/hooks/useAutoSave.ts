@@ -1,6 +1,6 @@
 
 import { useEffect, useRef, useCallback } from 'react';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 
 interface UseAutoSaveProps {

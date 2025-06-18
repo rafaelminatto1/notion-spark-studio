@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import Fuse from 'fuse.js';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 export interface SearchConfig {
   algorithm: 'fuzzy' | 'exact' | 'semantic' | 'regex';
@@ -234,7 +234,7 @@ export const useSemanticSearch = (files: FileItem[]) => {
 
         results = filteredFiles
           .map(file => {
-            const fileText = (file.name + ' ' + (file.content || '') + ' ' + (file.description || '')).toLowerCase();
+            const fileText = (`${file.name  } ${  file.content || ''  } ${  file.description || ''}`).toLowerCase();
             let semanticScore = 0;
             
             expandedTerms.forEach(term => {

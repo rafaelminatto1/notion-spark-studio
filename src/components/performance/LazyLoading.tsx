@@ -1,3 +1,6 @@
+import type {
+  ComponentType
+} from 'react';
 import React, { 
   useState, 
   useEffect, 
@@ -5,8 +8,7 @@ import React, {
   useRef, 
   useMemo, 
   Suspense,
-  lazy,
-  ComponentType
+  lazy
 } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -78,9 +80,9 @@ interface ProgressiveLoadingProps {
 
 // Hook para Intersection Observer
 const useIntersectionObserver = (
-  threshold: number = 0.1,
-  rootMargin: string = '0px',
-  triggerOnce: boolean = true
+  threshold = 0.1,
+  rootMargin = '0px',
+  triggerOnce = true
 ) => {
   const [isIntersecting, setIsIntersecting] = useState(false);
   const [hasTriggered, setHasTriggered] = useState(false);
@@ -367,8 +369,8 @@ export const LazyContent: React.FC<LazyContentProps> = ({
   useEffect(() => {
     if (isIntersecting) {
       if (delay > 0) {
-        const timer = setTimeout(() => setShouldRender(true), delay);
-        return () => clearTimeout(timer);
+        const timer = setTimeout(() => { setShouldRender(true); }, delay);
+        return () => { clearTimeout(timer); };
       } else {
         setShouldRender(true);
       }

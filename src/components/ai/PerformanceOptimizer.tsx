@@ -242,7 +242,7 @@ class PerformanceMonitor {
   }
 
   static cleanup() {
-    this.observers.forEach(observer => observer.disconnect());
+    this.observers.forEach(observer => { observer.disconnect(); });
     this.observers = [];
   }
 }
@@ -942,7 +942,7 @@ export const PerformanceOptimizer: React.FC<PerformanceOptimizerProps> = ({
                 <Switch
                   checked={settings.monitoringEnabled}
                   onCheckedChange={(checked) => 
-                    setSettings(prev => ({ ...prev, monitoringEnabled: checked }))
+                    { setSettings(prev => ({ ...prev, monitoringEnabled: checked })); }
                   }
                 />
               </div>
@@ -957,7 +957,7 @@ export const PerformanceOptimizer: React.FC<PerformanceOptimizerProps> = ({
                 <Switch
                   checked={settings.autoOptimize}
                   onCheckedChange={(checked) => 
-                    setSettings(prev => ({ ...prev, autoOptimize: checked }))
+                    { setSettings(prev => ({ ...prev, autoOptimize: checked })); }
                   }
                 />
               </div>
@@ -969,7 +969,7 @@ export const PerformanceOptimizer: React.FC<PerformanceOptimizerProps> = ({
                 <Slider
                   value={[settings.alertThreshold]}
                   onValueChange={([value]) => 
-                    setSettings(prev => ({ ...prev, alertThreshold: value }))
+                    { setSettings(prev => ({ ...prev, alertThreshold: value })); }
                   }
                   max={100}
                   min={30}
@@ -1009,7 +1009,7 @@ export const PerformanceOptimizer: React.FC<PerformanceOptimizerProps> = ({
                   variant="outline"
                   size="sm"
                   className="w-full justify-start"
-                  onClick={() => window.location.reload()}
+                  onClick={() => { window.location.reload(); }}
                 >
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Reiniciar aplicação

@@ -23,7 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { cn } from '@/lib/utils';
 import { format, subDays, isAfter, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -109,10 +109,10 @@ export const WorkspaceAnalytics: React.FC<WorkspaceAnalyticsProps> = ({
 
     // Tag analysis
     const allTags = files.flatMap(file => file.tags || []);
-    const tagCounts = allTags.reduce((acc, tag) => {
+    const tagCounts = allTags.reduce<Record<string, number>>((acc, tag) => {
       acc[tag] = (acc[tag] || 0) + 1;
       return acc;
-    }, {} as Record<string, number>);
+    }, {});
 
     const mostUsedTags = Object.entries(tagCounts)
       .map(([tag, count]) => ({ tag, count }))
@@ -290,7 +290,7 @@ export const WorkspaceAnalytics: React.FC<WorkspaceAnalyticsProps> = ({
           {(['7d', '30d', '90d'] as const).map(period => (
             <button
               key={period}
-              onClick={() => setSelectedPeriod(period)}
+              onClick={() => { setSelectedPeriod(period); }}
               className={cn(
                 "px-3 py-1 rounded-lg text-sm font-medium transition-colors",
                 selectedPeriod === period

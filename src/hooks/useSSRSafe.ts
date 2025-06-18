@@ -116,7 +116,7 @@ export function useSSRSafeMediaQuery(query: string): boolean {
     };
 
     mediaQuery.addEventListener('change', handler);
-    return () => mediaQuery.removeEventListener('change', handler);
+    return () => { mediaQuery.removeEventListener('change', handler); };
   }, [query, isHydrated]);
 
   return isHydrated ? matches : false;
@@ -152,7 +152,7 @@ export function useSSRSafeWindowEvent<K extends keyof WindowEventMap>(
     if (!isHydrated || typeof window === 'undefined') return;
 
     window.addEventListener(type, listener, options);
-    return () => window.removeEventListener(type, listener, options);
+    return () => { window.removeEventListener(type, listener, options); };
   }, [type, listener, options, isHydrated]);
 }
 

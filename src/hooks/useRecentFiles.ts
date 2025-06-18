@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 const RECENT_FILES_KEY = 'notion-spark-recent-files';
 const MAX_RECENT_FILES = 10;

@@ -54,7 +54,7 @@ export const useLinkAutocomplete = ({
     const existingFiles = files
       .filter(file => 
         file.name.toLowerCase().includes(normalizedQuery) ||
-        (file.content && file.content.toLowerCase().includes(normalizedQuery))
+        (file.content?.toLowerCase().includes(normalizedQuery))
       )
       .slice(0, 5)
       .map(file => ({

@@ -42,7 +42,7 @@ const Header: React.FC = () => {
     };
 
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => { window.removeEventListener('scroll', handleScroll); };
   }, []);
 
   const isHomePage = router.pathname === '/';
@@ -152,7 +152,7 @@ const Header: React.FC = () => {
             variant="ghost"
             size="sm"
             className="lg:hidden"
-            onClick={() => setMenuOpen(!menuOpen)}
+            onClick={() => { setMenuOpen(!menuOpen); }}
           >
             {menuOpen ? (
               <X className="h-5 w-5" />

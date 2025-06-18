@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { ChevronRight, ChevronDown, Hash, Folder, FolderOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { TagWithCount } from '@/hooks/useTags';
+import type { TagWithCount } from '@/hooks/useTags';
 import { cn } from '@/lib/utils';
 
 interface TagTreeItemProps {
@@ -55,7 +55,7 @@ export const TagTreeItem: React.FC<TagTreeItemProps> = ({
           isSelected && "bg-notion-purple text-white",
           `ml-${level * 3}`
         )}
-        onClick={() => onSelect(fullPath)}
+        onClick={() => { onSelect(fullPath); }}
       >
         {hasChildren && (
           <Button

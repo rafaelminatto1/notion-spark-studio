@@ -544,7 +544,7 @@ export const PermissionManager: React.FC<PermissionManagerProps> = ({ className 
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setSelectedTab(tab.id as any)}
+              onClick={() => { setSelectedTab(tab.id as any); }}
               className={cn(
                 "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors",
                 selectedTab === tab.id

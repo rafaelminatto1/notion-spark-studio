@@ -75,7 +75,7 @@ const useVirtualKeyboard = () => {
       return () => window.visualViewport?.removeEventListener('resize', handleViewportChange);
     } else {
       window.addEventListener('resize', handleViewportChange);
-      return () => window.removeEventListener('resize', handleViewportChange);
+      return () => { window.removeEventListener('resize', handleViewportChange); };
     }
   }, []);
 
@@ -197,26 +197,26 @@ const MobileToolbar: React.FC<MobileToolbarProps> = ({ onFormat, keyboardVisible
   const [linkUrl, setLinkUrl] = useState('');
 
   const basicTools: FormattingOption[] = [
-    { id: 'bold', label: 'Negrito', icon: Bold, action: () => onFormat('bold'), shortcut: 'Ctrl+B' },
-    { id: 'italic', label: 'Itálico', icon: Italic, action: () => onFormat('italic'), shortcut: 'Ctrl+I' },
-    { id: 'heading1', label: 'Título 1', icon: Heading1, action: () => onFormat('heading1') },
-    { id: 'heading2', label: 'Título 2', icon: Heading2, action: () => onFormat('heading2') },
-    { id: 'list', label: 'Lista', icon: List, action: () => onFormat('list') },
-    { id: 'quote', label: 'Citação', icon: Quote, action: () => onFormat('quote') }
+    { id: 'bold', label: 'Negrito', icon: Bold, action: () => { onFormat('bold'); }, shortcut: 'Ctrl+B' },
+    { id: 'italic', label: 'Itálico', icon: Italic, action: () => { onFormat('italic'); }, shortcut: 'Ctrl+I' },
+    { id: 'heading1', label: 'Título 1', icon: Heading1, action: () => { onFormat('heading1'); } },
+    { id: 'heading2', label: 'Título 2', icon: Heading2, action: () => { onFormat('heading2'); } },
+    { id: 'list', label: 'Lista', icon: List, action: () => { onFormat('list'); } },
+    { id: 'quote', label: 'Citação', icon: Quote, action: () => { onFormat('quote'); } }
   ];
 
   const advancedTools: FormattingOption[] = [
-    { id: 'orderedList', label: 'Lista Numerada', icon: ListOrdered, action: () => onFormat('orderedList') },
-    { id: 'code', label: 'Código', icon: Code, action: () => onFormat('code') },
-    { id: 'link', label: 'Link', icon: Link, action: () => setShowLinkInput(true) },
-    { id: 'underline', label: 'Sublinhado', icon: Underline, action: () => onFormat('underline') }
+    { id: 'orderedList', label: 'Lista Numerada', icon: ListOrdered, action: () => { onFormat('orderedList'); } },
+    { id: 'code', label: 'Código', icon: Code, action: () => { onFormat('code'); } },
+    { id: 'link', label: 'Link', icon: Link, action: () => { setShowLinkInput(true); } },
+    { id: 'underline', label: 'Sublinhado', icon: Underline, action: () => { onFormat('underline'); } }
   ];
 
   const mediaTools: FormattingOption[] = [
-    { id: 'image', label: 'Imagem', icon: Image, action: () => console.log('Adicionar imagem') },
-    { id: 'camera', label: 'Câmera', icon: Camera, action: () => console.log('Abrir câmera') },
-    { id: 'voice', label: 'Áudio', icon: Mic, action: () => console.log('Gravar áudio') },
-    { id: 'file', label: 'Arquivo', icon: Paperclip, action: () => console.log('Anexar arquivo') }
+    { id: 'image', label: 'Imagem', icon: Image, action: () => { console.log('Adicionar imagem'); } },
+    { id: 'camera', label: 'Câmera', icon: Camera, action: () => { console.log('Abrir câmera'); } },
+    { id: 'voice', label: 'Áudio', icon: Mic, action: () => { console.log('Gravar áudio'); } },
+    { id: 'file', label: 'Arquivo', icon: Paperclip, action: () => { console.log('Anexar arquivo'); } }
   ];
 
   const handleLinkSubmit = () => {
@@ -245,7 +245,7 @@ const MobileToolbar: React.FC<MobileToolbarProps> = ({ onFormat, keyboardVisible
           ].map((section) => (
             <button
               key={section.id}
-              onClick={() => setActiveSection(section.id as any)}
+              onClick={() => { setActiveSection(section.id as any); }}
               className={cn(
                 "px-3 py-1 text-sm rounded-full transition-colors mr-2",
                 activeSection === section.id
@@ -302,14 +302,14 @@ const MobileToolbar: React.FC<MobileToolbarProps> = ({ onFormat, keyboardVisible
               <input
                 type="url"
                 value={linkUrl}
-                onChange={(e) => setLinkUrl(e.target.value)}
+                onChange={(e) => { setLinkUrl(e.target.value); }}
                 placeholder="https://exemplo.com"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:border-blue-500"
                 autoFocus
               />
               <div className="flex gap-2">
                 <button
-                  onClick={() => setShowLinkInput(false)}
+                  onClick={() => { setShowLinkInput(false); }}
                   className="flex-1 px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
                 >
                   Cancelar
@@ -439,7 +439,7 @@ export const MobileEditor: React.FC<MobileEditorProps> = ({
         
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setShowPreview(true)}
+            onClick={() => { setShowPreview(true); }}
             className="p-2 text-gray-600 hover:text-gray-900 transition-colors"
             title="Preview"
           >
@@ -500,7 +500,7 @@ export const MobileEditor: React.FC<MobileEditorProps> = ({
         {showPreview && (
           <PreviewMode
             content={content}
-            onClose={() => setShowPreview(false)}
+            onClose={() => { setShowPreview(false); }}
           />
         )}
       </AnimatePresence>

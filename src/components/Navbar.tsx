@@ -8,11 +8,15 @@ import {
   Bell,
   Search,
   Menu,
-  X
+  X,
+  Activity,
+  Monitor,
+  Brain
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { usePerformance } from '../hooks/usePerformance';
+import { useSystemStatus } from '@/app/layout';
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +25,7 @@ import {
   DropdownMenuSeparator
 } from './ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
+import Link from 'next/link';
 
 interface NavbarProps {
   onNavigate?: (section: string) => void;
@@ -34,6 +39,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user } = useAuth();
   const { alerts, isMonitoring } = usePerformance();
+  const { systemsReady, systemsStatus } = useSystemStatus();
   
   // Contar alertas críticos (últimas 24h)
   const recentCriticalAlerts = alerts.filter(alert => 
@@ -47,6 +53,14 @@ export const Navbar: React.FC<NavbarProps> = ({
       label: 'Dashboard',
       icon: Home,
       path: '/'
+    },
+    {
+      id: 'system-dashboard',
+      label: 'System Dashboard',
+      icon: Monitor,
+      path: '/dashboard',
+      badge: systemsReady ? 'Active' : 'Loading',
+      badgeVariant: systemsReady ? 'default' : 'secondary' as const
     },
     {
       id: 'tasks',
@@ -63,6 +77,18 @@ export const Navbar: React.FC<NavbarProps> = ({
       badgeVariant: 'destructive' as const
     },
     {
+      id: 'health',
+      label: 'Health Monitor',
+      icon: Activity,
+      path: '/health'
+    },
+    {
+      id: 'systems',
+      label: 'Systems',
+      icon: Brain,
+      path: '/systems'
+    },
+    {
       id: 'settings',
       label: 'Configurações',
       icon: Settings,
@@ -70,10 +96,18 @@ export const Navbar: React.FC<NavbarProps> = ({
     }
   ];
 
-  const handleNavigation = (sectionId: string) => {
+  const handleNavigation = (sectionId: string, path?: string) => {
+    if (path) {
+      // Let Next.js handle the navigation
+      return;
+    }
     onNavigate?.(sectionId);
     setIsMobileMenuOpen(false);
   };
+
+  // Count active systems
+  const activeSystems = Object.values(systemsStatus).filter(status => status).length;
+  const totalSystems = Object.keys(systemsStatus).length;
 
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -82,9 +116,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Logo e Navegação Principal */}
           <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center">
-              <h1 className="text-xl font-bold text-gray-900">
-                Notion Spark Studio
-              </h1>
+              <Link href="/" className="flex items-center space-x-2">
+                <h1 className="text-xl font-bold text-gray-900">
+                  Notion Spark Studio
+                </h1>
+                {systemsReady && (
+                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                    AI Enhanced
+                  </Badge>
+                )}
+              </Link>
             </div>
             
             {/* Navegação Desktop */}
@@ -94,9 +135,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 const isActive = currentSection === item.id;
                 
                 return (
-                  <button
+                  <Link
                     key={item.id}
-                    onClick={() => handleNavigation(item.id)}
+                    href={item.path}
+                    onClick={() => { handleNavigation(item.id, item.path); }}
                     className={`
                       inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium
                       ${isActive 
@@ -115,7 +157,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         {item.badge}
                       </Badge>
                     )}
-                  </button>
+                  </Link>
                 );
               })}
             </div>
@@ -123,11 +165,26 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Ações da Direita */}
           <div className="flex items-center space-x-4">
+            {/* System Status Indicator */}
+            <div className="hidden md:flex items-center space-x-2">
+              {systemsReady ? (
+                <div className="flex items-center space-x-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span>All Systems Active</span>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                  <div className="animate-spin w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                  <span>{activeSystems}/{totalSystems} Systems</span>
+                </div>
+              )}
+            </div>
+
             {/* Indicador de Performance */}
             {isMonitoring && (
-              <div className="hidden md:flex items-center space-x-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span>Monitorando</span>
+              <div className="hidden md:flex items-center space-x-2 px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
+                <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
+                <span>Monitoring</span>
               </div>
             )}
 
@@ -155,10 +212,39 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <div className="p-3 border-b">
                   <h3 className="font-semibold">Notificações</h3>
                 </div>
+                
+                {/* System Status in Notifications */}
+                <DropdownMenuItem className="p-3">
+                  <div className="flex items-start space-x-3">
+                    <Monitor className="w-5 h-5 text-blue-500 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-sm">
+                        Advanced Systems Status
+                      </p>
+                      <div className="flex gap-2 mt-1">
+                        <Badge variant={systemsStatus.monitoring ? "default" : "secondary"} className="text-xs">
+                          Monitoring
+                        </Badge>
+                        <Badge variant={systemsStatus.websocket ? "default" : "secondary"} className="text-xs">
+                          WebSocket
+                        </Badge>
+                        <Badge variant={systemsStatus.cache ? "default" : "secondary"} className="text-xs">
+                          Cache
+                        </Badge>
+                        <Badge variant={systemsStatus.analytics ? "default" : "secondary"} className="text-xs">
+                          Analytics
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                </DropdownMenuItem>
+                
+                <DropdownMenuSeparator />
+                
                 {recentCriticalAlerts > 0 ? (
                   <>
                     <DropdownMenuItem 
-                      onClick={() => handleNavigation('performance')}
+                      onClick={() => { handleNavigation('performance'); }}
                       className="p-3 cursor-pointer"
                     >
                       <div className="flex items-start space-x-3">
@@ -177,7 +263,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </>
                 ) : null}
                 <DropdownMenuItem className="p-3 text-center text-gray-500">
-                  {recentCriticalAlerts === 0 ? 'Nenhuma notificação' : 'Ver todas'}
+                  {recentCriticalAlerts === 0 ? 'Nenhuma notificação crítica' : 'Ver todas'}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -197,12 +283,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <p className="text-xs text-gray-500">
                     {user?.email}
                   </p>
+                  {systemsReady && (
+                    <Badge variant="outline" className="mt-1 text-xs bg-green-50 text-green-700">
+                      AI Systems Active
+                    </Badge>
+                  )}
                 </div>
-                <DropdownMenuItem onClick={() => handleNavigation('settings')}>
+                <DropdownMenuItem onClick={() => { handleNavigation('settings'); }}>
                   <Settings className="w-4 h-4 mr-2" />
                   Configurações
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleNavigation('performance')}>
+                <DropdownMenuItem onClick={() => { handleNavigation('performance'); }}>
                   <BarChart3 className="w-4 h-4 mr-2" />
                   Performance
                 </DropdownMenuItem>
@@ -218,7 +309,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                onClick={() => { setIsMobileMenuOpen(!isMobileMenuOpen); }}
               >
                 {isMobileMenuOpen ? (
                   <X className="w-5 h-5" />
@@ -241,7 +332,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 return (
                   <button
                     key={item.id}
-                    onClick={() => handleNavigation(item.id)}
+                    onClick={() => { handleNavigation(item.id); }}
                     className={`
                       w-full flex items-center px-3 py-2 text-base font-medium
                       ${isActive 

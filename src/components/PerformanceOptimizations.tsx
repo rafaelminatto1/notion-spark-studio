@@ -81,7 +81,7 @@ export const PerformanceOptimizations: React.FC<PerformanceOptimizationsProps> =
                   ) : (
                     <Button
                       size="sm"
-                      onClick={() => onApply(optimization.id)}
+                      onClick={() => { onApply(optimization.id); }}
                       disabled={optimization.automatic}
                     >
                       {optimization.automatic ? 'Automática' : 'Aplicar'}

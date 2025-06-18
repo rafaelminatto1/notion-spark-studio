@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { useFileSystemPersistent } from './useFileSystemPersistent';
 import { useOfflineSync } from './useOfflineSync';
 import { useSessionManager } from './useSessionManager';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 export const useFileSystemOffline = () => {
   const fileSystem = useFileSystemPersistent();

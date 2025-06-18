@@ -63,7 +63,7 @@ export class AIPerformanceOptimizer {
   private patterns: Map<string, PerformancePattern> = new Map();
   private behaviorHistory: UserBehaviorData[] = [];
   private optimizations: Map<string, OptimizationSuggestion> = new Map();
-  private isLearning: boolean = false;
+  private isLearning = false;
   private listeners: Set<(metrics: OptimizationMetrics) => void> = new Set();
 
   private constructor() {
@@ -658,7 +658,7 @@ export class AIPerformanceOptimizer {
   /**
    * 🚀 Aplica otimizações automaticamente
    */
-  async applyOptimizations(autoApply: boolean = false): Promise<number> {
+  async applyOptimizations(autoApply = false): Promise<number> {
     let appliedCount = 0;
 
     for (const [key, pattern] of this.patterns) {
@@ -893,7 +893,7 @@ export class AIPerformanceOptimizer {
    */
   private notifyListeners(): void {
     const metrics = this.getMetrics();
-    this.listeners.forEach(listener => listener(metrics));
+    this.listeners.forEach(listener => { listener(metrics); });
   }
 
   /**
@@ -1016,7 +1016,7 @@ export function useAIPerformanceOptimizer() {
   
   return {
     analyzeUserBehavior: (userId: string, actionData: any) => 
-      optimizer.analyzeUserBehavior(userId, actionData),
+      { optimizer.analyzeUserBehavior(userId, actionData); },
     predictBottlenecks: (metrics: PerformanceMetrics) => 
       optimizer.predictPerformanceBottlenecks(metrics),
     optimizeProactively: (activity: any) => 

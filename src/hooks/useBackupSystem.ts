@@ -1,6 +1,6 @@
 
 import { useState, useCallback, useEffect } from 'react';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { useIndexedDB } from './useIndexedDB';
 import { useToast } from '@/hooks/use-toast';
 
@@ -47,7 +47,7 @@ export const useBackupSystem = (files: FileItem[]) => {
       createBackup(true);
     }, 30 * 60 * 1000); // 30 minutos
 
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, [autoBackupEnabled, isReady, files]);
 
   const createBackup = useCallback(async (isAutomatic = false) => {

@@ -1,4 +1,5 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import type { ErrorInfo, ReactNode } from 'react';
+import React, { Component } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, RefreshCw, Bug, Home, Mail } from 'lucide-react';
@@ -23,6 +24,11 @@ interface State {
   isRetrying: boolean;
 }
 
+// Tipos específicos para melhorar type safety
+type SanitizedProps = Record<string, unknown>;
+type SanitizedState = Record<string, unknown>;
+type ErrorContext = Record<string, unknown>;
+
 interface ErrorReport {
   errorId: string;
   message: string;
@@ -36,8 +42,8 @@ interface ErrorReport {
   retryCount: number;
   context: {
     component: string;
-    props: any;
-    state: any;
+    props: SanitizedProps;
+    state: SanitizedState;
   };
 }
 
@@ -61,7 +67,7 @@ class EnhancedErrorBoundary extends Component<Props, State> {
   }
 
   static getDerivedStateFromError(error: Error): Partial<State> {
-    const errorId = `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const errorId = `error_${Date.now().toString()}_${Math.random().toString(36).substring(2, 11)}`;
     
     return {
       hasError: true,
@@ -90,7 +96,7 @@ class EnhancedErrorBoundary extends Component<Props, State> {
     }
 
     // Reportar erro para serviço de monitoramento
-    this.reportError(error, errorInfo);
+    void this.reportError(error, errorInfo);
 
     // Mostrar toast de erro
     this.showErrorToast(error);
@@ -191,7 +197,7 @@ class EnhancedErrorBoundary extends Component<Props, State> {
 
     toast({
       title: isAutomatic ? "Tentativa automática" : "Tentando novamente",
-      description: `Tentativa ${this.state.retryCount + 1} de ${maxRetries}`,
+      description: `Tentativa ${(this.state.retryCount + 1).toString()} de ${maxRetries.toString()}`,
       variant: "default"
     });
   };
@@ -233,23 +239,20 @@ class EnhancedErrorBoundary extends Component<Props, State> {
   private getSessionId = (): string => {
     let sessionId = sessionStorage.getItem('error-boundary-session');
     if (!sessionId) {
-      sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      sessionId = `session_${Date.now().toString()}_${Math.random().toString(36).substring(2, 11)}`;
       sessionStorage.setItem('error-boundary-session', sessionId);
     }
     return sessionId;
   };
 
-  private sanitizeProps = (props: any): any => {
-    const sanitized = { ...props };
-    delete sanitized.children;
-    delete sanitized.onError;
-    return sanitized;
+  private sanitizeProps = (props: Props): SanitizedProps => {
+    const { children, onError, ...sanitized } = props;
+    return sanitized as SanitizedProps;
   };
 
-  private sanitizeState = (state: any): any => {
-    const sanitized = { ...state };
-    delete sanitized.errorInfo; // Evitar referência circular
-    return sanitized;
+  private sanitizeState = (state: State): SanitizedState => {
+    const { errorInfo, ...sanitized } = state;
+    return sanitized as SanitizedState;
   };
 
   private saveErrorToStorage = (errorReport: ErrorReport) => {
@@ -267,7 +270,7 @@ class EnhancedErrorBoundary extends Component<Props, State> {
 
   componentWillUnmount() {
     // Limpar timeouts
-    this.retryTimeouts.forEach(timeout => clearTimeout(timeout));
+    this.retryTimeouts.forEach(timeout => { clearTimeout(timeout); });
   }
 
   render() {
@@ -302,7 +305,7 @@ class EnhancedErrorBoundary extends Component<Props, State> {
               <div className="text-xs text-muted-foreground text-center">
                 ID do Erro: {this.state.errorId}
                 {this.state.retryCount > 0 && (
-                  <div>Tentativas: {this.state.retryCount}</div>
+                  <div>Tentativas: {this.state.retryCount.toString()}</div>
                 )}
               </div>
 
@@ -310,7 +313,7 @@ class EnhancedErrorBoundary extends Component<Props, State> {
               <div className="space-y-2">
                 {this.props.enableRetry !== false && (
                   <Button 
-                    onClick={() => this.handleRetry()} 
+                    onClick={() => { this.handleRetry(); }} 
                     className="w-full"
                     disabled={this.state.isRetrying}
                   >
@@ -380,9 +383,17 @@ class EnhancedErrorBoundary extends Component<Props, State> {
 }
 
 // Serviço de relatório de erros
+interface ErrorReportData {
+  error: Error;
+  errorInfo: ErrorInfo;
+  errorId: string;
+  retryCount: number;
+  context: ErrorContext;
+}
+
 class ErrorReportingService {
   private endpoint = '/api/errors';
-  private queue: any[] = [];
+  private queue: ErrorReportData[] = [];
   private isOnline = navigator.onLine;
 
   constructor() {
@@ -397,7 +408,7 @@ class ErrorReportingService {
     });
   }
 
-  async report(errorData: any): Promise<void> {
+  async report(errorData: ErrorReportData): Promise<void> {
     const report = {
       ...errorData,
       timestamp: Date.now(),
@@ -417,7 +428,7 @@ class ErrorReportingService {
     }
   }
 
-  private async sendReport(report: any): Promise<void> {
+  private async sendReport(report: ErrorReportData): Promise<void> {
     // Em desenvolvimento, apenas log
     if (process.env.NODE_ENV === 'development') {
       console.log('Error Report (would be sent to server):', report);
@@ -454,12 +465,12 @@ class ErrorReportingService {
 
 // Hook para usar Error Boundary programaticamente
 export const useErrorHandler = () => {
-  const handleError = (error: Error, errorInfo?: any) => {
+  const handleError = (error: Error, errorInfo?: ErrorInfo) => {
     // Simular erro para acionar Error Boundary
     throw error;
   };
 
-  const reportError = async (error: Error, context?: any) => {
+  const reportError = async (error: Error, context?: ErrorContext) => {
     const service = new ErrorReportingService();
     await service.report({
       error,

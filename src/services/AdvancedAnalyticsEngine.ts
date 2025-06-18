@@ -19,107 +19,90 @@ export interface UserEvent {
   id: string;
   userId: string;
   sessionId: string;
+  type: 'page_view' | 'click' | 'scroll' | 'form_submit' | 'search' | 'feature_use' | 'error';
   timestamp: number;
-  type: 'click' | 'view' | 'edit' | 'search' | 'create' | 'delete' | 'share';
-  action: string;
-  category: string;
-  properties: Record<string, any>;
-  performance?: PerformanceData;
-  device?: DeviceInfo;
-  location?: LocationInfo;
+  metadata: {
+    page?: string;
+    element?: string;
+    value?: any;
+    duration?: number;
+    coordinates?: { x: number; y: number };
+    viewport?: { width: number; height: number };
+    userAgent?: string;
+    referrer?: string;
+  };
+  context: {
+    feature: string;
+    category: string;
+    action: string;
+    label?: string;
+  };
 }
 
-export interface PerformanceData {
-  pageLoadTime: number;
-  renderTime: number;
-  interactionTime: number;
-  memoryUsage: number;
-  networkLatency: number;
-  fps: number;
-}
-
-export interface DeviceInfo {
-  type: 'desktop' | 'mobile' | 'tablet';
-  os: string;
-  browser: string;
-  screenResolution: string;
-  connectionType: string;
-}
-
-export interface LocationInfo {
-  country?: string;
-  region?: string;
-  timezone: string;
-  language: string;
-}
-
-export interface UserBehaviorPattern {
-  pattern: string;
-  frequency: number;
-  confidence: number;
-  prediction: string;
-  impact: number;
-  category: 'engagement' | 'performance' | 'retention' | 'conversion';
-}
-
-export interface AnalyticsInsight {
+export interface UserSegment {
   id: string;
-  type: 'trend' | 'anomaly' | 'prediction' | 'recommendation';
-  title: string;
+  name: string;
   description: string;
-  confidence: number;
-  impact: 'low' | 'medium' | 'high' | 'critical';
-  data: any;
-  actionable: boolean;
-  recommendation?: string;
+  criteria: {
+    demographics?: Record<string, any>;
+    behavior?: Record<string, any>;
+    engagement?: Record<string, any>;
+    technology?: Record<string, any>;
+  };
+  size: number;
+  growth: number;
+  value: number;
 }
 
-export interface MetricsTrend {
-  metric: string;
-  period: 'hour' | 'day' | 'week' | 'month';
-  values: number[];
+export interface PredictionModel {
+  id: string;
+  name: string;
+  type: 'churn' | 'conversion' | 'ltv' | 'engagement' | 'feature_adoption';
+  accuracy: number;
+  lastTrained: number;
+  features: string[];
+  weights: Record<string, number>;
+  threshold: number;
+}
+
+export interface BusinessMetric {
+  id: string;
+  name: string;
+  value: number;
+  target: number;
   trend: 'up' | 'down' | 'stable';
   change: number;
-  prediction: number[];
+  changePercent: number;
+  period: 'hour' | 'day' | 'week' | 'month';
+  category: 'engagement' | 'retention' | 'conversion' | 'revenue' | 'performance';
 }
 
 export interface UserJourney {
   userId: string;
   sessionId: string;
-  steps: UserEvent[];
-  duration: number;
-  conversionRate: number;
-  dropoffPoints: string[];
-  satisfactionScore: number;
+  startTime: number;
+  endTime: number;
+  touchpoints: UserEvent[];
+  funnel: {
+    stage: string;
+    timestamp: number;
+    completed: boolean;
+  }[];
+  outcome: 'conversion' | 'abandonment' | 'ongoing';
+  value: number;
 }
 
-export interface ConversionFunnel {
-  name: string;
-  steps: string[];
-  conversionRates: number[];
-  dropoffRates: number[];
-  totalUsers: number;
-  totalConversions: number;
-}
-
-export interface CohortAnalysis {
-  cohort: string;
-  period: string;
-  retentionRates: number[];
-  ltv: number;
-  churnRate: number;
-  engagementScore: number;
-}
-
-export interface AnalyticsMetrics {
-  activeUsers: number;
-  totalSessions: number;
-  averageSessionDuration: number;
-  bounceRate: number;
-  conversionRate: number;
-  retentionRate: number;
-  engagementScore: number;
-  performanceScore: number;
+export interface InsightAlert {
+  id: string;
+  type: 'opportunity' | 'risk' | 'anomaly' | 'achievement';
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  title: string;
+  description: string;
+  recommendation: string;
+  impact: number;
+  confidence: number;
+  timestamp: number;
+  data: Record<string, any>;
 }
 
 export class AdvancedAnalyticsEngine {
@@ -138,8 +121,13 @@ export class AdvancedAnalyticsEngine {
   private trends: Map<string, MetricsTrend> = new Map();
   private journeys: Map<string, UserJourney> = new Map();
   private listeners: Set<(insight: AnalyticsInsight) => void> = new Set();
-  private isAnalyzing: boolean = false;
+  private isAnalyzing = false;
   private analysisInterval: NodeJS.Timeout | null = null;
+  private segments: UserSegment[] = [];
+  private models: Map<string, PredictionModel> = new Map();
+  private metrics: BusinessMetric[] = [];
+  private isProcessing = false;
+  private processingInterval: NodeJS.Timeout | null = null;
   
   // Configurações
   private config = {
@@ -733,10 +721,10 @@ export class AdvancedAnalyticsEngine {
     const optimizations: string[] = [];
     
     // Análise de padrões para sugestões
-    const pageViews = journey.reduce((acc, step) => {
+    const pageViews = journey.reduce<Record<string, number>>((acc, step) => {
       acc[step.page] = (acc[step.page] || 0) + 1;
       return acc;
-    }, {} as Record<string, number>);
+    }, {});
     
     Object.entries(pageViews).forEach(([page, views]) => {
       if (views > 5) {
@@ -937,7 +925,7 @@ export class AdvancedAnalyticsEngine {
    * 👤 Obtém ID do usuário atual
    */
   getCurrentUserId(): string {
-    return 'user_' + Math.random().toString(36).substr(2, 9);
+    return `user_${  Math.random().toString(36).substr(2, 9)}`;
   }
 
   // Métodos auxiliares privados
@@ -1050,10 +1038,10 @@ export function useAdvancedAnalytics() {
   const engine = AdvancedAnalyticsEngine.getInstance();
   
   return {
-    trackEvent: (userId: string, eventData: any) => engine.trackEvent(userId, eventData),
+    trackEvent: (userId: string, eventData: any) => { engine.trackEvent(userId, eventData); },
     trackFeature: (userId: string, featureId: string, metadata?: any) => 
-      engine.trackFeatureUsage(userId, featureId, metadata),
-    defineFunnel: (config: any) => engine.defineFunnel(config),
+      { engine.trackFeatureUsage(userId, featureId, metadata); },
+    defineFunnel: (config: any) => { engine.defineFunnel(config); },
     generateInsights: () => engine.generateInsights(),
     analyzeCohorts: (period?: any) => engine.analyzeCohorts(period),
     predictBehavior: (userId: string) => engine.predictUserBehavior(userId),

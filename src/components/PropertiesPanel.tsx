@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { TagInput } from '@/components/TagInput';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,7 +47,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
             <Input
               id="file-name"
               value={file.name}
-              onChange={(e) => handleUpdate({ name: e.target.value })}
+              onChange={(e) => { handleUpdate({ name: e.target.value }); }}
               className="h-7 text-xs"
             />
           </div>
@@ -57,7 +57,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
             <Input
               id="file-emoji"
               value={file.emoji || ''}
-              onChange={(e) => handleUpdate({ emoji: e.target.value })}
+              onChange={(e) => { handleUpdate({ emoji: e.target.value }); }}
               className="h-7 text-xs"
               placeholder="📄"
             />
@@ -68,7 +68,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
             <Textarea
               id="file-description"
               value={file.description || ''}
-              onChange={(e) => handleUpdate({ description: e.target.value })}
+              onChange={(e) => { handleUpdate({ description: e.target.value }); }}
               className="text-xs min-h-[60px]"
               placeholder="Adicione uma descrição..."
             />
@@ -87,7 +87,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
         
         <TagInput
           tags={file.tags || []}
-          onTagsChange={(tags) => handleUpdate({ tags })}
+          onTagsChange={(tags) => { handleUpdate({ tags }); }}
           placeholder="Adicionar tags..."
         />
       </div>
@@ -107,7 +107,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
             <Switch
               id="is-public"
               checked={file.isPublic || false}
-              onCheckedChange={(isPublic) => handleUpdate({ isPublic })}
+              onCheckedChange={(isPublic) => { handleUpdate({ isPublic }); }}
             />
           </div>
 
@@ -116,7 +116,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
             <Switch
               id="is-protected"
               checked={file.isProtected || false}
-              onCheckedChange={(isProtected) => handleUpdate({ isProtected })}
+              onCheckedChange={(isProtected) => { handleUpdate({ isProtected }); }}
             />
           </div>
 
@@ -125,7 +125,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
             <Switch
               id="show-in-sidebar"
               checked={file.showInSidebar !== false}
-              onCheckedChange={(showInSidebar) => handleUpdate({ showInSidebar })}
+              onCheckedChange={(showInSidebar) => { handleUpdate({ showInSidebar }); }}
             />
           </div>
         </div>
@@ -170,7 +170,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
           variant="outline"
           size="sm"
           className="w-full h-7 text-xs"
-          onClick={() => handleUpdate({ updatedAt: new Date() })}
+          onClick={() => { handleUpdate({ updatedAt: new Date() }); }}
         >
           Atualizar Data de Modificação
         </Button>

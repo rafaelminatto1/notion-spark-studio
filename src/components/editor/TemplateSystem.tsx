@@ -1,7 +1,8 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { FileText, Users, Calendar, Lightbulb, Target, BookOpen, Briefcase, Heart, Zap, Plus, Search, Star, Crown, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Block, BlockType } from './BlockEditor';
+import type { Block} from './BlockEditor';
+import { BlockType } from './BlockEditor';
 
 export interface Template {
   id: string;
@@ -41,7 +42,7 @@ const PREDEFINED_TEMPLATES: Template[] = [
     usageCount: 2847,
     preview: '📅 Data, 🎯 Objetivos do dia, ✅ Tarefas, 📝 Notas',
     blocks: [
-      { id: '1', type: 'heading1', content: '📅 ' + new Date().toLocaleDateString('pt-BR') },
+      { id: '1', type: 'heading1', content: `📅 ${  new Date().toLocaleDateString('pt-BR')}` },
       { id: '2', type: 'heading2', content: '🎯 Objetivos do Dia' },
       { id: '3', type: 'todo', content: 'Objetivo principal' },
       { id: '4', type: 'heading2', content: '✅ Tarefas' },
@@ -66,7 +67,7 @@ const PREDEFINED_TEMPLATES: Template[] = [
     preview: '👥 Participantes, 📋 Agenda, ✅ Ações, 📊 Decisões',
     blocks: [
       { id: '1', type: 'heading1', content: '📋 Ata de Reunião' },
-      { id: '2', type: 'paragraph', content: 'Data: ' + new Date().toLocaleDateString('pt-BR') },
+      { id: '2', type: 'paragraph', content: `Data: ${  new Date().toLocaleDateString('pt-BR')}` },
       { id: '3', type: 'heading2', content: '👥 Participantes' },
       { id: '4', type: 'bullet-list', content: 'Nome - Cargo' },
       { id: '5', type: 'heading2', content: '📋 Agenda' },
@@ -144,7 +145,7 @@ const PREDEFINED_TEMPLATES: Template[] = [
     preview: '📚 Tópico, 📝 Notas, 🔍 Conceitos-chave, 📋 Resumo',
     blocks: [
       { id: '1', type: 'heading1', content: '📚 Notas de Estudo' },
-      { id: '2', type: 'paragraph', content: 'Matéria: | Data: ' + new Date().toLocaleDateString('pt-BR') },
+      { id: '2', type: 'paragraph', content: `Matéria: | Data: ${  new Date().toLocaleDateString('pt-BR')}` },
       { id: '3', type: 'heading2', content: '📖 Tópico Principal' },
       { id: '4', type: 'callout', content: 'Assunto principal da aula/leitura' },
       { id: '5', type: 'heading2', content: '📝 Anotações' },
@@ -171,7 +172,7 @@ const PREDEFINED_TEMPLATES: Template[] = [
     preview: '🎯 Hábito, 📊 Progresso, 📝 Reflexões, 🏆 Recompensas',
     blocks: [
       { id: '1', type: 'heading1', content: '🎯 Tracker de Hábitos' },
-      { id: '2', type: 'paragraph', content: 'Semana de: ' + new Date().toLocaleDateString('pt-BR') },
+      { id: '2', type: 'paragraph', content: `Semana de: ${  new Date().toLocaleDateString('pt-BR')}` },
       { id: '3', type: 'heading2', content: '📋 Hábitos Alvo' },
       { id: '4', type: 'todo', content: '💧 Beber 2L de água' },
       { id: '5', type: 'todo', content: '🏃‍♂️ Exercitar-se 30min' },
@@ -273,7 +274,7 @@ export const TemplateSystem: React.FC<TemplateSystemProps> = ({
                 type="text"
                 placeholder="Buscar templates..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => { setSearchQuery(e.target.value); }}
                 className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-slate-700"
               />
             </div>
@@ -287,7 +288,7 @@ export const TemplateSystem: React.FC<TemplateSystemProps> = ({
                 {categories.map((category) => (
                   <button
                     key={category.id}
-                    onClick={() => setSelectedCategory(category.id as TemplateCategory | 'all')}
+                    onClick={() => { setSelectedCategory(category.id as TemplateCategory | 'all'); }}
                     className={cn(
                       "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors text-left",
                       selectedCategory === category.id
@@ -311,7 +312,7 @@ export const TemplateSystem: React.FC<TemplateSystemProps> = ({
                 <input
                   type="checkbox"
                   checked={showFavoritesOnly}
-                  onChange={(e) => setShowFavoritesOnly(e.target.checked)}
+                  onChange={(e) => { setShowFavoritesOnly(e.target.checked); }}
                   className="rounded"
                 />
                 <Star className="h-4 w-4 text-yellow-500" />
@@ -327,7 +328,7 @@ export const TemplateSystem: React.FC<TemplateSystemProps> = ({
                 <TemplateCard
                   key={template.id}
                   template={template}
-                  onSelect={() => handleTemplateSelect(template)}
+                  onSelect={() => { handleTemplateSelect(template); }}
                 />
               ))}
             </div>

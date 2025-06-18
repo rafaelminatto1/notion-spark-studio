@@ -18,7 +18,7 @@ import {
   ArrowRight,
   Share2
 } from 'lucide-react';
-import { GraphNode, GraphLink, PathFindingResult } from '@/types/graph';
+import type { GraphNode, GraphLink, PathFindingResult } from '@/types/graph';
 import { useGraphAnalytics } from '@/hooks/useGraphAnalytics';
 
 interface PathFindingToolProps {
@@ -113,12 +113,12 @@ export const PathFindingTool: React.FC<PathFindingToolProps> = ({
     if (!currentPath) return null;
     
     const pathNodes = currentPath.path.map(id => nodes.find(n => n.id === id)).filter(Boolean);
-    const types = pathNodes.reduce((acc, node) => {
+    const types = pathNodes.reduce<Record<string, number>>((acc, node) => {
       if (node) {
         acc[node.type] = (acc[node.type] || 0) + 1;
       }
       return acc;
-    }, {} as Record<string, number>);
+    }, {});
 
     return {
       length: currentPath.path.length,
@@ -155,7 +155,7 @@ export const PathFindingTool: React.FC<PathFindingToolProps> = ({
                   setSearchSource(e.target.value);
                   setIsSearchingSource(true);
                 }}
-                onFocus={() => setIsSearchingSource(true)}
+                onFocus={() => { setIsSearchingSource(true); }}
                 className="bg-notion-dark border-notion-dark-border text-white"
               />
               
@@ -173,7 +173,7 @@ export const PathFindingTool: React.FC<PathFindingToolProps> = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => setIsSearchingSource(true)}
+                      onClick={() => { setIsSearchingSource(true); }}
                     >
                       <Search className="h-3 w-3" />
                     </Button>
@@ -192,7 +192,7 @@ export const PathFindingTool: React.FC<PathFindingToolProps> = ({
                     {filteredSourceNodes.map(node => (
                       <button
                         key={node.id}
-                        onClick={() => handleSourceSelect(node.id)}
+                        onClick={() => { handleSourceSelect(node.id); }}
                         className="w-full px-3 py-2 text-left hover:bg-notion-purple/20 text-white text-sm border-b border-notion-dark-border last:border-b-0"
                       >
                         <div className="flex items-center gap-2">
@@ -221,7 +221,7 @@ export const PathFindingTool: React.FC<PathFindingToolProps> = ({
                   setSearchTarget(e.target.value);
                   setIsSearchingTarget(true);
                 }}
-                onFocus={() => setIsSearchingTarget(true)}
+                onFocus={() => { setIsSearchingTarget(true); }}
                 className="bg-notion-dark border-notion-dark-border text-white"
                 disabled={!sourceNode}
               />
@@ -240,7 +240,7 @@ export const PathFindingTool: React.FC<PathFindingToolProps> = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => setIsSearchingTarget(true)}
+                      onClick={() => { setIsSearchingTarget(true); }}
                     >
                       <Search className="h-3 w-3" />
                     </Button>
@@ -259,7 +259,7 @@ export const PathFindingTool: React.FC<PathFindingToolProps> = ({
                     {filteredTargetNodes.map(node => (
                       <button
                         key={node.id}
-                        onClick={() => handleTargetSelect(node.id)}
+                        onClick={() => { handleTargetSelect(node.id); }}
                         className="w-full px-3 py-2 text-left hover:bg-notion-purple/20 text-white text-sm border-b border-notion-dark-border last:border-b-0"
                       >
                         <div className="flex items-center gap-2">

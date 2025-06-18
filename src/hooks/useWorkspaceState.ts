@@ -1,6 +1,7 @@
 
 import { useState, useEffect, createContext, useContext } from 'react';
-import { WorkspaceLayout, PanelConfig, WorkspaceSettings } from '@/types/workspace';
+import type { WorkspaceLayout} from '@/types/workspace';
+import { PanelConfig, WorkspaceSettings } from '@/types/workspace';
 
 const DEFAULT_WORKSPACE: WorkspaceLayout = {
   id: 'default',

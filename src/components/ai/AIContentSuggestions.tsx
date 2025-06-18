@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 interface AISuggestion {
   id: string;
@@ -216,7 +216,7 @@ class AIEngine {
       '## Recursos Relacionados\nListe links, referências e materiais complementares.'
     ];
 
-    return content + '\n\n' + topics.slice(0, 2).join('\n\n');
+    return `${content  }\n\n${  topics.slice(0, 2).join('\n\n')}`;
   }
 
   private static generateStructuredContent(content: string): string {
@@ -241,10 +241,10 @@ class AIEngine {
     
     const relevantKeywords = keywords
       .filter(word => !commonWords.has(word))
-      .reduce((acc, word) => {
+      .reduce<Record<string, number>>((acc, word) => {
         acc[word] = (acc[word] || 0) + 1;
         return acc;
-      }, {} as Record<string, number>);
+      }, {});
 
     const topKeywords = Object.entries(relevantKeywords)
       .sort(([, a], [, b]) => b - a)
@@ -274,7 +274,7 @@ class AIEngine {
     return context
       .filter(file => {
         const fileWords = new Set(
-          (file.name + ' ' + (file.content || '')).toLowerCase().match(/\b\w{4,}\b/g) || []
+          (`${file.name  } ${  file.content || ''}`).toLowerCase().match(/\b\w{4,}\b/g) || []
         );
         
         const intersection = new Set([...contentWords].filter(x => fileWords.has(x)));
@@ -335,7 +335,7 @@ export const AIContentSuggestions: React.FC<AIContentSuggestionsProps> = ({
         setLoading(false);
       }, 1500);
 
-      return () => clearTimeout(timer);
+      return () => { clearTimeout(timer); };
     }
   }, [currentFile?.content, currentFile?.id, allFiles]);
 
@@ -520,7 +520,7 @@ export const AIContentSuggestions: React.FC<AIContentSuggestionsProps> = ({
                         <Button
                           size="sm"
                           className="h-7 text-xs"
-                          onClick={() => handleApplySuggestion(suggestion)}
+                          onClick={() => { handleApplySuggestion(suggestion); }}
                         >
                           <CheckCircle className="h-3 w-3 mr-1" />
                           Aplicar

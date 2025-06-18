@@ -4,13 +4,25 @@ import React from 'react';
 import { Dashboard } from '@/components/Dashboard';
 import { PerformanceMonitor } from '@/components/PerformanceMonitor';
 import { TaskList } from '@/components/tasks/TaskList';
+import { SmartNotificationWidget } from '@/components/SmartNotificationWidget';
+import { GlobalSystemStatus } from '@/components/GlobalSystemStatus';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { FileItem } from '@/types';
+import { Badge } from '@/components/ui/badge';
+import type { FileItem } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useNavigation } from './layout';
 import { Button } from '@/components/ui/button';
 import { PageLoader } from '@/components/LoadingSpinner';
+import { 
+  Activity, 
+  Brain, 
+  Zap, 
+  Users, 
+  TrendingUp,
+  Monitor,
+  Bell
+} from 'lucide-react';
 
 // Mock data para demonstração
 const mockFiles: FileItem[] = [
@@ -116,14 +128,148 @@ export default function HomePage() {
       switch (currentSection) {
         case 'dashboard':
           return (
-            <Dashboard
-              files={mockFiles}
-              favorites={mockFavorites}
-              onNavigateToFile={handleNavigateToFile}
-              onCreateFile={handleCreateFile}
-            />
+            <div className="container mx-auto p-6 space-y-6">
+              {/* Header Section */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">Dashboard Inteligente</h1>
+                  <p className="text-lg text-gray-600 mt-1">
+                    Visão geral completa com IA e monitoramento em tempo real
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                    <Brain className="w-3 h-3 mr-1" />
+                    AI Ativo
+                  </Badge>
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                    <Activity className="w-3 h-3 mr-1" />
+                    Tempo Real
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Quick Stats Row */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">Performance</p>
+                        <p className="text-2xl font-bold text-green-600">98%</p>
+                      </div>
+                      <Zap className="w-8 h-8 text-green-600" />
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">Usuários Ativos</p>
+                        <p className="text-2xl font-bold text-blue-600">145</p>
+                      </div>
+                      <Users className="w-8 h-8 text-blue-600" />
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">Insights de IA</p>
+                        <p className="text-2xl font-bold text-purple-600">23</p>
+                      </div>
+                      <Brain className="w-8 h-8 text-purple-600" />
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">Otimizações</p>
+                        <p className="text-2xl font-bold text-orange-600">+15%</p>
+                      </div>
+                      <TrendingUp className="w-8 h-8 text-orange-600" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Main Dashboard Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Left Column - Main Dashboard */}
+                <div className="lg:col-span-2">
+                  <Dashboard
+                    files={mockFiles}
+                    favorites={mockFavorites}
+                    onNavigateToFile={handleNavigateToFile}
+                    onCreateFile={handleCreateFile}
+                  />
+                </div>
+                
+                {/* Right Column - Widgets */}
+                <div className="space-y-6">
+                  {/* Smart Notifications */}
+                  <SmartNotificationWidget />
+                  
+                  {/* Quick Actions Card */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center">
+                        <Zap className="w-5 h-5 mr-2 text-blue-600" />
+                        Ações Rápidas
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <Button 
+                        className="w-full justify-start" 
+                        variant="outline"
+                        onClick={() => setCurrentSection('system-dashboard')}
+                      >
+                        <Monitor className="w-4 h-4 mr-2" />
+                        System Dashboard
+                      </Button>
+                      <Button 
+                        className="w-full justify-start" 
+                        variant="outline"
+                        onClick={() => setCurrentSection('performance')}
+                      >
+                        <Activity className="w-4 h-4 mr-2" />
+                        Performance Monitor
+                      </Button>
+                      <Button 
+                        className="w-full justify-start" 
+                        variant="outline"
+                        onClick={() => setCurrentSection('tasks')}
+                      >
+                        <Users className="w-4 h-4 mr-2" />
+                        Gerenciar Tarefas
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </div>
           );
         
+        case 'system-dashboard':
+          return (
+            <div className="container mx-auto p-6">
+              <div className="mb-6">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">System Dashboard</h1>
+                <p className="text-lg text-gray-600">
+                  Monitoramento avançado de todos os sistemas com status em tempo real
+                </p>
+              </div>
+              <GlobalSystemStatus />
+            </div>
+          );
+
         case 'tasks':
           return (
             <div className="container mx-auto p-6">
@@ -174,7 +320,7 @@ export default function HomePage() {
                       <Button 
                         variant="outline" 
                         className="mt-2"
-                        onClick={() => setCurrentSection('performance')}
+                        onClick={() => { setCurrentSection('performance'); }}
                       >
                         Abrir Monitor de Performance
                       </Button>
@@ -205,7 +351,7 @@ export default function HomePage() {
                 Erro ao carregar esta seção. Tente novamente.
               </p>
               <Button 
-                onClick={() => setCurrentSection('dashboard')} 
+                onClick={() => { setCurrentSection('dashboard'); }} 
                 className="mt-4"
               >
                 Voltar ao Dashboard

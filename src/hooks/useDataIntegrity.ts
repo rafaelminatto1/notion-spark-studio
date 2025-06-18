@@ -1,6 +1,6 @@
 
 import { useCallback } from 'react';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 interface IntegrityIssue {
   type: 'orphan' | 'circular' | 'invalid_parent' | 'missing_data' | 'corruption';

@@ -208,7 +208,7 @@ export function useRealTimeCollaboration(config: CollaborationConfig = {
       setMetrics(newMetrics);
     }, 5000); // Atualiza a cada 5 segundos
 
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, [config.enabled, getCollaborationMetrics]);
 
   // Conectar ao WebSocket (desabilitado em modo simulação)

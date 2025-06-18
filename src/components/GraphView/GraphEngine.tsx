@@ -3,14 +3,14 @@ import ForceGraph2D from 'react-force-graph-2d';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGesture } from '@use-gesture/react';
 import * as d3 from 'd3';
-import { GraphNode, GraphLink, GraphFilters, LayoutSettings, ViewMode } from './types';
+import type { GraphNode, GraphLink, GraphFilters, LayoutSettings, ViewMode } from './types';
 import { GraphControls } from './GraphControls';
 import { GraphSidebar } from './GraphSidebar';
 import { GraphMinimap } from './GraphMinimap';
 import { GraphAnalytics } from './GraphAnalytics';
 import { PerformanceMonitor } from './PerformanceMonitor';
 import { useToast } from '@/hooks/use-toast';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { cn } from '@/lib/utils';
 
 interface GraphEngineProps {
@@ -177,7 +177,7 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
     const graphNodes: GraphNode[] = files.map(file => ({
       id: file.id,
       title: file.name,
-      type: file.type as 'file' | 'folder',
+      type: file.type,
       size: Math.max(8, Math.min(20, (file.content?.length || 0) / 100)),
       color: file.type === 'folder' ? '#4f46e5' : 
              file.tags?.includes('importante') ? '#dc2626' : 
@@ -272,7 +272,7 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
 
   // Aplicar filtros
   const filteredData = useMemo(() => {
-    let filteredNodes = nodes.filter(node => {
+    const filteredNodes = nodes.filter(node => {
       if (!filters.nodeTypes.includes(node.type)) return false;
       if (node.connections.length < filters.minConnections) return false;
       if (filters.tags.length > 0 && !filters.tags.some(tag => node.metadata.tags.includes(tag))) return false;
@@ -487,7 +487,7 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
       }
     }, 5000);
 
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, [liveUpdates]);
 
   // Auto-zoom no nó atual
@@ -530,8 +530,8 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
           setFoundPath([]);
         }}
         pathFindingMode={pathFindingMode}
-        onToggleAnalytics={() => setShowAnalytics(!showAnalytics)}
-        onToggleLiveUpdates={() => setLiveUpdates(!liveUpdates)}
+        onToggleAnalytics={() => { setShowAnalytics(!showAnalytics); }}
+        onToggleLiveUpdates={() => { setLiveUpdates(!liveUpdates); }}
         liveUpdates={liveUpdates}
       />
 
@@ -549,7 +549,7 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
             nodeData={selectedNodeData}
             centralityScore={centralityScores.get(selectedNodeData.id) || 0}
             community={nodeCommunities.get(selectedNodeData.id)}
-            onClose={() => setSelectedNode(null)}
+            onClose={() => { setSelectedNode(null); }}
           />
         )}
       </AnimatePresence>
@@ -562,7 +562,7 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
             links={filteredData.links}
             communities={communities}
             centralityScores={centralityScores}
-            onClose={() => setShowAnalytics(false)}
+            onClose={() => { setShowAnalytics(false); }}
           />
         )}
       </AnimatePresence>

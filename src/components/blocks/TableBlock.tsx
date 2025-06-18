@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Block } from '@/types';
+import type { Block } from '@/types';
 import { cn } from '@/lib/utils';
 import { Plus, Minus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -67,7 +67,7 @@ export const TableBlock: React.FC<TableBlockProps> = ({
                 <td key={colIndex} className="border border-gray-600 p-1 relative group">
                   <Input
                     value={cell.content}
-                    onChange={(e) => updateCell(rowIndex, colIndex, e.target.value)}
+                    onChange={(e) => { updateCell(rowIndex, colIndex, e.target.value); }}
                     className="bg-transparent border-none focus:ring-0 text-sm"
                     placeholder={rowIndex === 0 ? `Header ${colIndex + 1}` : `Cell`}
                   />
@@ -76,7 +76,7 @@ export const TableBlock: React.FC<TableBlockProps> = ({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => removeColumn(colIndex)}
+                        onClick={() => { removeColumn(colIndex); }}
                         className="h-6 w-6 p-0 text-red-400 hover:text-red-300"
                       >
                         <Minus className="h-3 w-3" />
@@ -90,7 +90,7 @@ export const TableBlock: React.FC<TableBlockProps> = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => removeRow(rowIndex)}
+                    onClick={() => { removeRow(rowIndex); }}
                     className="h-6 w-6 p-0 text-red-400 hover:text-red-300"
                   >
                     <Minus className="h-3 w-3" />

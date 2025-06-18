@@ -657,7 +657,7 @@ export const usePushNotifications = (options: PushNotificationOptions = {}) => {
     const now = Date.now();
     
     notificationManager?.scheduledNotifications.forEach((notification, id) => {
-      if (!notification.recurring || !notification.recurring.type) return;
+      if (!notification.recurring?.type) return;
 
       // Verificar triggers
       if (notification.recurring.type === 'daily' && now - notification.scheduledAt > 24 * 60 * 60 * 1000) {

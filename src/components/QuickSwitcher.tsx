@@ -9,7 +9,7 @@ import {
   CommandList 
 } from '@/components/ui/command';
 import { FileText, GitBranch, Plus, Search, Clock, Zap } from 'lucide-react';
-import { QuickSwitcherCommand } from '@/hooks/useQuickSwitcher';
+import type { QuickSwitcherCommand } from '@/hooks/useQuickSwitcher';
 import { cn } from '@/lib/utils';
 
 interface QuickSwitcherProps {
@@ -117,7 +117,7 @@ export const QuickSwitcher: React.FC<QuickSwitcherProps> = ({
                 return (
                   <CommandItem
                     key={command.id}
-                    onSelect={() => command.action()}
+                    onSelect={() => { command.action(); }}
                     className={cn(
                       "flex items-center gap-3 px-3 py-2 cursor-pointer",
                       isSelected && "bg-accent"
@@ -147,7 +147,7 @@ export const QuickSwitcher: React.FC<QuickSwitcherProps> = ({
                 return (
                   <CommandItem
                     key={command.id}
-                    onSelect={() => command.action()}
+                    onSelect={() => { command.action(); }}
                     className={cn(
                       "flex items-center gap-3 px-3 py-2 cursor-pointer",
                       isSelected && "bg-accent"
@@ -182,7 +182,7 @@ export const QuickSwitcher: React.FC<QuickSwitcherProps> = ({
                 return (
                   <CommandItem
                     key={command.id}
-                    onSelect={() => command.action()}
+                    onSelect={() => { command.action(); }}
                     className={cn(
                       "flex items-center gap-3 px-3 py-2 cursor-pointer",
                       isSelected && "bg-accent"
@@ -212,7 +212,7 @@ export const QuickSwitcher: React.FC<QuickSwitcherProps> = ({
                 return (
                   <CommandItem
                     key={command.id}
-                    onSelect={() => command.action()}
+                    onSelect={() => { command.action(); }}
                     className={cn(
                       "flex items-center gap-3 px-3 py-2 cursor-pointer",
                       isSelected && "bg-accent"

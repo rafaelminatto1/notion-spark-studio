@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { FileItem } from '@/types';
-import AITaggingService, { TagSuggestion } from '@/services/AITaggingService';
-import { WebSocketService, createWebSocketService } from '@/services/WebSocketService';
+import type { FileItem } from '@/types';
+import type { TagSuggestion } from '@/services/AITaggingService';
+import AITaggingService from '@/services/AITaggingService';
+import type { WebSocketService} from '@/services/WebSocketService';
+import { createWebSocketService } from '@/services/WebSocketService';
 import { useServiceWorker } from './useServiceWorker';
 import { useAuth } from './useAuth';
 import { useToast } from '@/components/ui/use-toast';
@@ -231,7 +233,7 @@ export const useSystemIntegration = (): SystemIntegrationAPI => {
     const interval = setInterval(updatePerformanceStatus, 5000);
     updatePerformanceStatus(); // Primeira execução
 
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, []);
 
   // Toggle de features
@@ -620,7 +622,7 @@ export const useSystemIntegration = (): SystemIntegrationAPI => {
       initializeSystem();
     }, 100);
 
-    return () => clearTimeout(timer);
+    return () => { clearTimeout(timer); };
   }, [features, initializeSystem]);
 
   // Monitoramento de performance

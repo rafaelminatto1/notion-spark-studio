@@ -153,7 +153,7 @@ export const MediaManagerEnhanced: React.FC<MediaManagerEnhancedProps> = ({
         }, file.type, quality);
       };
 
-      img.onerror = () => resolve({ file, compressed: false, originalSize });
+      img.onerror = () => { resolve({ file, compressed: false, originalSize }); };
       img.src = URL.createObjectURL(file);
     });
   };
@@ -298,7 +298,7 @@ export const MediaManagerEnhanced: React.FC<MediaManagerEnhancedProps> = ({
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))  } ${  sizes[i]}`;
   };
 
   return (
@@ -428,7 +428,7 @@ export const MediaManagerEnhanced: React.FC<MediaManagerEnhancedProps> = ({
                 </label>
                 <Input
                   value={url}
-                  onChange={(e) => setUrl(e.target.value)}
+                  onChange={(e) => { setUrl(e.target.value); }}
                   placeholder="https://exemplo.com/imagem.jpg"
                   className="mt-1"
                 />
@@ -440,7 +440,7 @@ export const MediaManagerEnhanced: React.FC<MediaManagerEnhancedProps> = ({
                 </label>
                 <Input
                   value={altText}
-                  onChange={(e) => setAltText(e.target.value)}
+                  onChange={(e) => { setAltText(e.target.value); }}
                   placeholder="Descrição da mídia"
                   className="mt-1"
                 />

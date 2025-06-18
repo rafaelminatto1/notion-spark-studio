@@ -1,4 +1,4 @@
-import { Task } from '@/types/task';
+import type { Task } from '@/types/task';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -85,7 +85,7 @@ export function TaskCard({ task }: TaskCardProps) {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setIsDialogOpen(true)}
+              onClick={() => { setIsDialogOpen(true); }}
             >
               Editar
             </Button>
@@ -100,7 +100,7 @@ export function TaskCard({ task }: TaskCardProps) {
           </div>
           <select
             value={task.status}
-            onChange={(e) => handleStatusChange(e.target.value as Task['status'])}
+            onChange={(e) => { handleStatusChange(e.target.value as Task['status']); }}
             className="text-sm border rounded px-2 py-1"
           >
             <option value="todo">A fazer</option>

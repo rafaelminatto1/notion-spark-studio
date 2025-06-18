@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Database, DatabaseView as DatabaseViewType } from '@/types/database';
+import type { Database, DatabaseView as DatabaseViewType } from '@/types/database';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DatabaseTable } from './DatabaseTable';
@@ -132,7 +132,7 @@ export const DatabaseView: React.FC<DatabaseViewProps> = ({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setShowProperties(!showProperties)}
+            onClick={() => { setShowProperties(!showProperties); }}
             className="gap-2"
           >
             <Settings className="h-4 w-4" />
@@ -155,7 +155,7 @@ export const DatabaseView: React.FC<DatabaseViewProps> = ({
         <DatabaseProperties
           database={database}
           onUpdateDatabase={onUpdateDatabase}
-          onClose={() => setShowProperties(false)}
+          onClose={() => { setShowProperties(false); }}
         />
       )}
 

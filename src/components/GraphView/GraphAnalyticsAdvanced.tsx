@@ -21,7 +21,7 @@ import {
   Clock,
   MapPin
 } from 'lucide-react';
-import { GraphNode, GraphLink } from './types';
+import type { GraphNode, GraphLink } from './types';
 
 interface GraphAnalyticsAdvancedProps {
   nodes: GraphNode[];
@@ -337,7 +337,7 @@ export const GraphAnalyticsAdvanced: React.FC<GraphAnalyticsAdvancedProps> = ({
                   <div
                     key={node.id}
                     className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
-                    onClick={() => onNodeSelect(node.id)}
+                    onClick={() => { onNodeSelect(node.id); }}
                   >
                     <div className="flex items-center gap-3">
                       <Badge variant="outline" className="w-6 h-6 rounded-full p-0 flex items-center justify-center">
@@ -364,7 +364,7 @@ export const GraphAnalyticsAdvanced: React.FC<GraphAnalyticsAdvancedProps> = ({
                   <div
                     key={node.id}
                     className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
-                    onClick={() => onNodeSelect(node.id)}
+                    onClick={() => { onNodeSelect(node.id); }}
                   >
                     <div className="flex items-center gap-3">
                       <Badge variant="outline" className="w-6 h-6 rounded-full p-0 flex items-center justify-center">
@@ -415,9 +415,9 @@ export const GraphAnalyticsAdvanced: React.FC<GraphAnalyticsAdvancedProps> = ({
                             key={nodeId}
                             variant="outline" 
                             className="text-xs cursor-pointer hover:bg-gray-100"
-                            onClick={() => onNodeSelect(nodeId)}
+                            onClick={() => { onNodeSelect(nodeId); }}
                           >
-                            {node.title.length > 15 ? node.title.slice(0, 15) + '...' : node.title}
+                            {node.title.length > 15 ? `${node.title.slice(0, 15)  }...` : node.title}
                           </Badge>
                         ) : null;
                       })}

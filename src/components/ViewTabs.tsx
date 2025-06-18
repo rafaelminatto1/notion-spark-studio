@@ -86,7 +86,7 @@ export const ViewTabs: React.FC<ViewTabsProps> = ({
             key={tab.id}
             variant="ghost"
             size="sm"
-            onClick={(event) => handleTabClick(tab.id, event)}
+            onClick={(event) => { handleTabClick(tab.id, event); }}
             className={cn(
               "relative gap-1.5 transition-all duration-200 text-xs font-medium rounded-md",
               "hover:bg-accent hover:text-accent-foreground",

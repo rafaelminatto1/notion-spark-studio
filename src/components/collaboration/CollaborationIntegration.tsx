@@ -143,7 +143,7 @@ export const CollaborationIntegration: React.FC<CollaborationIntegrationProps> =
       setLatency(Math.random() * 100 + 20); // 20-120ms
     }, 5000);
 
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, [isConnected]);
 
   const handleConflictDetected = useCallback((conflictInfo: any) => {
@@ -198,7 +198,7 @@ export const CollaborationIntegration: React.FC<CollaborationIntegrationProps> =
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setShowPresence(!showPresence)}
+                onClick={() => { setShowPresence(!showPresence); }}
                 className="h-6 w-6 p-0"
               >
                 <Eye className="h-3 w-3" />
@@ -267,7 +267,7 @@ export const CollaborationIntegration: React.FC<CollaborationIntegrationProps> =
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setShowComments(!showComments)}
+                    onClick={() => { setShowComments(!showComments); }}
                     className="flex-1 h-8 text-xs"
                   >
                     <MessageCircle className="h-3 w-3 mr-1" />
@@ -278,7 +278,7 @@ export const CollaborationIntegration: React.FC<CollaborationIntegrationProps> =
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setShowPresence(!showPresence)}
+                  onClick={() => { setShowPresence(!showPresence); }}
                   className="flex-1 h-8 text-xs"
                 >
                   <Users className="h-3 w-3 mr-1" />

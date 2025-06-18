@@ -115,7 +115,7 @@ export class BackupSystem {
 
   // Backup manual
   async createBackup(name?: string, type: 'full' | 'incremental' | 'manual' = 'manual'): Promise<BackupEntry> {
-    const id = `backup_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+    const id = `backup_${Date.now().toString()}_${Math.random().toString(36).substring(2, 15)}`;
     const timestamp = Date.now();
     
     const data = await this.collectData();
@@ -242,7 +242,7 @@ export class BackupSystem {
           }
 
           // Generate new ID to avoid conflicts
-          importedData.id = `imported_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+          importedData.id = `imported_${Date.now().toString()}_${Math.random().toString(36).substring(2, 15)}`;
           importedData.name = `${importedData.name} (Imported)`;
 
           this.backups.set(importedData.id, importedData);
@@ -253,7 +253,7 @@ export class BackupSystem {
           reject(new Error(`Failed to import backup: ${error}`));
         }
       };
-      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.onerror = () => { reject(new Error('Failed to read file')); };
       reader.readAsText(file);
     });
   }
@@ -454,7 +454,7 @@ export class BackupSystem {
   }
 
   private notifyObservers(): void {
-    this.observers.forEach(observer => observer(this.stats));
+    this.observers.forEach(observer => { observer(this.stats); });
   }
 
   private startAutoBackup(): void {

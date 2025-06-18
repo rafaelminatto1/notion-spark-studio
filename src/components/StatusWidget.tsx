@@ -450,7 +450,7 @@ export const StatusWidget: React.FC<StatusWidgetProps> = ({
         whileHover={{ scale: 1.05 }}
       >
         <Button
-          onClick={() => setIsExpanded(true)}
+          onClick={() => { setIsExpanded(true); }}
           className="bg-notion-purple hover:bg-notion-purple-hover text-white shadow-lg"
         >
           <Zap className="h-4 w-4 mr-2" />
@@ -488,7 +488,7 @@ export const StatusWidget: React.FC<StatusWidgetProps> = ({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setIsExpanded(false)}
+                onClick={() => { setIsExpanded(false); }}
                 className="text-gray-400 hover:text-white"
               >
                 <X className="h-4 w-4" />

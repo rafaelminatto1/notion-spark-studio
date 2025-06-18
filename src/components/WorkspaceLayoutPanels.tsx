@@ -6,8 +6,8 @@ import { Dashboard } from '@/components/Dashboard';
 import { TemplatesManager } from '@/components/TemplatesManager';
 import { PropertiesPanel } from '@/components/PropertiesPanel';
 import { DailyNotesPanel } from '@/components/DailyNotesPanel';
-import { PanelConfig } from '@/types/workspace';
-import { FileItem } from '@/types';
+import type { PanelConfig } from '@/types/workspace';
+import type { FileItem } from '@/types';
 
 interface WorkspaceLayoutPanelsProps {
   panel: PanelConfig;

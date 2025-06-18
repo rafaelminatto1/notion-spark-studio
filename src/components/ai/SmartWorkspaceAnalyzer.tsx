@@ -26,7 +26,7 @@ import {
   Calendar,
   Layers
 } from 'lucide-react';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { cn } from '@/lib/utils';
 
 interface AIInsight {
@@ -237,7 +237,7 @@ export const SmartWorkspaceAnalyzer: React.FC<SmartWorkspaceAnalyzerProps> = ({
     if (autoRefresh && files.length > 0) {
       performAnalysis();
       const interval = setInterval(performAnalysis, 300000); // 5 minutos
-      return () => clearInterval(interval);
+      return () => { clearInterval(interval); };
     }
   }, [autoRefresh, files.length, performAnalysis]);
 
@@ -310,7 +310,7 @@ export const SmartWorkspaceAnalyzer: React.FC<SmartWorkspaceAnalyzerProps> = ({
         </CardHeader>
 
         <CardContent>
-          <Tabs value={activeTab} onValueChange={(value: any) => setActiveTab(value)}>
+          <Tabs value={activeTab} onValueChange={(value: any) => { setActiveTab(value); }}>
             <TabsList className="grid w-full grid-cols-4 mb-4">
               <TabsTrigger value="insights" className="text-xs">
                 Insights

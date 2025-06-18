@@ -1,4 +1,4 @@
-import { GraphNode, GraphLink } from '../types';
+import type { GraphNode, GraphLink } from '../types';
 
 export interface LayoutConfig {
   type: 'force' | 'hierarchical' | 'circular' | 'timeline' | 'cluster';
@@ -77,10 +77,10 @@ export class LayoutEngine {
     const traverse = (nodeId: string, depth: number) => {
       maxDepth = Math.max(maxDepth, depth);
       const childIds = children.get(nodeId) || [];
-      childIds.forEach(childId => traverse(childId, depth + 1));
+      childIds.forEach(childId => { traverse(childId, depth + 1); });
     };
     
-    roots.forEach(root => traverse(root.id, 0));
+    roots.forEach(root => { traverse(root.id, 0); });
     return maxDepth;
   }
 
@@ -100,10 +100,10 @@ export class LayoutEngine {
       nodesByLevel.get(level)!.push(nodeId);
       
       const childIds = children.get(nodeId) || [];
-      childIds.forEach(childId => organizeByLevel(childId, level + 1));
+      childIds.forEach(childId => { organizeByLevel(childId, level + 1); });
     };
     
-    rootNodes.forEach(root => organizeByLevel(root.id, 0));
+    rootNodes.forEach(root => { organizeByLevel(root.id, 0); });
     
     // Posicionar nós
     nodesByLevel.forEach((nodeIds, level) => {

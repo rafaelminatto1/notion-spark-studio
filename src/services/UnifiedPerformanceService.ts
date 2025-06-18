@@ -95,7 +95,7 @@ export class UnifiedPerformanceService {
       this.intervalId = null;
     }
     
-    this.observers.forEach(observer => observer.disconnect());
+    this.observers.forEach(observer => { observer.disconnect(); });
     this.observers = [];
     
     console.log('⏹️ Unified Performance Service parado');

@@ -9,6 +9,9 @@
     "preview": "next start",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "lint:quick": "eslint . --config eslint.config.quick.js",
+    "lint:hybrid": "eslint . --config eslint.config.hybrid.js", 
+    "lint:robust": "node scripts/fix-type-safety.js",
     "type-check": "tsc --noEmit",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -27,6 +30,8 @@
     "analyze": "npx @next/bundle-analyzer",
     "clean": "rm -rf .next out coverage .vercel",
     "verify-env": "node scripts/verify-env.js",
+    "system-status": "node scripts/system-status.js",
+    "health-check": "npm run system-status && npm run verify-env && npm run lint:hybrid",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run"
   },

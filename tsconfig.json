@@ -17,14 +17,14 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "preserve",
-    /* Linting - temporariamente desabilitado */
-    "strict": false,
+    /* Linting - habilitando gradualmente */
+    "strict": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "noFallthroughCasesInSwitch": false,
-    "noImplicitAny": false,
-    "noImplicitReturns": false,
-    "noImplicitThis": false,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
     "noPropertyAccessFromIndexSignature": false,
     /* Path mapping */
     "baseUrl": ".",

@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 interface QuickAction {
   id: string;
@@ -115,7 +115,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
           shortcut: 'Enter',
           category: 'edit',
           priority: 95,
-          action: () => onEditFile(selectedFile.id)
+          action: () => { onEditFile(selectedFile.id); }
         },
         {
           id: 'toggle-favorite',
@@ -125,7 +125,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
           shortcut: 'Ctrl+D',
           category: 'organize',
           priority: 80,
-          action: () => onToggleFavorite(selectedFile.id)
+          action: () => { onToggleFavorite(selectedFile.id); }
         },
         {
           id: 'share-file',
@@ -135,7 +135,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
           shortcut: 'Ctrl+Shift+S',
           category: 'share',
           priority: 75,
-          action: () => onShareFile(selectedFile.id)
+          action: () => { onShareFile(selectedFile.id); }
         },
         {
           id: 'duplicate-file',
@@ -145,7 +145,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
           shortcut: 'Ctrl+Shift+D',
           category: 'edit',
           priority: 70,
-          action: () => onDuplicateFile(selectedFile.id)
+          action: () => { onDuplicateFile(selectedFile.id); }
         }
       );
 
@@ -159,7 +159,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
             icon: <Download className="h-4 w-4" />,
             category: 'share',
             priority: 60,
-            action: () => onExportFiles([selectedFile.id])
+            action: () => { onExportFiles([selectedFile.id]); }
           },
           {
             id: 'add-tags',
@@ -184,7 +184,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
           icon: <Star className="h-4 w-4" />,
           category: 'organize',
           priority: 70,
-          action: () => selectedFiles.forEach(file => onToggleFavorite(file.id))
+          action: () => { selectedFiles.forEach(file => { onToggleFavorite(file.id); }); }
         },
         {
           id: 'bulk-move',
@@ -202,7 +202,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
           icon: <Download className="h-4 w-4" />,
           category: 'share',
           priority: 60,
-          action: () => onExportFiles(selectedFiles.map(f => f.id))
+          action: () => { onExportFiles(selectedFiles.map(f => f.id)); }
         }
       );
     }
@@ -232,7 +232,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
             category: 'system',
             priority: 10,
             variant: 'destructive' as const,
-            action: () => onDeleteFiles(fileIds)
+            action: () => { onDeleteFiles(fileIds); }
           }
         );
       }

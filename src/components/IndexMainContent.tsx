@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { cn } from '@/lib/utils';
-import { ViewMode } from '@/components/ViewTabs';
+import type { ViewMode } from '@/components/ViewTabs';
 import { FileItem } from '@/types';
 import { DashboardEnhanced } from '@/components/DashboardEnhanced';
 import { EvernoteLayout } from '@/components/EvernoteLayout';
@@ -93,14 +93,14 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
       {/* Keyboard Shortcuts Handler */}
       <KeyboardShortcuts
         onQuickSwitcher={openQuickSwitcher}
-        onCommandPalette={() => setIsCommandPaletteOpen(true)}
+        onCommandPalette={() => { setIsCommandPaletteOpen(true); }}
         onCreateNote={() => handleCreateFile('Nova Nota')}
         onCreateNotebook={() => handleCreateFile('Novo Notebook', undefined, 'folder')}
         onToggleSidebar={onToggleMobileSidebar}
         onFocusMode={() => {/* handled by FocusMode component */}}
-        onSearch={() => setIsCommandPaletteOpen(true)}
+        onSearch={() => { setIsCommandPaletteOpen(true); }}
         activeView={activeView}
-        setActiveView={(view) => setActiveView(view as ViewMode)}
+        setActiveView={(view) => { setActiveView(view as ViewMode); }}
       />
 
       {isMobile && isMobileSidebarOpen && (
@@ -120,7 +120,7 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
               onCreateFile={handleCreateFile}
               onToggleSidebar={onToggleMobileSidebar}
               onShowSettings={onShowSettings}
-              onOpenSearch={() => setIsCommandPaletteOpen(true)}
+              onOpenSearch={() => { setIsCommandPaletteOpen(true); }}
             />
           ) : (
             <>
@@ -281,7 +281,7 @@ export const IndexMainContent: React.FC<IndexMainContentProps> = ({
           activeView={activeView}
           onViewChange={handleViewChangeFromHeader}
           onToggleSidebar={onToggleMobileSidebar}
-          onOpenSearch={useCallback(() => setIsCommandPaletteOpen(true), [setIsCommandPaletteOpen])}
+          onOpenSearch={useCallback(() => { setIsCommandPaletteOpen(true); }, [setIsCommandPaletteOpen])}
           onShowSettings={onShowSettings}
         />
       )}

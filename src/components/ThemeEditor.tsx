@@ -10,7 +10,7 @@ import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Palette, Eye, Save, RotateCcw, Download, Upload } from 'lucide-react';
-import { CustomTheme } from '@/types/workspace';
+import type { CustomTheme } from '@/types/workspace';
 import { useWorkspaceThemes } from '@/hooks/useWorkspaceThemes';
 import { useToast } from '@/hooks/use-toast';
 
@@ -198,7 +198,7 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({
               <Input
                 id="themeName"
                 value={editingTheme.name}
-                onChange={(e) => setEditingTheme(prev => ({ ...prev, name: e.target.value }))}
+                onChange={(e) => { setEditingTheme(prev => ({ ...prev, name: e.target.value })); }}
                 placeholder="Nome do seu tema"
               />
             </div>
@@ -225,13 +225,13 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({
                       <Input
                         type="color"
                         value={value}
-                        onChange={(e) => handleColorChange(key, e.target.value)}
+                        onChange={(e) => { handleColorChange(key, e.target.value); }}
                         className="w-12 h-10 p-1 border-2"
                       />
                       <Input
                         type="text"
                         value={value}
-                        onChange={(e) => handleColorChange(key, e.target.value)}
+                        onChange={(e) => { handleColorChange(key, e.target.value); }}
                         className="flex-1"
                         placeholder="#000000"
                       />
@@ -247,7 +247,7 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({
                   <Label>Família da Fonte</Label>
                   <Select
                     value={editingTheme.typography.fontFamily}
-                    onValueChange={(value) => handleTypographyChange('fontFamily', value)}
+                    onValueChange={(value) => { handleTypographyChange('fontFamily', value); }}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -269,7 +269,7 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({
                     max={24}
                     step={1}
                     value={[editingTheme.typography.fontSize]}
-                    onValueChange={(value) => handleTypographyChange('fontSize', value[0])}
+                    onValueChange={(value) => { handleTypographyChange('fontSize', value[0]); }}
                   />
                 </div>
 
@@ -280,7 +280,7 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({
                     max={900}
                     step={100}
                     value={[editingTheme.typography.fontWeight]}
-                    onValueChange={(value) => handleTypographyChange('fontWeight', value[0])}
+                    onValueChange={(value) => { handleTypographyChange('fontWeight', value[0]); }}
                   />
                 </div>
               </div>

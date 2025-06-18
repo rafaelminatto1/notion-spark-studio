@@ -236,7 +236,7 @@ export const AdaptiveUIProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       confidence: pattern.confidence,
       timeRelevant: pattern.timeOfDay.includes(currentTime),
       contextRelevant: pattern.context === state.currentContext.workspace,
-      action: () => trackAction(pattern.action)
+      action: () => { trackAction(pattern.action); }
     }));
   }, [state.patterns, state.currentContext, trackAction]);
 
@@ -281,14 +281,14 @@ export const AdaptiveUIProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       });
     }, 60000); // Verificar a cada minuto
 
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, []);
 
   // Analisar e adaptar UI periodicamente
   useEffect(() => {
     if (state.learningEnabled && state.adaptationLevel !== 'basic') {
       const interval = setInterval(adaptUI, 300000); // A cada 5 minutos
-      return () => clearInterval(interval);
+      return () => { clearInterval(interval); };
     }
   }, [state.learningEnabled, state.adaptationLevel, adaptUI]);
 
@@ -432,7 +432,7 @@ export const AdaptiveToolbar: React.FC<AdaptiveToolbarProps> = ({
               key={pattern.id}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => trackAction(pattern.action)}
+              onClick={() => { trackAction(pattern.action); }}
               className="px-2 py-1 text-xs rounded-md bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               title={`${pattern.action} (usado ${pattern.frequency}x)`}
             >
@@ -482,7 +482,7 @@ export const AdaptiveSettings: React.FC<AdaptiveSettingsProps> = ({ className })
             <input
               type="checkbox"
               checked={state.learningEnabled}
-              onChange={(e) => dispatch({ type: 'TOGGLE_LEARNING', payload: e.target.checked })}
+              onChange={(e) => { dispatch({ type: 'TOGGLE_LEARNING', payload: e.target.checked }); }}
               className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
             />
           </div>
@@ -493,10 +493,10 @@ export const AdaptiveSettings: React.FC<AdaptiveSettingsProps> = ({ className })
             </label>
             <select
               value={state.adaptationLevel}
-              onChange={(e) => dispatch({ 
+              onChange={(e) => { dispatch({ 
                 type: 'SET_ADAPTATION_LEVEL', 
                 payload: e.target.value as AdaptiveState['adaptationLevel'] 
-              })}
+              }); }}
               className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm"
             >
               <option value="basic">Básico - Apenas sugestões</option>

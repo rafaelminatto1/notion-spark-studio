@@ -2,7 +2,7 @@
 import React from 'react';
 import { ChevronRight, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 interface BreadcrumbsProps {
   currentFile: FileItem | undefined;
@@ -74,7 +74,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => onNavigate(item.id)}
+            onClick={() => { onNavigate(item.id); }}
             className={`text-sm ${
               index === breadcrumbPath.length - 1 
                 ? 'text-white font-medium' 

@@ -525,7 +525,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   if (!isOpen) {
     return (
       <Button
-        onClick={() => setIsOpen(true)}
+        onClick={() => { setIsOpen(true); }}
         variant="outline"
         size="sm"
         className={cn("gap-2 btn-magic", className)}
@@ -552,7 +552,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
             </div>
           </div>
           <Button
-            onClick={() => setIsOpen(false)}
+            onClick={() => { setIsOpen(false); }}
             variant="ghost"
             size="sm"
             className="rounded-full p-2 hover:bg-white/10"
@@ -570,7 +570,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 type="text"
                 placeholder="🔍 Buscar templates..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => { setSearchTerm(e.target.value); }}
                 className="w-full px-4 py-2 bg-workspace-surface border border-white/20 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
             </div>
@@ -578,7 +578,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
             {/* Categories */}
             <div className="flex gap-2 overflow-x-auto">
               <Button
-                onClick={() => setSelectedCategory('Todos')}
+                onClick={() => { setSelectedCategory('Todos'); }}
                 variant={selectedCategory === 'Todos' ? 'default' : 'ghost'}
                 size="sm"
                 className="whitespace-nowrap"
@@ -590,7 +590,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 return (
                   <Button
                     key={category}
-                    onClick={() => setSelectedCategory(category)}
+                    onClick={() => { setSelectedCategory(category); }}
                     variant={selectedCategory === category ? 'default' : 'ghost'}
                     size="sm"
                     className="whitespace-nowrap"
@@ -611,7 +611,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               return (
                 <div
                   key={template.id}
-                  onClick={() => handleSelectTemplate(template)}
+                  onClick={() => { handleSelectTemplate(template); }}
                   className="group p-4 bg-gradient-to-br from-workspace-surface to-workspace-surface/50 border border-white/10 rounded-xl hover:border-purple-500/50 hover:bg-gradient-to-br hover:from-purple-500/10 hover:to-blue-500/10 cursor-pointer template-card"
                 >
                   <div className="flex items-start gap-3 mb-3">

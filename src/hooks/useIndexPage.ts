@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { ViewMode } from '@/components/ViewTabs';
+import type { ViewMode } from '@/components/ViewTabs';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useFileSystemContext } from '@/contexts/FileSystemContext';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';

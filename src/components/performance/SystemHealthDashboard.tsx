@@ -262,7 +262,7 @@ export const SystemHealthDashboard: React.FC<SystemHealthDashboardProps> = ({
           <Button
             variant={isMonitoring ? "destructive" : "default"}
             size="sm"
-            onClick={() => setIsMonitoring(!isMonitoring)}
+            onClick={() => { setIsMonitoring(!isMonitoring); }}
           >
             {isMonitoring ? <RefreshCw className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
             {isMonitoring ? 'Pausar' : 'Iniciar'}

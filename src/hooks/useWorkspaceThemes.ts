@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { CustomTheme } from '@/types/workspace';
+import type { CustomTheme } from '@/types/workspace';
 
 const CUSTOM_THEMES: CustomTheme[] = [
   {

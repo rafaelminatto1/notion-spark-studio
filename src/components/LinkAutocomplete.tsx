@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { FileText, Plus } from 'lucide-react';
-import { LinkSuggestion } from '@/hooks/useLinkAutocomplete';
+import type { LinkSuggestion } from '@/hooks/useLinkAutocomplete';
 import { cn } from '@/lib/utils';
 
 interface LinkAutocompleteProps {
@@ -43,7 +43,7 @@ export const LinkAutocomplete: React.FC<LinkAutocompleteProps> = ({
             key={suggestion.id}
             variant="ghost"
             size="sm"
-            onClick={() => onSelect(suggestion)}
+            onClick={() => { onSelect(suggestion); }}
             className={cn(
               "w-full justify-start gap-2 h-auto p-2",
               index === selectedIndex && "bg-notion-purple text-white"

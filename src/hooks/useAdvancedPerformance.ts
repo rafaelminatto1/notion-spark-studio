@@ -167,7 +167,7 @@ export const useAdvancedPerformance = (
     
     observer.observe({ entryTypes: ['measure'] });
     
-    return () => observer.disconnect();
+    return () => { observer.disconnect(); };
   }, []);
 
   // Coletar todas as métricas

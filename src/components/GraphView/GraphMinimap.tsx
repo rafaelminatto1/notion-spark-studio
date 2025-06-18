@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
-import { GraphNode } from './types';
+import type { GraphNode } from './types';
 import { cn } from '@/lib/utils';
 
 interface GraphMinimapProps {

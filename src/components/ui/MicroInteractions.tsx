@@ -260,9 +260,9 @@ export const InteractiveButton: React.FC<InteractiveButtonProps> = ({
       `}
       onClick={handleClick}
       disabled={disabled || isLoading}
-      onMouseDown={() => setIsPressed(true)}
-      onMouseUp={() => setIsPressed(false)}
-      onMouseLeave={() => setIsPressed(false)}
+      onMouseDown={() => { setIsPressed(true); }}
+      onMouseUp={() => { setIsPressed(false); }}
+      onMouseLeave={() => { setIsPressed(false); }}
       whileHover={{ scale: disabled ? 1 : 1.02 }}
       whileTap={{ scale: disabled ? 1 : 0.98 }}
       animate={{
@@ -469,7 +469,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
           </p>
         </div>
         <button
-          onClick={() => clearError(id)}
+          onClick={() => { clearError(id); }}
           className="text-red-400 hover:text-red-600 transition-colors"
         >
           <X className="h-4 w-4" />
@@ -490,8 +490,8 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({ className })
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   React.useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
+    const handleOnline = () => { setIsOnline(true); };
+    const handleOffline = () => { setIsOnline(false); };
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);

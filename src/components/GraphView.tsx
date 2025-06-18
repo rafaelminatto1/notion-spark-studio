@@ -21,8 +21,9 @@ import {
   Eye,
   EyeOff
 } from 'lucide-react';
-import { GraphNode, GraphLink, useGraph } from '@/hooks/useGraph';
-import { FileItem } from '@/types';
+import type { GraphNode, GraphLink} from '@/hooks/useGraph';
+import { useGraph } from '@/hooks/useGraph';
+import type { FileItem } from '@/types';
 import { cn } from '@/lib/utils';
 
 interface GraphViewProps {
@@ -118,8 +119,8 @@ export const GraphView: React.FC<GraphViewProps> = ({
 
     const filteredNodeIds = new Set(filteredNodes.map(n => n.id));
     const filteredLinks = links.filter(link => 
-      filteredNodeIds.has(link.source as string) &&
-      filteredNodeIds.has(link.target as string)
+      filteredNodeIds.has(link.source) &&
+      filteredNodeIds.has(link.target)
     );
 
     return { nodes: filteredNodes, links: filteredLinks };
@@ -390,7 +391,7 @@ export const GraphView: React.FC<GraphViewProps> = ({
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => { setSearchQuery(e.target.value); }}
               placeholder="Buscar arquivos..."
               className="pl-10 bg-notion-dark-hover border-notion-dark-border"
             />
@@ -408,7 +409,7 @@ export const GraphView: React.FC<GraphViewProps> = ({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setFocusMode(!focusMode)}
+            onClick={() => { setFocusMode(!focusMode); }}
             className={cn("gap-2", focusMode && "bg-notion-purple/20")}
           >
             <Target className="h-4 w-4" />
@@ -418,7 +419,7 @@ export const GraphView: React.FC<GraphViewProps> = ({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setShowSettings(!showSettings)}
+            onClick={() => { setShowSettings(!showSettings); }}
             className="gap-2"
           >
             <Settings className="h-4 w-4" />
@@ -514,7 +515,7 @@ export const GraphView: React.FC<GraphViewProps> = ({
                         ? "bg-notion-purple text-white" 
                         : "bg-notion-dark-hover hover:bg-notion-purple/20"
                     )}
-                    onClick={() => handleClusterToggle(cluster)}
+                    onClick={() => { handleClusterToggle(cluster); }}
                   >
                     {cluster} ({nodes.filter(n => n.cluster === cluster).length})
                   </Badge>
@@ -538,7 +539,7 @@ export const GraphView: React.FC<GraphViewProps> = ({
                         ? "bg-blue-600 text-white" 
                         : "bg-notion-dark-hover hover:bg-blue-600/20"
                     )}
-                    onClick={() => handleTagToggle(tag)}
+                    onClick={() => { handleTagToggle(tag); }}
                   >
                     {tag}
                   </Badge>
@@ -676,7 +677,7 @@ export const GraphView: React.FC<GraphViewProps> = ({
                             key={connectedNode.id}
                             variant="ghost"
                             size="sm"
-                            onClick={() => onFileSelect(connectedNode.id)}
+                            onClick={() => { onFileSelect(connectedNode.id); }}
                             className="w-full justify-start text-xs h-auto p-2 truncate"
                           >
                             {connectedNode.name}

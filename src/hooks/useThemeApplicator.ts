@@ -1,6 +1,6 @@
 
 import { useEffect } from 'react';
-import { CustomTheme } from '@/types/workspace';
+import type { CustomTheme } from '@/types/workspace';
 
 export const useThemeApplicator = (activeTheme?: CustomTheme) => {
   useEffect(() => {

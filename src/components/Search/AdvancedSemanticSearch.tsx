@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { useDebounce } from '@/hooks/useDebounce';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { cn } from '@/lib/utils';
 
 interface SearchFilters {
@@ -102,7 +102,7 @@ export const AdvancedSemanticSearch: React.FC<AdvancedSemanticSearchProps> = ({
           
           if (termMatches > 0) {
             const position = contentLower.indexOf(term);
-            const snippet = file.content!.substring(Math.max(0, position - 50), position + 50);
+            const snippet = file.content.substring(Math.max(0, position - 50), position + 50);
             matches.push({
               type: 'content',
               text: snippet,
@@ -208,17 +208,17 @@ export const AdvancedSemanticSearch: React.FC<AdvancedSemanticSearchProps> = ({
           <Input
             ref={searchInputRef}
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => { setQuery(e.target.value); }}
             placeholder="🔍 Busca inteligente com IA..."
             className="pl-10 pr-20 py-3 text-base border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 rounded-xl transition-all duration-200"
-            onFocus={() => setIsExpanded(true)}
+            onFocus={() => { setIsExpanded(true); }}
           />
           <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
             {query && (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setQuery('')}
+                onClick={() => { setQuery(''); }}
                 className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
               >
                 <X className="h-3 w-3" />
@@ -227,7 +227,7 @@ export const AdvancedSemanticSearch: React.FC<AdvancedSemanticSearchProps> = ({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setIsExpanded(!isExpanded)}
+              onClick={() => { setIsExpanded(!isExpanded); }}
               className={cn(
                 "h-6 w-6 p-0 rounded-full transition-colors",
                 isExpanded ? "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400" : ""
@@ -297,7 +297,7 @@ export const AdvancedSemanticSearch: React.FC<AdvancedSemanticSearchProps> = ({
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: index * 0.05 }}
-                            onClick={() => onFileSelect(result.item.id)}
+                            onClick={() => { onFileSelect(result.item.id); }}
                             className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 cursor-pointer transition-all duration-200 hover:shadow-md group"
                           >
                             <div className="flex items-start gap-3">
@@ -375,7 +375,7 @@ export const AdvancedSemanticSearch: React.FC<AdvancedSemanticSearchProps> = ({
                       </label>
                       <Slider
                         value={[filters.minRelevance]}
-                        onValueChange={([value]) => handleFilterChange('minRelevance', value)}
+                        onValueChange={([value]) => { handleFilterChange('minRelevance', value); }}
                         max={100}
                         step={10}
                         className="w-full"
@@ -390,7 +390,7 @@ export const AdvancedSemanticSearch: React.FC<AdvancedSemanticSearchProps> = ({
                         </label>
                         <Switch
                           checked={filters.includeContent}
-                          onCheckedChange={(checked) => handleFilterChange('includeContent', checked)}
+                          onCheckedChange={(checked) => { handleFilterChange('includeContent', checked); }}
                         />
                       </div>
                       <div className="flex items-center justify-between">
@@ -399,7 +399,7 @@ export const AdvancedSemanticSearch: React.FC<AdvancedSemanticSearchProps> = ({
                         </label>
                         <Switch
                           checked={filters.exactMatch}
-                          onCheckedChange={(checked) => handleFilterChange('exactMatch', checked)}
+                          onCheckedChange={(checked) => { handleFilterChange('exactMatch', checked); }}
                         />
                       </div>
                     </div>
@@ -426,7 +426,7 @@ export const AdvancedSemanticSearch: React.FC<AdvancedSemanticSearchProps> = ({
                           {aiSuggestions.map((suggestion, index) => (
                             <button
                               key={index}
-                              onClick={() => handleSearch(suggestion)}
+                              onClick={() => { handleSearch(suggestion); }}
                               className="w-full text-left p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-colors text-sm"
                             >
                               {suggestion}
@@ -449,7 +449,7 @@ export const AdvancedSemanticSearch: React.FC<AdvancedSemanticSearchProps> = ({
                               key={index}
                               variant="secondary"
                               className="cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900"
-                              onClick={() => handleSearch(search)}
+                              onClick={() => { handleSearch(search); }}
                             >
                               {search}
                             </Badge>
@@ -471,7 +471,7 @@ export const AdvancedSemanticSearch: React.FC<AdvancedSemanticSearchProps> = ({
                               key={tag}
                               variant="outline"
                               className="cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900"
-                              onClick={() => handleSearch(tag)}
+                              onClick={() => { handleSearch(tag); }}
                             >
                               {tag}
                             </Badge>
@@ -491,7 +491,7 @@ export const AdvancedSemanticSearch: React.FC<AdvancedSemanticSearchProps> = ({
       {(isExpanded || query) && (
         <div
           className="fixed inset-0 z-40"
-          onClick={() => setIsExpanded(false)}
+          onClick={() => { setIsExpanded(false); }}
         />
       )}
     </div>

@@ -87,7 +87,7 @@ export const PerformanceMonitor: React.FC = () => {
     return (
       <div className="fixed bottom-4 right-4 z-50">
         <Button
-          onClick={() => setIsVisible(true)}
+          onClick={() => { setIsVisible(true); }}
           className="rounded-full bg-blue-600 hover:bg-blue-700 text-white"
           size="icon"
         >
@@ -112,7 +112,7 @@ export const PerformanceMonitor: React.FC = () => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setIsVisible(false)}
+              onClick={() => { setIsVisible(false); }}
               className="h-8 w-8"
             >
               ✕

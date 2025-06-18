@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { dataService } from '@/services/DataService';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 export const useDataService = () => {
   const [isConnected, setIsConnected] = useState(false);
@@ -19,7 +19,7 @@ export const useDataService = () => {
     // Check every 5 seconds
     const interval = setInterval(checkConnection, 5000);
 
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, []);
 
   // File operations
@@ -36,11 +36,11 @@ export const useDataService = () => {
   }, []);
 
   const updateFile = useCallback(async <T = FileItem>(id: string, updates: Partial<T>): Promise<void> => {
-    return await dataService.updateFile<T>(id, updates);
+    await dataService.updateFile<T>(id, updates);
   }, []);
 
   const deleteFile = useCallback(async (id: string): Promise<void> => {
-    return await dataService.deleteFile(id);
+    await dataService.deleteFile(id);
   }, []);
 
   const searchFiles = useCallback(async <T = FileItem>(query: string): Promise<T[]> => {
@@ -49,7 +49,7 @@ export const useDataService = () => {
 
   // Workspace operations
   const saveWorkspace = useCallback(async (data: any): Promise<void> => {
-    return await dataService.saveWorkspace(data);
+    await dataService.saveWorkspace(data);
   }, []);
 
   const loadWorkspace = useCallback(async (): Promise<any> => {
@@ -63,7 +63,7 @@ export const useDataService = () => {
 
   // Cache management
   const invalidateCache = useCallback(async (pattern?: string): Promise<void> => {
-    return await dataService.invalidateCache(pattern);
+    await dataService.invalidateCache(pattern);
   }, []);
 
   // Stats

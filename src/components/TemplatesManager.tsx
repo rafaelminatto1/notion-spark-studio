@@ -413,7 +413,7 @@ export const TemplatesManager: React.FC<TemplatesManagerProps> = ({
                     ))}
                   </div>
                   <div className="flex gap-2 mt-auto">
-                    <Button size="sm" className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white rounded-lg" onClick={() => onCreateFromTemplate(template)}>
+                    <Button size="sm" className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white rounded-lg" onClick={() => { onCreateFromTemplate(template); }}>
                       <Copy className="h-4 w-4 mr-1" /> Usar
                     </Button>
                     <Button size="sm" variant="outline" className="border-[#22c55e] text-[#22c55e] dark:border-[#4ade80] dark:text-[#4ade80]">

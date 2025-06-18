@@ -1,6 +1,6 @@
 
 import { useState, useCallback } from 'react';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 export interface DragState {
   isDragging: boolean;
@@ -97,7 +97,7 @@ export const useDragAndDrop = (
     // Previne mover uma pasta para dentro de si mesma ou de suas subpastas
     const isDescendant = (itemId: string, potentialAncestorId: string): boolean => {
       const item = files.find(f => f.id === itemId);
-      if (!item || !item.parentId) return false;
+      if (!item?.parentId) return false;
       if (item.parentId === potentialAncestorId) return true;
       return isDescendant(item.parentId, potentialAncestorId);
     };

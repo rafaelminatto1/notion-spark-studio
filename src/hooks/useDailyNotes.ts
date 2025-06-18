@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { format, startOfDay, addDays, subDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 

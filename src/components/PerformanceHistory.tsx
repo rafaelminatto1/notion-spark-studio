@@ -3,6 +3,9 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Download, Trash2 } from 'lucide-react';
 import { Line } from 'react-chartjs-2';
+import type {
+  ChartOptions
+} from 'chart.js';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -11,8 +14,7 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend,
-  ChartOptions
+  Legend
 } from 'chart.js';
 
 ChartJS.register(

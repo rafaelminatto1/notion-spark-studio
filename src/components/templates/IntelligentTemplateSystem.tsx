@@ -315,7 +315,7 @@ export const IntelligentTemplateSystem: React.FC<IntelligentTemplateSystemProps>
         confidence: 0.89,
         impact: 'high',
         category: 'workflow',
-        action: () => console.log('Criando template de OKRs')
+        action: () => { console.log('Criando template de OKRs'); }
       },
       {
         id: 'suggestion_2',
@@ -325,7 +325,7 @@ export const IntelligentTemplateSystem: React.FC<IntelligentTemplateSystemProps>
         confidence: 0.76,
         impact: 'medium',
         category: 'report',
-        action: () => console.log('Aplicando melhorias')
+        action: () => { console.log('Aplicando melhorias'); }
       },
       {
         id: 'suggestion_3',
@@ -335,7 +335,7 @@ export const IntelligentTemplateSystem: React.FC<IntelligentTemplateSystemProps>
         confidence: 0.82,
         impact: 'medium',
         category: 'workflow',
-        action: () => console.log('Personalizando template')
+        action: () => { console.log('Personalizando template'); }
       }
     ];
 
@@ -554,7 +554,7 @@ export const IntelligentTemplateSystem: React.FC<IntelligentTemplateSystemProps>
                     <Input
                       placeholder="Buscar templates..."
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onChange={(e) => { setSearchQuery(e.target.value); }}
                       className="pl-10"
                     />
                   </div>
@@ -647,7 +647,7 @@ export const IntelligentTemplateSystem: React.FC<IntelligentTemplateSystemProps>
                           variant="ghost"
                           size="sm"
                           className="h-8 w-8 p-0 bg-white/80 hover:bg-white"
-                          onClick={() => toggleFavorite(template.id)}
+                          onClick={() => { toggleFavorite(template.id); }}
                         >
                           <Heart 
                             className={`h-4 w-4 ${
@@ -719,7 +719,7 @@ export const IntelligentTemplateSystem: React.FC<IntelligentTemplateSystemProps>
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => useTemplate(template)}>
+                              <DropdownMenuItem onClick={() => { useTemplate(template); }}>
                                 <Copy className="h-4 w-4 mr-2" />
                                 Usar Template
                               </DropdownMenuItem>
@@ -858,7 +858,7 @@ export const IntelligentTemplateSystem: React.FC<IntelligentTemplateSystemProps>
                     <label className="text-sm font-medium mb-2 block">Tipo de Template</label>
                     <Select 
                       value={generationPrompt.type} 
-                      onValueChange={(value) => setGenerationPrompt(prev => ({ ...prev, type: value }))}
+                      onValueChange={(value) => { setGenerationPrompt(prev => ({ ...prev, type: value })); }}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -878,7 +878,7 @@ export const IntelligentTemplateSystem: React.FC<IntelligentTemplateSystemProps>
                     <Input
                       placeholder="Ex: Relatório mensal de vendas"
                       value={generationPrompt.purpose}
-                      onChange={(e) => setGenerationPrompt(prev => ({ ...prev, purpose: e.target.value }))}
+                      onChange={(e) => { setGenerationPrompt(prev => ({ ...prev, purpose: e.target.value })); }}
                     />
                   </div>
 
@@ -887,7 +887,7 @@ export const IntelligentTemplateSystem: React.FC<IntelligentTemplateSystemProps>
                     <Input
                       placeholder="Ex: Executivos, desenvolvedores, clientes"
                       value={generationPrompt.audience}
-                      onChange={(e) => setGenerationPrompt(prev => ({ ...prev, audience: e.target.value }))}
+                      onChange={(e) => { setGenerationPrompt(prev => ({ ...prev, audience: e.target.value })); }}
                     />
                   </div>
                 </div>
@@ -897,7 +897,7 @@ export const IntelligentTemplateSystem: React.FC<IntelligentTemplateSystemProps>
                     <label className="text-sm font-medium mb-2 block">Extensão</label>
                     <Select 
                       value={generationPrompt.length} 
-                      onValueChange={(value: any) => setGenerationPrompt(prev => ({ ...prev, length: value }))}
+                      onValueChange={(value: any) => { setGenerationPrompt(prev => ({ ...prev, length: value })); }}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -914,7 +914,7 @@ export const IntelligentTemplateSystem: React.FC<IntelligentTemplateSystemProps>
                     <label className="text-sm font-medium mb-2 block">Tom</label>
                     <Select 
                       value={generationPrompt.tone} 
-                      onValueChange={(value: any) => setGenerationPrompt(prev => ({ ...prev, tone: value }))}
+                      onValueChange={(value: any) => { setGenerationPrompt(prev => ({ ...prev, tone: value })); }}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -933,7 +933,7 @@ export const IntelligentTemplateSystem: React.FC<IntelligentTemplateSystemProps>
                       <Switch
                         checked={generationPrompt.includeStructure}
                         onCheckedChange={(checked) => 
-                          setGenerationPrompt(prev => ({ ...prev, includeStructure: checked }))
+                          { setGenerationPrompt(prev => ({ ...prev, includeStructure: checked })); }
                         }
                         id="include-structure"
                       />
@@ -945,7 +945,7 @@ export const IntelligentTemplateSystem: React.FC<IntelligentTemplateSystemProps>
                       <Switch
                         checked={generationPrompt.includeExamples}
                         onCheckedChange={(checked) => 
-                          setGenerationPrompt(prev => ({ ...prev, includeExamples: checked }))
+                          { setGenerationPrompt(prev => ({ ...prev, includeExamples: checked })); }
                         }
                         id="include-examples"
                       />
@@ -962,7 +962,7 @@ export const IntelligentTemplateSystem: React.FC<IntelligentTemplateSystemProps>
                 <Textarea
                   placeholder="Descreva qualquer requisito específico, seções obrigatórias, ou características especiais..."
                   value={generationPrompt.customRequirements}
-                  onChange={(e) => setGenerationPrompt(prev => ({ ...prev, customRequirements: e.target.value }))}
+                  onChange={(e) => { setGenerationPrompt(prev => ({ ...prev, customRequirements: e.target.value })); }}
                   rows={3}
                 />
               </div>

@@ -122,7 +122,7 @@ export const RealtimeCollaboration: React.FC<RealtimeCollaborationProps> = ({
       setEvents(prev => [...prev.slice(-19), newEvent]);
     }, 3000);
 
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, [documentId]);
 
   // Monitoramento de qualidade da conexão
@@ -135,7 +135,7 @@ export const RealtimeCollaboration: React.FC<RealtimeCollaborationProps> = ({
     };
 
     const interval = setInterval(checkConnection, 5000);
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, []);
 
   // Transformação operacional para edição colaborativa
@@ -212,7 +212,7 @@ export const RealtimeCollaboration: React.FC<RealtimeCollaborationProps> = ({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setShowPresence(!showPresence)}
+                onClick={() => { setShowPresence(!showPresence); }}
               >
                 <Eye className="h-4 w-4 mr-1" />
                 {showPresence ? 'Ocultar' : 'Mostrar'} Presença
@@ -366,7 +366,7 @@ export const RealtimeCollaboration: React.FC<RealtimeCollaborationProps> = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setConflictResolution(conflictResolution === 'auto' ? 'manual' : 'auto')}
+                      onClick={() => { setConflictResolution(conflictResolution === 'auto' ? 'manual' : 'auto'); }}
                     >
                       Alternar para {conflictResolution === 'auto' ? 'manual' : 'automático'}
                     </Button>
@@ -404,7 +404,7 @@ export const RealtimeCollaboration: React.FC<RealtimeCollaborationProps> = ({
                     <Button
                       variant={showPresence ? "default" : "outline"}
                       size="sm"
-                      onClick={() => setShowPresence(!showPresence)}
+                      onClick={() => { setShowPresence(!showPresence); }}
                     >
                       {showPresence ? 'Ativado' : 'Desativado'}
                     </Button>

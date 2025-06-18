@@ -1,6 +1,6 @@
 
 import { useEffect, useCallback } from 'react';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 interface UseKeyboardNavigationProps {
   files: FileItem[];
@@ -104,7 +104,7 @@ export const useKeyboardNavigation = ({
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => { window.removeEventListener('keydown', handleKeyDown); };
   }, [handleKeyDown]);
 
   return {

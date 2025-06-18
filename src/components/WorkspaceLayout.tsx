@@ -14,7 +14,7 @@ import { Editor } from '@/components/Editor';
 import { TemplatesManager } from '@/components/TemplatesManager';
 import { GraphContainer } from '@/components/GraphView/GraphContainer';
 import { EvernoteLayout } from '@/components/EvernoteLayout';
-import { ViewMode } from '@/components/ViewTabs'; // Import ViewMode type
+import type { ViewMode } from '@/components/ViewTabs'; // Import ViewMode type
 import { Sidebar } from '@/components/Sidebar'; // Import Sidebar
 
 interface WorkspaceLayoutProps {

@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { SmartCollections } from '@/components/SmartCollections';
 import { TagSystem } from '@/components/TagSystem';
 import { QuickActions } from '@/components/QuickActions';
@@ -276,7 +276,7 @@ export const DashboardEnhanced: React.FC<DashboardEnhancedProps> = ({
                     <div className="font-medium text-[#1a2233] dark:text-white">{file.name}</div>
                     <div className="text-xs text-[#64748b] dark:text-[#cbd5e1]">{new Date(file.updatedAt).toLocaleDateString()}</div>
                   </div>
-                  <Button size="sm" variant="ghost" className="text-[#2563eb] dark:text-[#60a5fa]" onClick={() => onNavigateToFile(file.id)}>
+                  <Button size="sm" variant="ghost" className="text-[#2563eb] dark:text-[#60a5fa]" onClick={() => { onNavigateToFile(file.id); }}>
                     Abrir
                   </Button>
                 </div>

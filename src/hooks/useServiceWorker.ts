@@ -38,8 +38,8 @@ export const useServiceWorker = (): ServiceWorkerAPI => {
     }
 
     // Listeners para eventos de conectividade
-    const handleOnline = () => setState(prev => ({ ...prev, isOnline: true }));
-    const handleOffline = () => setState(prev => ({ ...prev, isOnline: false }));
+    const handleOnline = () => { setState(prev => ({ ...prev, isOnline: true })); };
+    const handleOffline = () => { setState(prev => ({ ...prev, isOnline: false })); };
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -271,12 +271,12 @@ export const useOfflineNotification = () => {
   useEffect(() => {
     const handleOffline = () => {
       setShowOfflineToast(true);
-      setTimeout(() => setShowOfflineToast(false), 5000);
+      setTimeout(() => { setShowOfflineToast(false); }, 5000);
     };
 
     const handleOnline = () => {
       setShowOnlineToast(true);
-      setTimeout(() => setShowOnlineToast(false), 3000);
+      setTimeout(() => { setShowOnlineToast(false); }, 3000);
     };
 
     window.addEventListener('offline', handleOffline);
@@ -320,7 +320,7 @@ export const useOfflineCache = () => {
     try {
       await Promise.all(
         criticalResources.map(resource => 
-          fetch(resource).catch(err => console.warn('Failed to preload:', resource, err))
+          fetch(resource).catch(err => { console.warn('Failed to preload:', resource, err); })
         )
       );
       console.log('[Offline Cache] Critical resources preloaded');

@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 interface TagSuggestion {
   tag: string;
@@ -65,8 +65,8 @@ class ContentAnalyzer {
     'at', 'to', 'for', 'of', 'with', 'by', 'from'
   ]);
 
-  static analyzeContent(content: string, title: string = ''): ContentAnalysis {
-    const text = (title + ' ' + content).toLowerCase();
+  static analyzeContent(content: string, title = ''): ContentAnalysis {
+    const text = (`${title  } ${  content}`).toLowerCase();
     const words = this.extractWords(text);
     
     return {
@@ -366,12 +366,12 @@ class ContentAnalyzer {
   }
 
   private static findSimilarFiles(file: FileItem, allFiles: FileItem[]): FileItem[] {
-    const fileWords = new Set(this.extractWords((file.name + ' ' + (file.content || '')).toLowerCase()));
+    const fileWords = new Set(this.extractWords((`${file.name  } ${  file.content || ''}`).toLowerCase()));
     
     return allFiles
       .filter(f => f.id !== file.id)
       .map(f => {
-        const otherWords = new Set(this.extractWords((f.name + ' ' + (f.content || '')).toLowerCase()));
+        const otherWords = new Set(this.extractWords((`${f.name  } ${  f.content || ''}`).toLowerCase()));
         const intersection = new Set([...fileWords].filter(x => otherWords.has(x)));
         const similarity = intersection.size / Math.max(fileWords.size, otherWords.size);
         
@@ -577,7 +577,7 @@ export const AutoTagging: React.FC<AutoTaggingProps> = ({
               <Switch
                 checked={settings.autoApply}
                 onCheckedChange={(checked) => 
-                  setSettings(prev => ({ ...prev, autoApply: checked }))
+                  { setSettings(prev => ({ ...prev, autoApply: checked })); }
                 }
               />
               <span className="text-xs text-slate-600">Auto-aplicar</span>
@@ -680,9 +680,9 @@ export const AutoTagging: React.FC<AutoTaggingProps> = ({
                           variant="outline"
                           size="sm"
                           className="h-7 text-xs"
-                          onClick={() => setTagSuggestions(prev => 
+                          onClick={() => { setTagSuggestions(prev => 
                             prev.filter(s => s.tag !== suggestion.tag)
-                          )}
+                          ); }}
                         >
                           <X className="h-3 w-3 mr-1" />
                           Ignorar
@@ -691,7 +691,7 @@ export const AutoTagging: React.FC<AutoTaggingProps> = ({
                         <Button
                           size="sm"
                           className="h-7 text-xs"
-                          onClick={() => applyTagSuggestion(suggestion)}
+                          onClick={() => { applyTagSuggestion(suggestion); }}
                         >
                           <CheckCircle className="h-3 w-3 mr-1" />
                           Aplicar
@@ -750,9 +750,9 @@ export const AutoTagging: React.FC<AutoTaggingProps> = ({
                         variant="outline"
                         size="sm"
                         className="h-7 text-xs"
-                        onClick={() => setOrgSuggestions(prev => 
+                        onClick={() => { setOrgSuggestions(prev => 
                           prev.filter(s => s.id !== suggestion.id)
-                        )}
+                        ); }}
                       >
                         <X className="h-3 w-3 mr-1" />
                         Dispensar
@@ -761,7 +761,7 @@ export const AutoTagging: React.FC<AutoTaggingProps> = ({
                       <Button
                         size="sm"
                         className="h-7 text-xs"
-                        onClick={() => applyOrganizationSuggestion(suggestion)}
+                        onClick={() => { applyOrganizationSuggestion(suggestion); }}
                       >
                         <CheckCircle className="h-3 w-3 mr-1" />
                         Aplicar
@@ -785,7 +785,7 @@ export const AutoTagging: React.FC<AutoTaggingProps> = ({
                 <Switch
                   checked={settings.autoApply}
                   onCheckedChange={(checked) => 
-                    setSettings(prev => ({ ...prev, autoApply: checked }))
+                    { setSettings(prev => ({ ...prev, autoApply: checked })); }
                   }
                 />
               </div>
@@ -797,7 +797,7 @@ export const AutoTagging: React.FC<AutoTaggingProps> = ({
                 <Slider
                   value={[settings.confidenceThreshold]}
                   onValueChange={([value]) => 
-                    setSettings(prev => ({ ...prev, confidenceThreshold: value }))
+                    { setSettings(prev => ({ ...prev, confidenceThreshold: value })); }
                   }
                   max={100}
                   min={30}
@@ -819,7 +819,7 @@ export const AutoTagging: React.FC<AutoTaggingProps> = ({
                 <Switch
                   checked={settings.enableOrganization}
                   onCheckedChange={(checked) => 
-                    setSettings(prev => ({ ...prev, enableOrganization: checked }))
+                    { setSettings(prev => ({ ...prev, enableOrganization: checked })); }
                   }
                 />
               </div>

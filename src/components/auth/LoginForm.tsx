@@ -27,7 +27,7 @@ export const LoginForm = () => {
             type="email"
             placeholder="seu@email.com"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => { setEmail(e.target.value); }}
             required
             disabled={loading}
             className="h-11"
@@ -42,7 +42,7 @@ export const LoginForm = () => {
               type={showPassword ? "text" : "password"}
               placeholder="Digite sua senha"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => { setPassword(e.target.value); }}
               required
               disabled={loading}
               className="h-11 pr-10"
@@ -52,7 +52,7 @@ export const LoginForm = () => {
               variant="ghost"
               size="sm"
               className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-              onClick={() => setShowPassword(!showPassword)}
+              onClick={() => { setShowPassword(!showPassword); }}
               disabled={loading}
             >
               {showPassword ? (

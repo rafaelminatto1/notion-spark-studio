@@ -15,7 +15,8 @@ import { CollaborationProvider, useCollaborationContext } from '@/components/col
 import { LiveCursors } from '@/components/collaboration/LiveCursors';
 import { OperationalTransform } from '@/components/collaboration/OperationalTransform';
 import { CommentsSystem } from '@/components/collaboration/CommentsSystem';
-import { FileItem, Comment, Block } from '@/types';
+import type { FileItem, Block } from '@/types';
+import { Comment } from '@/types';
 import { useComments } from '@/hooks/useComments';
 import { useVersionHistory } from '@/hooks/useVersionHistory';
 import { useAutoSave } from '@/hooks/useAutoSave';
@@ -74,8 +75,8 @@ const EditorInner: React.FC<EditorProps> = ({
 
   // Auto-save functionality
   const { forceSave } = useAutoSave({
-    file: file,
-    onUpdateFile: onUpdateFile,
+    file,
+    onUpdateFile,
     enabled: true
   });
 
@@ -100,7 +101,7 @@ const EditorInner: React.FC<EditorProps> = ({
       collaboration.updatePresence(false, true);
     }, 2000);
 
-    return () => clearTimeout(typingTimeout);
+    return () => { clearTimeout(typingTimeout); };
   }, [collaboration]);
 
   // Handle operational transform content changes
@@ -226,9 +227,9 @@ const EditorInner: React.FC<EditorProps> = ({
           <DatabaseView
             database={file.database}
             onUpdateDatabase={(updates) => 
-              onUpdateFile(file.id, { 
+              { onUpdateFile(file.id, { 
                 database: { ...file.database!, ...updates }
-              })
+              }); }
             }
           />
         </div>
@@ -304,7 +305,7 @@ const EditorInner: React.FC<EditorProps> = ({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => forceSave()}
+              onClick={() => { forceSave(); }}
               className="gap-2 text-gray-400 hover:text-white"
             >
               Salvar agora
@@ -335,7 +336,7 @@ const EditorInner: React.FC<EditorProps> = ({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setShowComments(!showComments)}
+              onClick={() => { setShowComments(!showComments); }}
               className={`text-gray-400 hover:text-white ${
                 showComments ? 'bg-notion-purple text-white' : ''
               }`}
@@ -347,7 +348,7 @@ const EditorInner: React.FC<EditorProps> = ({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setShowCollaborationComments(!showCollaborationComments)}
+                onClick={() => { setShowCollaborationComments(!showCollaborationComments); }}
                 className={`text-gray-400 hover:text-white ${
                   showCollaborationComments ? 'bg-blue-500 text-white' : ''
                 }`}
@@ -364,7 +365,7 @@ const EditorInner: React.FC<EditorProps> = ({
           <Tag className="h-4 w-4 text-gray-400" />
           <TagInput
             tags={file.tags || []}
-            onTagsChange={(tags) => onUpdateFile(file.id, { tags })}
+            onTagsChange={(tags) => { onUpdateFile(file.id, { tags }); }}
             placeholder="Adicionar tags..."
           />
         </div>
@@ -458,7 +459,7 @@ const EditorInner: React.FC<EditorProps> = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setShowCollaborationComments(false)}
+                  onClick={() => { setShowCollaborationComments(false); }}
                   className="text-gray-400 hover:text-white"
                 >
                   ✕

@@ -4,7 +4,7 @@ import { Tag, Search, X, Filter, SortAsc, SortDesc } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { TagWithCount } from '@/hooks/useTags';
+import type { TagWithCount } from '@/hooks/useTags';
 import { TagTreeItem } from '@/components/TagTreeItem';
 import { TagStats } from '@/components/TagStats';
 import { cn } from '@/lib/utils';
@@ -164,14 +164,14 @@ export const TagsPanel: React.FC<TagsPanelProps> = ({
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
           <Input
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => { setSearchQuery(e.target.value); }}
             placeholder="Buscar tags..."
             className="h-8 text-sm bg-notion-dark-hover border-notion-dark-border pl-9"
           />
         </div>
 
         <div className="flex items-center gap-2">
-          <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
+          <Select value={sortBy} onValueChange={(value: SortOption) => { setSortBy(value); }}>
             <SelectTrigger className="h-7 text-xs flex-1">
               <SelectValue />
             </SelectTrigger>
@@ -185,7 +185,7 @@ export const TagsPanel: React.FC<TagsPanelProps> = ({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setShowOnlySelected(!showOnlySelected)}
+            onClick={() => { setShowOnlySelected(!showOnlySelected); }}
             className={cn(
               "h-7 text-xs",
               showOnlySelected && "bg-notion-purple text-white"
@@ -233,7 +233,7 @@ export const TagsPanel: React.FC<TagsPanelProps> = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => onTagSelect(tag)}
+                  onClick={() => { onTagSelect(tag); }}
                   className="h-4 w-4 p-0 text-gray-400 hover:text-white"
                 >
                   <X className="h-3 w-3" />

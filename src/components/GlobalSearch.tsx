@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 interface SearchFilter {
   type: 'all' | 'notes' | 'notebooks';
@@ -133,13 +133,13 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
     });
 
     // Remove duplicates and sort by relevance
-    const uniqueResults = results.reduce((acc, result) => {
+    const uniqueResults = results.reduce<SearchResult[]>((acc, result) => {
       const existing = acc.find(r => r.item.id === result.item.id);
       if (!existing || result.relevanceScore > existing.relevanceScore) {
         return acc.filter(r => r.item.id !== result.item.id).concat(result);
       }
       return acc;
-    }, [] as SearchResult[]);
+    }, []);
 
     return uniqueResults.sort((a, b) => b.relevanceScore - a.relevanceScore);
   }, [query, files, filters]);
@@ -174,7 +174,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
     };
 
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    return () => { document.removeEventListener('keydown', handleKeyDown); };
   }, [isOpen, searchResults, selectedResultIndex]);
 
   const handleSelectResult = useCallback((fileId: string) => {
@@ -231,7 +231,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
             setIsOpen(true);
             setSelectedResultIndex(0);
           }}
-          onFocus={() => setIsOpen(true)}
+          onFocus={() => { setIsOpen(true); }}
           placeholder="Buscar em todas as notas e notebooks..."
           className="pl-10 pr-10 h-9 text-sm"
         />
@@ -240,7 +240,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
             variant="ghost"
             size="sm"
             className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
-            onClick={() => setQuery('')}
+            onClick={() => { setQuery(''); }}
           >
             <X className="h-3 w-3" />
           </Button>
@@ -287,7 +287,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
                             variant={filters.type === value ? 'default' : 'outline'}
                             size="sm"
                             className="h-8 text-xs"
-                            onClick={() => toggleFilter('type', value)}
+                            onClick={() => { toggleFilter('type', value); }}
                           >
                             <Icon className="h-3 w-3 mr-1" />
                             {label}
@@ -303,7 +303,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
                         <div className="flex items-center gap-2">
                           <Checkbox
                             checked={filters.favorites}
-                            onCheckedChange={(checked) => toggleFilter('favorites', checked)}
+                            onCheckedChange={(checked) => { toggleFilter('favorites', checked); }}
                           />
                           <Star className="h-3 w-3 text-yellow-500" />
                           <span className="text-sm">Apenas favoritos</span>
@@ -311,7 +311,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
                         <div className="flex items-center gap-2">
                           <Checkbox
                             checked={filters.recent}
-                            onCheckedChange={(checked) => toggleFilter('recent', checked)}
+                            onCheckedChange={(checked) => { toggleFilter('recent', checked); }}
                           />
                           <Clock className="h-3 w-3 text-blue-500" />
                           <span className="text-sm">Modificados nas últimas 24h</span>
@@ -329,7 +329,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
                               key={tag}
                               variant={filters.tags.includes(tag) ? 'default' : 'outline'}
                               className="text-xs cursor-pointer"
-                              onClick={() => toggleTag(tag)}
+                              onClick={() => { toggleTag(tag); }}
                             >
                               {tag}
                             </Badge>
@@ -363,7 +363,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
                   {tag}
                   <X
                     className="h-2 w-2 ml-1 cursor-pointer"
-                    onClick={() => toggleTag(tag)}
+                    onClick={() => { toggleTag(tag); }}
                   />
                 </Badge>
               ))}
@@ -393,7 +393,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
                     "w-full flex items-start gap-3 p-3 text-left hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors border-b border-slate-100 dark:border-slate-600 last:border-b-0",
                     index === selectedResultIndex && "bg-blue-50 dark:bg-blue-900/20"
                   )}
-                  onClick={() => handleSelectResult(result.item.id)}
+                  onClick={() => { handleSelectResult(result.item.id); }}
                 >
                   <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
                     {result.item.type === 'folder' ? (

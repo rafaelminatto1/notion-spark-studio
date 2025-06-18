@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Block } from '@/types';
+import type { Block } from '@/types';
 import { Play, Twitter, Image, FileText, Figma, Code, ExternalLink, RefreshCw } from 'lucide-react';
 
 interface EmbedBlockProps {
@@ -46,7 +46,7 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({
           <div className="flex gap-2 max-w-md mx-auto">
             <Input
               value={url}
-              onChange={(e) => setUrl(e.target.value)}
+              onChange={(e) => { setUrl(e.target.value); }}
               placeholder={getPlaceholder()}
               className="bg-notion-dark-hover border-gray-600"
               onKeyPress={(e) => e.key === 'Enter' && handleUrlSubmit()}
@@ -69,7 +69,7 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onUpdate({ content: '' })}
+                onClick={() => { onUpdate({ content: '' }); }}
                 className="mt-2 text-red-400 hover:text-red-300"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
@@ -114,7 +114,7 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onUpdate({ content: '' })}
+                onClick={() => { onUpdate({ content: '' }); }}
                 className="mt-2 text-red-400 hover:text-red-300"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
@@ -164,7 +164,7 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onUpdate({ content: '' })}
+                onClick={() => { onUpdate({ content: '' }); }}
                 className="mt-2 text-red-400 hover:text-red-300"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
@@ -222,7 +222,7 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onUpdate({ content: '' })}
+                onClick={() => { onUpdate({ content: '' }); }}
                 className="mt-2 text-red-400 hover:text-red-300"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
@@ -267,7 +267,7 @@ export const EmbedBlock: React.FC<EmbedBlockProps> = ({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onUpdate({ content: '' })}
+                onClick={() => { onUpdate({ content: '' }); }}
                 className="mt-2 text-red-400 hover:text-red-300"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />

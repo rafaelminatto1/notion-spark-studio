@@ -60,7 +60,7 @@ export const WorkspaceSelector: React.FC<WorkspaceSelectorProps> = ({
       <DropdownMenuContent className="w-64" align="start">
         <DropdownMenuLabel>Workspaces</DropdownMenuLabel>
         
-        <DropdownMenuItem onClick={() => setCurrentWorkspace(null)}>
+        <DropdownMenuItem onClick={() => { setCurrentWorkspace(null); }}>
           <div className="flex items-center gap-2 w-full">
             <Users className="h-4 w-4" />
             <span>Workspace Pessoal</span>
@@ -76,7 +76,7 @@ export const WorkspaceSelector: React.FC<WorkspaceSelectorProps> = ({
           workspaces.map((workspace) => (
             <DropdownMenuItem 
               key={workspace.id}
-              onClick={() => setCurrentWorkspace(workspace)}
+              onClick={() => { setCurrentWorkspace(workspace); }}
             >
               <div className="flex items-center gap-2 w-full">
                 {workspace.is_public ? (

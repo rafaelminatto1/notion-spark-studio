@@ -236,7 +236,7 @@ export const AdaptiveUIProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       confidence: pattern.confidence,
       timeRelevant: pattern.timeOfDay.includes(currentTime),
       contextRelevant: pattern.context === state.currentContext.workspace,
-      action: () => trackAction(pattern.action)
+      action: () => { trackAction(pattern.action); }
     }));
   }, [state.patterns, state.currentContext, trackAction]);
 
@@ -281,14 +281,14 @@ export const AdaptiveUIProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       });
     }, 60000); // Verificar a cada minuto
 
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, []);
 
   // Analisar e adaptar UI periodicamente
   useEffect(() => {
     if (state.learningEnabled && state.adaptationLevel !== 'basic') {
       const interval = setInterval(adaptUI, 300000); // A cada 5 minutos
-      return () => clearInterval(interval);
+      return () => { clearInterval(interval); };
     }
   }, [state.learningEnabled, state.adaptationLevel, adaptUI]);
 

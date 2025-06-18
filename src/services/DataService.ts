@@ -1,8 +1,8 @@
 
-import { IDataProvider, ICacheProvider } from './interfaces/IDataProvider';
+import type { IDataProvider, ICacheProvider } from './interfaces/IDataProvider';
 import { IndexedDBProvider } from './providers/IndexedDBProvider';
 import { MemoryCacheProvider } from './providers/MemoryCacheProvider';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 class DataService {
   private provider: IDataProvider;

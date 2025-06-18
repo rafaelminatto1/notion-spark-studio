@@ -30,8 +30,8 @@ import {
   Maximize2,
   Minimize2
 } from 'lucide-react';
-import { FileItem } from '@/types';
-import { GraphNode, GraphLink, GraphState, GraphViewSettings } from '@/types/graph';
+import type { FileItem } from '@/types';
+import type { GraphNode, GraphLink, GraphState, GraphViewSettings } from '@/types/graph';
 import { useGraphAnalytics } from '@/hooks/useGraphAnalytics';
 import { cn } from '@/lib/utils';
 
@@ -417,7 +417,7 @@ export const GraphViewEnhanced: React.FC<GraphViewEnhancedProps> = ({
     // Função para focar em um nó
     function focusOnNode(nodeId: string) {
       const node = filteredData.nodes.find(n => n.id === nodeId);
-      if (!node || !node.x || !node.y) return;
+      if (!node?.x || !node.y) return;
 
       const scale = 2;
       const translate = [width / 2 - scale * node.x, height / 2 - scale * node.y];
@@ -570,7 +570,7 @@ export const GraphViewEnhanced: React.FC<GraphViewEnhancedProps> = ({
     };
 
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => { window.removeEventListener('resize', handleResize); };
   }, [renderGraph]);
 
   // Handlers
@@ -623,7 +623,7 @@ export const GraphViewEnhanced: React.FC<GraphViewEnhancedProps> = ({
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => { setSearchQuery(e.target.value); }}
               placeholder="Buscar nós no grafo..."
               className="pl-10 bg-notion-dark-hover border-notion-dark-border"
             />
@@ -632,7 +632,7 @@ export const GraphViewEnhanced: React.FC<GraphViewEnhancedProps> = ({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setGraphState(prev => ({ ...prev, physics: !prev.physics }))}
+            onClick={() => { setGraphState(prev => ({ ...prev, physics: !prev.physics })); }}
             className={cn("gap-2", graphState.physics && "bg-green-600/20")}
           >
             {graphState.physics ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
@@ -642,7 +642,7 @@ export const GraphViewEnhanced: React.FC<GraphViewEnhancedProps> = ({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setGraphState(prev => ({ ...prev, focusMode: !prev.focusMode }))}
+            onClick={() => { setGraphState(prev => ({ ...prev, focusMode: !prev.focusMode })); }}
             className={cn("gap-2", graphState.focusMode && "bg-purple-600/20")}
           >
             <Target className="h-4 w-4" />
@@ -652,7 +652,7 @@ export const GraphViewEnhanced: React.FC<GraphViewEnhancedProps> = ({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setShowSettings(!showSettings)}
+            onClick={() => { setShowSettings(!showSettings); }}
             className="gap-2"
           >
             <Settings className="h-4 w-4" />
@@ -672,10 +672,10 @@ export const GraphViewEnhanced: React.FC<GraphViewEnhancedProps> = ({
                 <Slider
                   value={[Math.abs(settings.layout.forceStrength)]}
                   onValueChange={([value]) => 
-                    setSettings(prev => ({
+                    { setSettings(prev => ({
                       ...prev,
                       layout: { ...prev.layout, forceStrength: -value }
-                    }))
+                    })); }
                   }
                   max={800}
                   min={100}
@@ -688,10 +688,10 @@ export const GraphViewEnhanced: React.FC<GraphViewEnhancedProps> = ({
                 <Slider
                   value={[settings.layout.linkDistance]}
                   onValueChange={([value]) => 
-                    setSettings(prev => ({
+                    { setSettings(prev => ({
                       ...prev,
                       layout: { ...prev.layout, linkDistance: value }
-                    }))
+                    })); }
                   }
                   max={300}
                   min={50}
@@ -752,7 +752,7 @@ export const GraphViewEnhanced: React.FC<GraphViewEnhancedProps> = ({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setGraphState(prev => ({ ...prev, selectedNode: null }))}
+                        onClick={() => { setGraphState(prev => ({ ...prev, selectedNode: null })); }}
                       >
                         ×
                       </Button>
@@ -797,7 +797,7 @@ export const GraphViewEnhanced: React.FC<GraphViewEnhancedProps> = ({
                       <div className="flex gap-2 pt-2">
                         <Button
                           size="sm"
-                          onClick={() => onFileSelect(selectedNodeData.id)}
+                          onClick={() => { onFileSelect(selectedNodeData.id); }}
                           className="flex-1"
                         >
                           Abrir
@@ -805,11 +805,11 @@ export const GraphViewEnhanced: React.FC<GraphViewEnhancedProps> = ({
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => setGraphState(prev => ({ 
+                          onClick={() => { setGraphState(prev => ({ 
                             ...prev, 
                             focusMode: true, 
                             selectedNode: selectedNodeData.id 
-                          }))}
+                          })); }}
                         >
                           Focar
                         </Button>

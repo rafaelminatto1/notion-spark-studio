@@ -1,6 +1,6 @@
 
 import { useMemo } from 'react';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { parseLinks } from '@/utils/linkParser';
 
 export interface GraphNode {

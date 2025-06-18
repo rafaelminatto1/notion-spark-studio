@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
-import { GraphWorkerMessage, GraphWorkerResponse } from '@/workers/graphCalculations.worker';
+import type { GraphWorkerMessage, GraphWorkerResponse } from '@/workers/graphCalculations.worker';
 
 interface UseWebWorkerOptions {
   maxWorkers?: number;

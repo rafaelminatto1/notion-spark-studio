@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Block } from '@/types';
-import { Database } from '@/types/database';
+import type { Block } from '@/types';
+import type { Database } from '@/types/database';
 import { DatabaseView } from '@/components/database/DatabaseView';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';

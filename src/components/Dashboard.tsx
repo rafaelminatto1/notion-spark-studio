@@ -2,7 +2,7 @@ import React from 'react';
 import { FileText, Tag, Clock, Star, TrendingUp, Calendar, Sparkles, Activity, Zap, Target, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { TaskList } from './tasks/TaskList';
@@ -60,10 +60,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   const allTags = files
     .flatMap(f => f.tags || [])
-    .reduce((acc, tag) => {
+    .reduce<Record<string, number>>((acc, tag) => {
       acc[tag] = (acc[tag] || 0) + 1;
       return acc;
-    }, {} as Record<string, number>);
+    }, {});
 
   const topTags = Object.entries(allTags)
     .sort(([,a], [,b]) => b - a)
@@ -145,7 +145,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 recentFiles.map(file => (
                   <div
                     key={file.id}
-                    onClick={() => onNavigateToFile(file.id)}
+                    onClick={() => { onNavigateToFile(file.id); }}
                     className="recent-file-item group"
                   >
                     <div className="recent-file-content">
@@ -216,7 +216,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <CardContent className="content-card-body">
           <div className="quick-actions-grid">
             <Button
-              onClick={() => onCreateFile('Nova Nota')}
+              onClick={() => { onCreateFile('Nova Nota'); }}
               className="quick-action-button"
               variant="outline"
             >

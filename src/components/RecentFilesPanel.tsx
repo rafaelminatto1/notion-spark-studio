@@ -2,7 +2,7 @@
 import React from 'react';
 import { Clock, FileText, Folder, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -49,7 +49,7 @@ export const RecentFilesPanel: React.FC<RecentFilesPanelProps> = ({
           <div
             key={file.id}
             className="group flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800/50 cursor-pointer transition-colors"
-            onClick={() => onFileSelect(file.id)}
+            onClick={() => { onFileSelect(file.id); }}
           >
             <div className="flex items-center gap-2 flex-1 min-w-0">
               {file.emoji && (

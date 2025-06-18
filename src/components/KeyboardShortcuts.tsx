@@ -1,4 +1,5 @@
-import React, { useEffect, useCallback } from 'react';
+import type React from 'react';
+import { useEffect, useCallback } from 'react';
 import { useFileSystemContext } from '@/contexts/FileSystemContext';
 import { toast } from 'sonner';
 

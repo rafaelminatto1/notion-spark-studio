@@ -278,7 +278,7 @@ export const useAdvancedCache = <T = any>(config?: Partial<CacheConfig>) => {
     };
 
     const interval = setInterval(updateMetrics, 1000);
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, []);
 
   // Cleanup automático
@@ -289,7 +289,7 @@ export const useAdvancedCache = <T = any>(config?: Partial<CacheConfig>) => {
     };
 
     const interval = setInterval(cleanup, defaultConfig.cleanupInterval);
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, [cleanupExpired, evictLRU, defaultConfig.cleanupInterval]);
 
   // Métodos de análise e debug
@@ -349,13 +349,13 @@ export const useAdvancedCache = <T = any>(config?: Partial<CacheConfig>) => {
     
     // Utilidades
     cleanup: cleanupExpired,
-    clear: () => invalidate()
+    clear: () => { invalidate(); }
   };
 };
 
 // Hook específico para cache de arquivos
 export const useFileCache = () => {
-  const cache = useAdvancedCache<any>({
+  const cache = useAdvancedCache({
     maxSize: 200,
     defaultTTL: 10 * 60 * 1000, // 10 minutos para arquivos
     prefetchEnabled: true
@@ -389,7 +389,7 @@ export const useFileCache = () => {
 
 // Hook para cache de busca
 export const useSearchCache = () => {
-  return useAdvancedCache<any>({
+  return useAdvancedCache({
     maxSize: 50,
     defaultTTL: 2 * 60 * 1000, // 2 minutos para buscas
     prefetchEnabled: false // Busca não precisa de prefetch

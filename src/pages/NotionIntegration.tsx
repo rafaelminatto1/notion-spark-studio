@@ -260,7 +260,7 @@ const NotionIntegration: React.FC = () => {
                       type="password"
                       placeholder="secret_..."
                       value={apiKey}
-                      onChange={(e) => setApiKey(e.target.value)}
+                      onChange={(e) => { setApiKey(e.target.value); }}
                     />
                     <p className="text-xs text-muted-foreground">
                       Obtenha sua API Key em: notion.so/my-integrations

@@ -274,7 +274,7 @@ export const createCustomEvent = (type: string, detail?: any) => {
 };
 
 // Função helper para simular delay de rede
-export const mockNetworkDelay = (ms: number = 100) => {
+export const mockNetworkDelay = (ms = 100) => {
   return new Promise(resolve => setTimeout(resolve, ms));
 };
 

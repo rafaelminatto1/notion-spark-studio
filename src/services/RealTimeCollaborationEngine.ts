@@ -74,9 +74,9 @@ class RealTimeCollaborationEngine {
   private ws: WebSocket | null = null;
   private documentState: DocumentState | null = null;
   private pendingOperations: Operation[] = [];
-  private isConnected: boolean = false;
-  private reconnectAttempts: number = 0;
-  private maxReconnectAttempts: number = 5;
+  private isConnected = false;
+  private reconnectAttempts = 0;
+  private maxReconnectAttempts = 5;
   private heartbeatInterval: NodeJS.Timeout | null = null;
   private currentUser: User | null = null;
   private collaborators: Map<string, User> = new Map();
@@ -91,7 +91,7 @@ class RealTimeCollaborationEngine {
     syncEfficiency: 0.98 // 98% efficiency
   };
 
-  constructor(wsUrl: string = 'ws://localhost:3001') {
+  constructor(wsUrl = 'ws://localhost:3001') {
     // Simulação da conexão para demonstração
     this.simulateConnection();
     this.setupPerformanceMonitoring();

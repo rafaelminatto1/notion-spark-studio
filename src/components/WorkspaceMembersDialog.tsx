@@ -19,7 +19,8 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useSharedWorkspaces, WorkspaceMember } from '@/hooks/useSharedWorkspaces';
+import type { WorkspaceMember } from '@/hooks/useSharedWorkspaces';
+import { useSharedWorkspaces } from '@/hooks/useSharedWorkspaces';
 import { UserPlus, MoreHorizontal, Crown, Shield, Edit, Eye, Trash2 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -123,14 +124,14 @@ export const WorkspaceMembersDialog: React.FC<WorkspaceMembersDialogProps> = ({
                 id="email"
                 type="email"
                 value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
+                onChange={(e) => { setInviteEmail(e.target.value); }}
                 placeholder="email@exemplo.com"
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="role">Permissão</Label>
-              <Select value={inviteRole} onValueChange={(value) => setInviteRole(value as WorkspaceMember['role'])}>
+              <Select value={inviteRole} onValueChange={(value) => { setInviteRole(value as WorkspaceMember['role']); }}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

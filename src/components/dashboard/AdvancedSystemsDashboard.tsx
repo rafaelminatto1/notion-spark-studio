@@ -116,7 +116,7 @@ export const AdvancedSystemsDashboard: React.FC = () => {
 
   useEffect(() => {
     // Simular carregamento
-    setTimeout(() => setIsLoading(false), 1500);
+    setTimeout(() => { setIsLoading(false); }, 1500);
   }, []);
 
   if (isLoading) {
@@ -202,7 +202,7 @@ export const AdvancedSystemsDashboard: React.FC = () => {
         ].map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
+            onClick={() => { setActiveTab(tab.id as any); }}
             className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-all ${
               activeTab === tab.id
                 ? 'bg-white text-blue-600 shadow-sm'

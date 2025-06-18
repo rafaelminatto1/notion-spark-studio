@@ -101,7 +101,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
     padding: appleDevice.isTargetDevice ? (appleDevice.isIPad ? 24 : 20) : 16
   });
 
-  const insertText = useCallback((beforeText: string, afterText: string = '', selectText: string = '') => {
+  const insertText = useCallback((beforeText: string, afterText = '', selectText = '') => {
     if (!textareaRef.current) return;
 
     const textarea = textareaRef.current;
@@ -129,7 +129,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
 
     const textarea = textareaRef.current;
     const start = textarea.selectionStart;
-    const newContent = content.substring(0, start) + '\n' + markdown + '\n' + content.substring(start);
+    const newContent = `${content.substring(0, start)  }\n${  markdown  }\n${  content.substring(start)}`;
     
     onChange(newContent);
 
@@ -243,52 +243,52 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
     {
       icon: Bold,
       label: 'Negrito',
-      action: () => insertText('**', '**', 'texto em negrito')
+      action: () => { insertText('**', '**', 'texto em negrito'); }
     },
     {
       icon: Italic,
       label: 'Itálico',
-      action: () => insertText('*', '*', 'texto em itálico')
+      action: () => { insertText('*', '*', 'texto em itálico'); }
     },
     {
       icon: Type,
       label: 'Título',
-      action: () => insertText('# ', '', 'Título')
+      action: () => { insertText('# ', '', 'Título'); }
     },
     {
       icon: List,
       label: 'Lista',
-      action: () => insertText('- ', '', 'item da lista')
+      action: () => { insertText('- ', '', 'item da lista'); }
     },
     {
       icon: ListOrdered,
       label: 'Numerada',
-      action: () => insertText('1. ', '', 'item numerado')
+      action: () => { insertText('1. ', '', 'item numerado'); }
     },
     {
       icon: Link,
       label: 'Link',
-      action: () => insertText('[', '](url)', 'texto do link')
+      action: () => { insertText('[', '](url)', 'texto do link'); }
     },
     {
       icon: Code,
       label: 'Código',
-      action: () => insertText('`', '`', 'código')
+      action: () => { insertText('`', '`', 'código'); }
     },
     {
       icon: Quote,
       label: 'Citação',
-      action: () => insertText('> ', '', 'citação')
+      action: () => { insertText('> ', '', 'citação'); }
     },
     {
       icon: Table,
       label: 'Tabela',
-      action: () => insertText('| Coluna 1 | Coluna 2 |\n|----------|----------|\n| ', ' | Célula 2 |\n| Célula 3 | Célula 4 |', 'Célula 1')
+      action: () => { insertText('| Coluna 1 | Coluna 2 |\n|----------|----------|\n| ', ' | Célula 2 |\n| Célula 3 | Célula 4 |', 'Célula 1'); }
     },
     {
       icon: LineChart,
       label: 'Analytics',
-      action: () => setShowAnalytics(true)
+      action: () => { setShowAnalytics(true); }
     }
   ];
 
@@ -331,7 +331,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setZenMode(false)}
+              onClick={() => { setZenMode(false); }}
               className="gap-2 btn-magic"
             >
               <Maximize2 className="h-4 w-4" />
@@ -343,7 +343,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setShowPreview(!showPreview)}
+              onClick={() => { setShowPreview(!showPreview); }}
               className={cn("gap-2 btn-magic", showPreview && "bg-gradient-to-r from-purple-500 to-blue-500")}
             >
               {showPreview ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -458,7 +458,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
           <TemplateSelector
             onSelectTemplate={(templateContent) => {
               onChange(templateContent);
-              setTimeout(() => adjustHeight(), 100);
+              setTimeout(() => { adjustHeight(); }, 100);
               toast.success('Template aplicado! 🎉');
             }}
             className={isMobile ? "text-xs" : ""}
@@ -471,7 +471,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
             <TemplateQuickActions
               onSelectTemplate={(templateContent) => {
                 onChange(templateContent);
-                setTimeout(() => adjustHeight(), 100);
+                setTimeout(() => { adjustHeight(); }, 100);
                 toast.success('Template rápido aplicado! ⚡');
               }}
             />
@@ -502,7 +502,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
             variant="ghost"
             size="lg"
             className="flex flex-col items-center justify-center flex-shrink-0 mx-1 px-3 py-3 text-base h-16 w-16 rounded-2xl btn-magic"
-            onClick={() => setShowPreview(!showPreview)}
+            onClick={() => { setShowPreview(!showPreview); }}
             aria-label="Preview"
           >
             {showPreview ? <EyeOff className="h-6 w-6 mb-1" /> : <Eye className="h-6 w-6 mb-1" />}
@@ -702,7 +702,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
       {/* Template Analytics Modal */}
       <TemplateAnalytics
         isOpen={showAnalytics}
-        onClose={() => setShowAnalytics(false)}
+        onClose={() => { setShowAnalytics(false); }}
       />
     </div>
   );

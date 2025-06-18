@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Input } from '@/components/ui/input';
-import { Block } from '@/types';
+import type { Block } from '@/types';
 import { cn } from '@/lib/utils';
 
 interface HeadingBlockProps {
@@ -31,7 +31,7 @@ export const HeadingBlock: React.FC<HeadingBlockProps> = ({
   return (
     <Input
       value={block.content}
-      onChange={(e) => onUpdate({ content: e.target.value })}
+      onChange={(e) => { onUpdate({ content: e.target.value }); }}
       onFocus={onFocus}
       placeholder={`Título ${level}`}
       className={cn(

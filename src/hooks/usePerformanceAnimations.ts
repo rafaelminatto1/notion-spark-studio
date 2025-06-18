@@ -32,7 +32,7 @@ export const usePerformanceAnimations = () => {
     };
 
     mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
+    return () => { mediaQuery.removeEventListener('change', handleChange); };
   }, []);
 
   useEffect(() => {

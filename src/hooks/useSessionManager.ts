@@ -34,7 +34,7 @@ export const useSessionManager = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   // Criar nova sessão
-  const createSession = useCallback(async (userId: string = 'default-user'): Promise<string> => {
+  const createSession = useCallback(async (userId = 'default-user'): Promise<string> => {
     if (!isReady) return '';
 
     const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -174,7 +174,7 @@ export const useSessionManager = () => {
   }, [allSessions, currentSession]);
 
   // Limpar sessões antigas
-  const cleanOldSessions = useCallback(async (daysOld: number = 30) => {
+  const cleanOldSessions = useCallback(async (daysOld = 30) => {
     if (!isReady) return;
 
     const cutoffDate = new Date();
@@ -220,7 +220,7 @@ export const useSessionManager = () => {
       updateActivity();
     }, 60000); // 1 minuto
 
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, [currentSession?.isActive, updateActivity]);
 
   // Finalizar sessão ao fechar a página
@@ -232,7 +232,7 @@ export const useSessionManager = () => {
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    return () => { window.removeEventListener('beforeunload', handleBeforeUnload); };
   }, [currentSession?.isActive, endSession]);
 
   return {

@@ -22,8 +22,8 @@ export const ResizeIndicator: React.FC<ResizeIndicatorProps> = ({
   useEffect(() => {
     if (isResizing) {
       setShowIndicator(true);
-      const timer = setTimeout(() => setShowIndicator(false), 1000);
-      return () => clearTimeout(timer);
+      const timer = setTimeout(() => { setShowIndicator(false); }, 1000);
+      return () => { clearTimeout(timer); };
     }
   }, [isResizing]);
 

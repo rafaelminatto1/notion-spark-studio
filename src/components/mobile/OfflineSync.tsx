@@ -60,8 +60,8 @@ const useConnectivity = () => {
   const [connectionType, setConnectionType] = useState<string>('unknown');
 
   useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
+    const handleOnline = () => { setIsOnline(true); };
+    const handleOffline = () => { setIsOnline(false); };
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -99,7 +99,7 @@ const useConnectivity = () => {
 const useLocalCache = () => {
   const cache = useRef<Map<string, CacheEntry>>(new Map());
 
-  const set = useCallback((key: string, data: any, ttl: number = 3600000) => { // 1 hora default
+  const set = useCallback((key: string, data: any, ttl = 3600000) => { // 1 hora default
     const entry: CacheEntry = {
       id: key,
       data,
@@ -160,7 +160,7 @@ const useLocalCache = () => {
     
     // Limpar cache do localStorage
     const keys = Object.keys(localStorage).filter(key => key.startsWith('cache_'));
-    keys.forEach(key => localStorage.removeItem(key));
+    keys.forEach(key => { localStorage.removeItem(key); });
   }, []);
 
   const size = cache.current.size;
@@ -408,14 +408,14 @@ const PendingOperations: React.FC<PendingOperationsProps> = ({ operations, onRet
 
             <div className="flex items-center gap-2">
               <button
-                onClick={() => onRetry(operation.id)}
+                onClick={() => { onRetry(operation.id); }}
                 className="p-1 text-blue-600 hover:text-blue-800 transition-colors"
                 title="Tentar novamente"
               >
                 <RefreshCw className="h-3 w-3" />
               </button>
               <button
-                onClick={() => onRemove(operation.id)}
+                onClick={() => { onRemove(operation.id); }}
                 className="p-1 text-red-600 hover:text-red-800 transition-colors"
                 title="Remover"
               >
@@ -594,7 +594,7 @@ export const OfflineSync: React.FC<OfflineSyncProps> = ({
       {/* Botões de ação */}
       <div className="flex items-center gap-2 mt-3">
         <button
-          onClick={() => setShowDetails(!showDetails)}
+          onClick={() => { setShowDetails(!showDetails); }}
           className="flex items-center gap-2 px-3 py-1 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
         >
           <Database className="h-4 w-4" />

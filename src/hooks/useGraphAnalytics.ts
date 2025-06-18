@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { GraphNode, GraphLink, GraphCluster, GraphAnalytics, PathFindingResult } from '@/types/graph';
+import type { GraphNode, GraphLink, GraphCluster, GraphAnalytics, PathFindingResult } from '@/types/graph';
 
 export const useGraphAnalytics = (nodes: GraphNode[], links: GraphLink[]) => {
   // Análise de centralidade

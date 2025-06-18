@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { GlobalSearch } from '@/components/GlobalSearch';
 import { Plus, Menu, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 interface MobileHeaderProps {
   onToggleSidebar: () => void;

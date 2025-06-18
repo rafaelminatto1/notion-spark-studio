@@ -150,14 +150,14 @@ export const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = (
             label: 'Revisar',
             type: 'primary',
             icon: <Eye className="h-4 w-4" />,
-            handler: () => console.log('Revisar documento')
+            handler: () => { console.log('Revisar documento'); }
           },
           {
             id: 'auto-fix',
             label: 'Corrigir Auto',
             type: 'secondary',
             icon: <Zap className="h-4 w-4" />,
-            handler: () => console.log('Aplicar correções automáticas')
+            handler: () => { console.log('Aplicar correções automáticas'); }
           }
         ]
       },
@@ -180,7 +180,7 @@ export const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = (
             label: 'Ver Perfil',
             type: 'secondary',
             icon: <Users className="h-4 w-4" />,
-            handler: () => console.log('Ver perfil do usuário')
+            handler: () => { console.log('Ver perfil do usuário'); }
           }
         ]
       },
@@ -200,14 +200,14 @@ export const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = (
             label: 'Limpar',
             type: 'primary',
             icon: <Trash2 className="h-4 w-4" />,
-            handler: () => console.log('Iniciar limpeza')
+            handler: () => { console.log('Iniciar limpeza'); }
           },
           {
             id: 'upgrade',
             label: 'Upgrade',
             type: 'secondary',
             icon: <TrendingUp className="h-4 w-4" />,
-            handler: () => console.log('Fazer upgrade')
+            handler: () => { console.log('Fazer upgrade'); }
           }
         ]
       },
@@ -239,13 +239,13 @@ export const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = (
             label: 'Proteger Conta',
             type: 'destructive',
             icon: <AlertTriangle className="h-4 w-4" />,
-            handler: () => console.log('Proteger conta')
+            handler: () => { console.log('Proteger conta'); }
           },
           {
             id: 'ignore',
             label: 'Era Eu',
             type: 'secondary',
-            handler: () => console.log('Ignorar alerta')
+            handler: () => { console.log('Ignorar alerta'); }
           }
         ]
       }
@@ -335,10 +335,10 @@ export const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = (
     const total = notifications.length;
     const unread = notifications.filter(n => !n.read).length;
     const urgent = notifications.filter(n => n.priority === 'urgent' && !n.read).length;
-    const categories = notifications.reduce((acc, n) => {
+    const categories = notifications.reduce<Record<string, number>>((acc, n) => {
       acc[n.category] = (acc[n.category] || 0) + 1;
       return acc;
-    }, {} as Record<string, number>);
+    }, {});
 
     return { total, unread, urgent, categories };
   }, [notifications]);
@@ -425,7 +425,7 @@ export const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = (
             <Input
               placeholder="Buscar notificações..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => { setSearchQuery(e.target.value); }}
               className="pl-10"
             />
           </div>
@@ -524,11 +524,11 @@ export const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = (
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => markAsRead(notification.id)}>
+                              <DropdownMenuItem onClick={() => { markAsRead(notification.id); }}>
                                 <Check className="h-4 w-4 mr-2" />
                                 Marcar como lida
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => removeNotification(notification.id)}>
+                              <DropdownMenuItem onClick={() => { removeNotification(notification.id); }}>
                                 <Trash2 className="h-4 w-4 mr-2" />
                                 Remover
                               </DropdownMenuItem>
@@ -606,7 +606,7 @@ export const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = (
             <div className="flex items-center space-x-2">
               <Switch
                 checked={settings.enabled}
-                onCheckedChange={(checked) => setSettings(prev => ({ ...prev, enabled: checked }))}
+                onCheckedChange={(checked) => { setSettings(prev => ({ ...prev, enabled: checked })); }}
                 id="notifications-enabled"
               />
               <label htmlFor="notifications-enabled" className="text-sm">

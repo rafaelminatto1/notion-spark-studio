@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 interface TagInfo {
   name: string;
@@ -227,7 +227,7 @@ export const TagSystem: React.FC<TagSystemProps> = ({
             <Input
               placeholder="Buscar tags..."
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              onChange={(e) => { setInputValue(e.target.value); }}
               className="w-48"
             />
             <Button variant="outline" size="sm">
@@ -334,7 +334,7 @@ export const TagSystem: React.FC<TagSystemProps> = ({
             setInputValue(e.target.value);
             setIsOpen(true);
           }}
-          onFocus={() => setIsOpen(true)}
+          onFocus={() => { setIsOpen(true); }}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           className="pr-10"
@@ -348,7 +348,7 @@ export const TagSystem: React.FC<TagSystemProps> = ({
           {inputValue.trim() && !tagInfo[inputValue.trim()] && (
             <button
               className="w-full flex items-center gap-2 p-2 hover:bg-slate-50 dark:hover:bg-slate-700 text-left border-b border-slate-100 dark:border-slate-600"
-              onClick={() => addTag(inputValue)}
+              onClick={() => { addTag(inputValue); }}
             >
               <Plus className="h-3 w-3 text-green-500" />
               <span className="text-sm">Criar nova tag "{inputValue.trim()}"</span>
@@ -361,7 +361,7 @@ export const TagSystem: React.FC<TagSystemProps> = ({
               <button
                 key={tag}
                 className="w-full flex items-center justify-between p-2 hover:bg-slate-50 dark:hover:bg-slate-700 text-left"
-                onClick={() => addTag(tag)}
+                onClick={() => { addTag(tag); }}
               >
                 <div className="flex items-center gap-2">
                   <Badge className={getTagColor(tag)} variant="outline">

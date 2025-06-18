@@ -1,5 +1,5 @@
 // Utilitário para variáveis de ambiente compatível com Next.js e Vite
-const getEnvVar = (key: string, defaultValue: string = ''): string => {
+const getEnvVar = (key: string, defaultValue = ''): string => {
   // No Next.js, usar process.env
   if (typeof process !== 'undefined' && process.env) {
     return process.env[key] || defaultValue;

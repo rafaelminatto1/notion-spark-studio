@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Database, DatabaseProperty } from '@/types/database';
+import type { Database, DatabaseProperty } from '@/types/database';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -106,13 +106,13 @@ export const DatabaseProperties: React.FC<DatabasePropertiesProps> = ({
                   <Icon className="h-4 w-4 text-gray-400" />
                   <Input
                     value={property.name}
-                    onChange={(e) => updateProperty(property.id, { name: e.target.value })}
+                    onChange={(e) => { updateProperty(property.id, { name: e.target.value }); }}
                     className="flex-1"
                   />
                   <Select
                     value={property.type}
                     onValueChange={(type) => 
-                      updateProperty(property.id, { type: type as DatabaseProperty['type'] })
+                      { updateProperty(property.id, { type: type as DatabaseProperty['type'] }); }
                     }
                   >
                     <SelectTrigger className="w-32">
@@ -133,7 +133,7 @@ export const DatabaseProperties: React.FC<DatabasePropertiesProps> = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => deleteProperty(property.id)}
+                    onClick={() => { deleteProperty(property.id); }}
                     className="text-red-400 hover:text-red-300"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -148,11 +148,11 @@ export const DatabaseProperties: React.FC<DatabasePropertiesProps> = ({
             <div className="flex items-center gap-2 flex-1">
               <Input
                 value={newPropertyName}
-                onChange={(e) => setNewPropertyName(e.target.value)}
+                onChange={(e) => { setNewPropertyName(e.target.value); }}
                 placeholder="Nome da propriedade"
                 className="flex-1"
               />
-              <Select value={newPropertyType} onValueChange={(type) => setNewPropertyType(type as DatabaseProperty['type'])}>
+              <Select value={newPropertyType} onValueChange={(type) => { setNewPropertyType(type as DatabaseProperty['type']); }}>
                 <SelectTrigger className="w-32">
                   <SelectValue />
                 </SelectTrigger>

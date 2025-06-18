@@ -280,7 +280,7 @@ export const IntelligentBackupSystem: React.FC<IntelligentBackupSystemProps> = (
       });
     }, 2000);
 
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, [currentBackup]);
 
   // Iniciar backup manual
@@ -486,7 +486,7 @@ export const IntelligentBackupSystem: React.FC<IntelligentBackupSystemProps> = (
                 <Input
                   placeholder="Buscar backups..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => { setSearchQuery(e.target.value); }}
                   className="pl-10 w-64"
                 />
               </div>
@@ -629,7 +629,7 @@ export const IntelligentBackupSystem: React.FC<IntelligentBackupSystemProps> = (
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => restoreVersion(version)}
+                        onClick={() => { restoreVersion(version); }}
                       >
                         <RotateCcw className="h-4 w-4 mr-2" />
                         Restaurar
@@ -722,20 +722,20 @@ export const IntelligentBackupSystem: React.FC<IntelligentBackupSystemProps> = (
                           <Button 
                             size="sm" 
                             variant="outline"
-                            onClick={() => resolveConflict(session.id, 'local')}
+                            onClick={() => { resolveConflict(session.id, 'local'); }}
                           >
                             Manter Local
                           </Button>
                           <Button 
                             size="sm" 
                             variant="outline"
-                            onClick={() => resolveConflict(session.id, 'remote')}
+                            onClick={() => { resolveConflict(session.id, 'remote'); }}
                           >
                             Manter Remoto
                           </Button>
                           <Button 
                             size="sm"
-                            onClick={() => resolveConflict(session.id, 'merge')}
+                            onClick={() => { resolveConflict(session.id, 'merge'); }}
                           >
                             Mesclar
                           </Button>
@@ -774,7 +774,7 @@ export const IntelligentBackupSystem: React.FC<IntelligentBackupSystemProps> = (
                     <Switch
                       checked={settings.autoBackup}
                       onCheckedChange={(checked) => 
-                        setSettings(prev => ({ ...prev, autoBackup: checked }))
+                        { setSettings(prev => ({ ...prev, autoBackup: checked })); }
                       }
                     />
                   </div>
@@ -784,7 +784,7 @@ export const IntelligentBackupSystem: React.FC<IntelligentBackupSystemProps> = (
                     <Slider
                       value={[settings.backupInterval]}
                       onValueChange={([value]) => 
-                        setSettings(prev => ({ ...prev, backupInterval: value }))
+                        { setSettings(prev => ({ ...prev, backupInterval: value })); }
                       }
                       max={1440}
                       min={5}
@@ -798,7 +798,7 @@ export const IntelligentBackupSystem: React.FC<IntelligentBackupSystemProps> = (
                     <Slider
                       value={[settings.retention]}
                       onValueChange={([value]) => 
-                        setSettings(prev => ({ ...prev, retention: value }))
+                        { setSettings(prev => ({ ...prev, retention: value })); }
                       }
                       max={365}
                       min={1}
@@ -814,7 +814,7 @@ export const IntelligentBackupSystem: React.FC<IntelligentBackupSystemProps> = (
                     <Switch
                       checked={settings.compression}
                       onCheckedChange={(checked) => 
-                        setSettings(prev => ({ ...prev, compression: checked }))
+                        { setSettings(prev => ({ ...prev, compression: checked })); }
                       }
                     />
                   </div>
@@ -824,7 +824,7 @@ export const IntelligentBackupSystem: React.FC<IntelligentBackupSystemProps> = (
                     <Switch
                       checked={settings.encryption}
                       onCheckedChange={(checked) => 
-                        setSettings(prev => ({ ...prev, encryption: checked }))
+                        { setSettings(prev => ({ ...prev, encryption: checked })); }
                       }
                     />
                   </div>
@@ -834,7 +834,7 @@ export const IntelligentBackupSystem: React.FC<IntelligentBackupSystemProps> = (
                     <Switch
                       checked={settings.cloudSync}
                       onCheckedChange={(checked) => 
-                        setSettings(prev => ({ ...prev, cloudSync: checked }))
+                        { setSettings(prev => ({ ...prev, cloudSync: checked })); }
                       }
                     />
                   </div>
@@ -844,7 +844,7 @@ export const IntelligentBackupSystem: React.FC<IntelligentBackupSystemProps> = (
                     <Switch
                       checked={settings.realtimeSync}
                       onCheckedChange={(checked) => 
-                        setSettings(prev => ({ ...prev, realtimeSync: checked }))
+                        { setSettings(prev => ({ ...prev, realtimeSync: checked })); }
                       }
                     />
                   </div>

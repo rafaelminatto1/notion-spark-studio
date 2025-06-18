@@ -232,7 +232,7 @@ export const usePerformance = () => {
         saveToStorage('performance-history', history.slice(0, 1000)); // Limitar a 1000 entradas
       }, 30000); // Salvar a cada 30 segundos
 
-      return () => clearInterval(interval);
+      return () => { clearInterval(interval); };
     }
   }, [history, saveToStorage]);
 
@@ -346,7 +346,7 @@ export const usePerformance = () => {
     
     observer.observe({ entryTypes: ['measure'] });
     
-    return () => observer.disconnect();
+    return () => { observer.disconnect(); };
   }, []);
 
   // Verificar alertas de performance
@@ -626,7 +626,7 @@ export const usePerformance = () => {
         generateOptimizations();
       }, 5000); // A cada 5 segundos
 
-      return () => clearInterval(interval);
+      return () => { clearInterval(interval); };
     }
   }, [isMonitoring, checkAlerts, generateOptimizations]);
 

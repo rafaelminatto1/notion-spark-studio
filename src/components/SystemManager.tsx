@@ -19,7 +19,7 @@ import {
   HardDrive,
   Activity
 } from 'lucide-react';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { useImportExport } from '@/hooks/useImportExport';
 import { useVersionHistory } from '@/hooks/useVersionHistory';
@@ -164,12 +164,12 @@ export const SystemManager: React.FC<SystemManagerProps> = ({
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button onClick={() => exportFiles()} className="w-full">
+                <Button onClick={() => { exportFiles(); }} className="w-full">
                   Exportar todos os arquivos
                 </Button>
                 {currentFile && (
                   <Button 
-                    onClick={() => exportAsMarkdown(currentFile.id)} 
+                    onClick={() => { exportAsMarkdown(currentFile.id); }} 
                     variant="outline" 
                     className="w-full"
                   >

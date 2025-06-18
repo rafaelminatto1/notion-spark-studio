@@ -2,7 +2,7 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Plus, GripVertical, Minus, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Block } from '@/types';
+import type { Block } from '@/types';
 import { TextBlock } from './blocks/TextBlock';
 import { HeadingBlock } from './blocks/HeadingBlock';
 import { CalloutBlock } from './blocks/CalloutBlock';
@@ -177,7 +177,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => { document.removeEventListener('mousedown', handleClickOutside); };
   }, [slashMenu.isOpen]);
 
   const renderBlock = (block: Block) => {
@@ -186,8 +186,8 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
     const commonProps = {
       block,
       isSelected,
-      onUpdate: (updates: Partial<Block>) => updateBlock(block.id, updates),
-      onFocus: () => setSelectedBlockId(block.id)
+      onUpdate: (updates: Partial<Block>) => { updateBlock(block.id, updates); },
+      onFocus: () => { setSelectedBlockId(block.id); }
     };
 
     const handleContentUpdate = (content: string) => {
@@ -302,7 +302,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
             variant="ghost"
             size="lg"
             className="flex flex-col items-center justify-center mx-1 px-2 py-2 text-base"
-            onClick={() => addBlock('text')}
+            onClick={() => { addBlock('text'); }}
             aria-label="Adicionar bloco"
           >
             <Plus className="h-6 w-6 mb-0.5" />
@@ -313,7 +313,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
             variant="ghost"
             size="lg"
             className="flex flex-col items-center justify-center mx-1 px-2 py-2 text-base"
-            onClick={() => duplicateBlock(blocks[blocks.length-1]?.id)}
+            onClick={() => { duplicateBlock(blocks[blocks.length-1]?.id); }}
             aria-label="Duplicar último"
             disabled={blocks.length === 0}
           >
@@ -325,7 +325,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
             variant="ghost"
             size="lg"
             className="flex flex-col items-center justify-center mx-1 px-2 py-2 text-base"
-            onClick={() => deleteBlock(blocks[blocks.length-1]?.id)}
+            onClick={() => { deleteBlock(blocks[blocks.length-1]?.id); }}
             aria-label="Deletar último"
             disabled={blocks.length === 0}
           >
@@ -345,9 +345,9 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
             data-block-id={block.id}
             className="group relative"
             draggable
-            onDragStart={(e) => handleDragStart(e, block.id)}
+            onDragStart={(e) => { handleDragStart(e, block.id); }}
             onDragOver={handleDragOver}
-            onDrop={(e) => handleDrop(e, block.id)}
+            onDrop={(e) => { handleDrop(e, block.id); }}
           >
             <div className="flex items-start gap-2">
               {/* Drag Handle */}
@@ -364,7 +364,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => addBlock('text', block.id)}
+                  onClick={() => { addBlock('text', block.id); }}
                   className="h-6 w-6 p-0"
                   title="Adicionar bloco"
                 >
@@ -373,7 +373,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => duplicateBlock(block.id)}
+                  onClick={() => { duplicateBlock(block.id); }}
                   className="h-6 w-6 p-0"
                   title="Duplicar"
                 >
@@ -382,7 +382,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => deleteBlock(block.id)}
+                  onClick={() => { deleteBlock(block.id); }}
                   className="h-6 w-6 p-0 text-red-400 hover:text-red-300"
                   title="Deletar"
                 >
@@ -398,7 +398,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
             <p className="text-gray-400 mb-4">Digite / para ver comandos</p>
             <Button
               variant="ghost"
-              onClick={() => addBlock('text')}
+              onClick={() => { addBlock('text'); }}
               className="gap-2 text-gray-400 hover:text-white"
             >
               <Plus className="h-4 w-4" />
@@ -411,7 +411,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
           isOpen={slashMenu.isOpen}
           position={slashMenu.position}
           onSelect={handleSlashMenuSelect}
-          onClose={() => setSlashMenu({ isOpen: false, blockId: '', position: { x: 0, y: 0 }, query: '' })}
+          onClose={() => { setSlashMenu({ isOpen: false, blockId: '', position: { x: 0, y: 0 }, query: '' }); }}
           query={slashMenu.query}
         />
       </div>

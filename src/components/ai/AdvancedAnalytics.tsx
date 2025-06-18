@@ -15,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 interface AnalyticsData {
   productivity: ProductivityMetrics;
@@ -392,7 +392,7 @@ export const AdvancedAnalytics: React.FC<AdvancedAnalyticsProps> = ({
       setLoading(false);
     }, 2000);
 
-    return () => clearTimeout(timer);
+    return () => { clearTimeout(timer); };
   }, [files, timeRange]);
 
   const getTrendIcon = (trend: 'up' | 'down' | 'stable') => {

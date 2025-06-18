@@ -74,8 +74,8 @@ const Index = () => {
       console.log('[Index] Rendering workspace settings');
       return (
         <IndexWorkspaceSettings
-          onClose={() => setShowWorkspaceSettings(false)}
-          onShowSettings={() => setShowWorkspaceSettings(true)}
+          onClose={() => { setShowWorkspaceSettings(false); }}
+          onShowSettings={() => { setShowWorkspaceSettings(true); }}
         />
       );
     }
@@ -91,14 +91,14 @@ const Index = () => {
         activeView={activeView}
         isMobile={isMobile}
         isMobileSidebarOpen={isMobileSidebarOpen}
-        onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+        onToggleMobileSidebar={() => { setIsMobileSidebarOpen(!isMobileSidebarOpen); }}
         convertedFiles={convertedFiles}
         favorites={favorites}
         currentFileId={currentFileId}
         setCurrentFileId={setCurrentFileId}
         navigateTo={navigateTo}
         setActiveView={setActiveView}
-        onShowSettings={() => setShowWorkspaceSettings(true)}
+        onShowSettings={() => { setShowWorkspaceSettings(true); }}
         onCreateFile={handleCreateFile}
         isQuickSwitcherOpen={isQuickSwitcherOpen}
         closeQuickSwitcher={closeQuickSwitcher}

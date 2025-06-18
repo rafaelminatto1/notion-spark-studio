@@ -22,7 +22,7 @@ export const PageTransition: React.FC<PageTransitionProps> = ({
       setIsVisible(true);
     }, 50);
 
-    return () => clearTimeout(timer);
+    return () => { clearTimeout(timer); };
   }, []);
 
   const getTransitionClasses = () => {

@@ -29,7 +29,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 // Tipos para otimizações inteligentes
 interface OptimizationSuggestion {
@@ -505,7 +505,7 @@ export const SmartWorkspaceOptimizer: React.FC<SmartWorkspaceOptimizerProps> = (
                     </div>
                     <Button
                       size="sm"
-                      onClick={() => handleApplyOptimization(suggestion.id)}
+                      onClick={() => { handleApplyOptimization(suggestion.id); }}
                       disabled={appliedSuggestions.has(suggestion.id)}
                     >
                       {appliedSuggestions.has(suggestion.id) ? (

@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { SearchFilters } from '@/hooks/useAdvancedSearch';
+import type { SearchFilters } from '@/hooks/useAdvancedSearch';
 import { cn } from '@/lib/utils';
 
 interface AdvancedSearchPanelProps {
@@ -48,14 +48,14 @@ export const AdvancedSearchPanel: React.FC<AdvancedSearchPanelProps> = ({
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
         <Input
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => { setQuery(e.target.value); }}
           placeholder="Buscar em notas e pastas..."
           className="pl-10 pr-12"
         />
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => setIsAdvancedMode(!isAdvancedMode)}
+          onClick={() => { setIsAdvancedMode(!isAdvancedMode); }}
           className={cn(
             "absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0",
             isAdvancedMode && "bg-purple-500/20 text-purple-400"
@@ -82,7 +82,7 @@ export const AdvancedSearchPanel: React.FC<AdvancedSearchPanelProps> = ({
               <FileText className="h-4 w-4" />
               Tipo
             </label>
-            <Select value={filters.type} onValueChange={(value) => updateFilter('type', value)}>
+            <Select value={filters.type} onValueChange={(value) => { updateFilter('type', value); }}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -110,7 +110,7 @@ export const AdvancedSearchPanel: React.FC<AdvancedSearchPanelProps> = ({
               <Calendar className="h-4 w-4" />
               Data de Modificação
             </label>
-            <Select value={filters.dateRange} onValueChange={(value) => updateFilter('dateRange', value)}>
+            <Select value={filters.dateRange} onValueChange={(value) => { updateFilter('dateRange', value); }}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -131,7 +131,7 @@ export const AdvancedSearchPanel: React.FC<AdvancedSearchPanelProps> = ({
             </label>
             <Switch
               checked={filters.hasContent}
-              onCheckedChange={(checked) => updateFilter('hasContent', checked)}
+              onCheckedChange={(checked) => { updateFilter('hasContent', checked); }}
             />
           </div>
 
@@ -150,7 +150,7 @@ export const AdvancedSearchPanel: React.FC<AdvancedSearchPanelProps> = ({
                       key={tag}
                       variant={filters.tags?.includes(tag) ? "default" : "outline"}
                       className="cursor-pointer hover:bg-purple-500/20 transition-colors"
-                      onClick={() => handleTagToggle(tag)}
+                      onClick={() => { handleTagToggle(tag); }}
                     >
                       {tag}
                     </Badge>

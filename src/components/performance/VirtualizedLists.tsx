@@ -64,9 +64,9 @@ interface VirtualScrollState {
 // Hook para virtualização
 const useVirtualization = (
   items: VirtualizedItem[],
-  itemHeight: number = 60,
-  containerHeight: number = 400,
-  overscan: number = 5
+  itemHeight = 60,
+  containerHeight = 400,
+  overscan = 5
 ) => {
   const [scrollState, setScrollState] = useState<VirtualScrollState>({
     scrollTop: 0,
@@ -77,7 +77,7 @@ const useVirtualization = (
 
   // Flatten hierarchical items for virtualization
   const flattenedItems = useMemo(() => {
-    const flatten = (items: VirtualizedItem[], level: number = 0): VirtualizedItem[] => {
+    const flatten = (items: VirtualizedItem[], level = 0): VirtualizedItem[] => {
       const result: VirtualizedItem[] = [];
       
       items.forEach((item, index) => {
@@ -236,7 +236,7 @@ const VirtualListItem: React.FC<VirtualListItemProps> = ({
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))  } ${  sizes[i]}`;
   };
 
   const formatDate = (date: Date) => {
@@ -386,7 +386,7 @@ const ListControls: React.FC<ListControlsProps> = ({
         <input
           type="text"
           value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
+          onChange={(e) => { onSearchChange(e.target.value); }}
           placeholder="Buscar itens..."
           className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
         />
@@ -427,7 +427,7 @@ const ListControls: React.FC<ListControlsProps> = ({
         <div className="flex items-center gap-2">
           <select
             value={sortBy}
-            onChange={(e) => onSortChange(e.target.value)}
+            onChange={(e) => { onSortChange(e.target.value); }}
             className="px-3 py-1 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
           >
             {sortOptions.map((option) => (
@@ -438,7 +438,7 @@ const ListControls: React.FC<ListControlsProps> = ({
           </select>
           
           <button
-            onClick={() => onSortOrderChange(sortOrder === 'asc' ? 'desc' : 'asc')}
+            onClick={() => { onSortOrderChange(sortOrder === 'asc' ? 'desc' : 'asc'); }}
             className="p-1 text-gray-500 hover:text-gray-700 transition-colors"
             title={`Ordenar ${sortOrder === 'asc' ? 'decrescente' : 'crescente'}`}
           >
@@ -452,7 +452,7 @@ const ListControls: React.FC<ListControlsProps> = ({
         {/* View mode */}
         <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
           <button
-            onClick={() => onViewModeChange('list')}
+            onClick={() => { onViewModeChange('list'); }}
             className={cn(
               "p-1 rounded transition-colors",
               viewMode === 'list' ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"
@@ -461,7 +461,7 @@ const ListControls: React.FC<ListControlsProps> = ({
             <List className="h-4 w-4" />
           </button>
           <button
-            onClick={() => onViewModeChange('grid')}
+            onClick={() => { onViewModeChange('grid'); }}
             className={cn(
               "p-1 rounded transition-colors",
               viewMode === 'grid' ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"
@@ -627,7 +627,7 @@ export const VirtualizedList: React.FC<VirtualizedListProps> = ({
                     key={item.id}
                     item={item}
                     onExpand={handleItemExpand}
-                    onClick={() => handleItemClick(item)}
+                    onClick={() => { handleItemClick(item); }}
                     style={style}
                   />
                 );
@@ -669,7 +669,7 @@ export const VirtualizedList: React.FC<VirtualizedListProps> = ({
 };
 
 // Hook para criar dados de exemplo
-export const useVirtualizedData = (count: number = 1000): VirtualizedItem[] => {
+export const useVirtualizedData = (count = 1000): VirtualizedItem[] => {
   return useMemo(() => {
     const generateItems = (numItems: number): VirtualizedItem[] => {
       const items: VirtualizedItem[] = [];

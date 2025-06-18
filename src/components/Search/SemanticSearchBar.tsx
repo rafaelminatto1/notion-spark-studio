@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, Clock, BookmarkPlus, X, ChevronDown, Calendar, FileText, Folder, Database, Tag, User, FileCheck } from 'lucide-react';
-import { useSemanticSearch, SemanticSearchConfig, SemanticSearchFilters } from '../../hooks/useSemanticSearch';
-import { FileItem } from '../../types/FileItem';
-import { DatabaseItem } from '../../types/DatabaseItem';
+import type { SemanticSearchConfig} from '../../hooks/useSemanticSearch';
+import { useSemanticSearch, SemanticSearchFilters } from '../../hooks/useSemanticSearch';
+import type { FileItem } from '../../types/FileItem';
+import type { DatabaseItem } from '../../types/DatabaseItem';
 
 interface SemanticSearchBarProps {
   items: (FileItem | DatabaseItem)[];
@@ -61,7 +62,7 @@ export const SemanticSearchBar: React.FC<SemanticSearchBarProps> = ({
       }
     }, 300);
 
-    return () => clearTimeout(delayedSearch);
+    return () => { clearTimeout(delayedSearch); };
   }, [query, search]);
 
   // Fechar ao clicar fora
@@ -74,7 +75,7 @@ export const SemanticSearchBar: React.FC<SemanticSearchBarProps> = ({
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => { document.removeEventListener('mousedown', handleClickOutside); };
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,7 +126,7 @@ export const SemanticSearchBar: React.FC<SemanticSearchBarProps> = ({
         {/* Tabs de Filtros */}
         <div className="flex space-x-4 mb-4">
           <button
-            onClick={() => setActiveFilterTab('basic')}
+            onClick={() => { setActiveFilterTab('basic'); }}
             className={`px-3 py-1 text-sm rounded-md transition-colors ${
               activeFilterTab === 'basic'
                 ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
@@ -135,7 +136,7 @@ export const SemanticSearchBar: React.FC<SemanticSearchBarProps> = ({
             Básico
           </button>
           <button
-            onClick={() => setActiveFilterTab('advanced')}
+            onClick={() => { setActiveFilterTab('advanced'); }}
             className={`px-3 py-1 text-sm rounded-md transition-colors ${
               activeFilterTab === 'advanced'
                 ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
@@ -157,7 +158,7 @@ export const SemanticSearchBar: React.FC<SemanticSearchBarProps> = ({
                 {(['fuzzy', 'exact', 'semantic', 'regex'] as const).map((type) => (
                   <button
                     key={type}
-                    onClick={() => handleSearchTypeChange(type)}
+                    onClick={() => { handleSearchTypeChange(type); }}
                     className={`px-3 py-2 text-sm rounded-md border transition-colors ${
                       config.type === type
                         ? 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900 dark:border-blue-700 dark:text-blue-300'
@@ -180,7 +181,7 @@ export const SemanticSearchBar: React.FC<SemanticSearchBarProps> = ({
               </label>
               <select
                 value={config.sorting}
-                onChange={(e) => handleSortingChange(e.target.value as any)}
+                onChange={(e) => { handleSortingChange(e.target.value as any); }}
                 className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
               >
                 <option value="relevance">Relevância</option>
@@ -270,7 +271,7 @@ export const SemanticSearchBar: React.FC<SemanticSearchBarProps> = ({
               <input
                 type="checkbox"
                 checked={config.highlighting}
-                onChange={(e) => setConfig({ highlighting: e.target.checked })}
+                onChange={(e) => { setConfig({ highlighting: e.target.checked }); }}
                 className="mr-2"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">Destacar termos</span>
@@ -279,7 +280,7 @@ export const SemanticSearchBar: React.FC<SemanticSearchBarProps> = ({
               <input
                 type="checkbox"
                 checked={config.suggestions}
-                onChange={(e) => setConfig({ suggestions: e.target.checked })}
+                onChange={(e) => { setConfig({ suggestions: e.target.checked }); }}
                 className="mr-2"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">Sugestões</span>
@@ -288,7 +289,7 @@ export const SemanticSearchBar: React.FC<SemanticSearchBarProps> = ({
               <input
                 type="checkbox"
                 checked={config.facets}
-                onChange={(e) => setConfig({ facets: e.target.checked })}
+                onChange={(e) => { setConfig({ facets: e.target.checked }); }}
                 className="mr-2"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">Facetas</span>
@@ -310,7 +311,7 @@ export const SemanticSearchBar: React.FC<SemanticSearchBarProps> = ({
             type="text"
             value={query}
             onChange={handleInputChange}
-            onFocus={() => setIsOpen(true)}
+            onFocus={() => { setIsOpen(true); }}
             placeholder={placeholder}
             className="flex-1 px-3 py-3 bg-transparent border-none outline-none text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
           />
@@ -327,7 +328,7 @@ export const SemanticSearchBar: React.FC<SemanticSearchBarProps> = ({
             )}
             
             <button
-              onClick={() => setShowFilters(!showFilters)}
+              onClick={() => { setShowFilters(!showFilters); }}
               className={`p-1 transition-colors ${
                 showFilters 
                   ? 'text-blue-600 dark:text-blue-400' 
@@ -339,7 +340,7 @@ export const SemanticSearchBar: React.FC<SemanticSearchBarProps> = ({
 
             {query && (
               <button
-                onClick={() => saveSearch(query)}
+                onClick={() => { saveSearch(query); }}
                 className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                 title="Salvar busca"
               >
@@ -387,7 +388,7 @@ export const SemanticSearchBar: React.FC<SemanticSearchBarProps> = ({
                     {suggestions.map((suggestion, index) => (
                       <button
                         key={index}
-                        onClick={() => setQuery(suggestion)}
+                        onClick={() => { setQuery(suggestion); }}
                         className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                       >
                         {suggestion}
@@ -403,7 +404,7 @@ export const SemanticSearchBar: React.FC<SemanticSearchBarProps> = ({
                   {results.map((result, index) => (
                     <button
                       key={`${result.item.id}-${index}`}
-                      onClick={() => handleResultClick(result.item)}
+                      onClick={() => { handleResultClick(result.item); }}
                       className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-b-0"
                     >
                       <div className="flex items-center space-x-3">
@@ -448,7 +449,7 @@ export const SemanticSearchBar: React.FC<SemanticSearchBarProps> = ({
                     {recentSearches.slice(0, 5).map((recentQuery, index) => (
                       <button
                         key={index}
-                        onClick={() => setQuery(recentQuery)}
+                        onClick={() => { setQuery(recentQuery); }}
                         className="w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                       >
                         <div className="flex items-center space-x-3">

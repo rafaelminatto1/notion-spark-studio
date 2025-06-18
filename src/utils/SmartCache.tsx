@@ -42,8 +42,19 @@ export class SmartCacheSystem {
   private accessFrequency = new Map<string, number>();
   private lastCleanup = Date.now();
   private compressionWorker: Worker | null = null;
+  private stats: CacheStats;
+  private accessLog: Array<{ key: string; timestamp: number }> = [];
+  private cleanupTimer: NodeJS.Timeout | null = null;
   
   constructor(private config: CacheConfig) {
+    this.stats = {
+      totalEntries: 0,
+      totalSize: 0,
+      hitRate: 0,
+      missRate: 0,
+      evictionCount: 0,
+      memoryUsage: 0
+    };
     this.initializeCompression();
     this.startCleanupTimer();
   }
@@ -76,7 +87,7 @@ export class SmartCacheSystem {
   }
 
   private startCleanupTimer() {
-    setInterval(() => {
+    this.cleanupTimer = setInterval(() => {
       this.performMaintenance();
     }, this.config.cleanupInterval || 300000); // 5 minutos
   }
@@ -104,7 +115,7 @@ export class SmartCacheSystem {
     this.lastCleanup = now;
     
     if (removedCount > 0) {
-      console.log(`[SmartCache] Limpeza realizada: ${removedCount} entradas removidas`);
+      console.log(`[SmartCache] Limpeza realizada: ${removedCount.toString()} entradas removidas`);
     }
   }
 
@@ -114,16 +125,20 @@ export class SmartCacheSystem {
     // Ordenar por estratégia de eviction
     const sorted = entries.sort(([keyA, entryA], [keyB, entryB]) => {
       switch (this.config.adaptiveEviction) {
-        case 'lru':
+        case 'lru': {
           return entryA.lastAccessed - entryB.lastAccessed;
-        case 'lfu':
-          const freqA = this.accessFrequency.get(keyA) || 0;
-          const freqB = this.accessFrequency.get(keyB) || 0;
+        }
+        case 'lfu': {
+          const freqA = this.accessFrequency.get(keyA) ?? 0;
+          const freqB = this.accessFrequency.get(keyB) ?? 0;
           return freqA - freqB;
-        case 'ttl':
+        }
+        case 'ttl': {
           return entryA.timestamp - entryB.timestamp;
-        default:
+        }
+        default: {
           return entryA.lastAccessed - entryB.lastAccessed;
+        }
       }
     });
 
@@ -189,14 +204,14 @@ export class SmartCacheSystem {
     const entry = this.cache.get(key);
     
     if (!entry) {
-      this.stats.missRate++;
+      this.updateMissRate();
       return null;
     }
 
     // Verificar TTL
     if (this.isExpired(entry)) {
       this.cache.delete(key);
-      this.stats.missRate++;
+      this.updateMissRate();
       return null;
     }
 
@@ -210,7 +225,7 @@ export class SmartCacheSystem {
       this.accessLog = this.accessLog.slice(-500);
     }
 
-    this.stats.hitRate++;
+    this.updateHitRate();
 
     // Descomprimir se necessário
     const data = this.config.compressionEnabled 
@@ -265,7 +280,7 @@ export class SmartCacheSystem {
     return { ...this.stats };
   }
 
-  getHotKeys(limit: number = 10): Array<{ key: string; accessCount: number; lastAccessed: number }> {
+  getHotKeys(limit = 10): Array<{ key: string; accessCount: number; lastAccessed: number }> {
     return Array.from(this.cache.entries())
       .map(([key, entry]) => ({
         key,
@@ -276,7 +291,7 @@ export class SmartCacheSystem {
       .slice(0, limit);
   }
 
-  getColdKeys(limit: number = 10): Array<{ key: string; accessCount: number; lastAccessed: number }> {
+  getColdKeys(limit = 10): Array<{ key: string; accessCount: number; lastAccessed: number }> {
     const now = Date.now();
     return Array.from(this.cache.entries())
       .map(([key, entry]) => ({
@@ -440,6 +455,22 @@ export class SmartCacheSystem {
       return data;
     } catch {
       return data;
+    }
+  }
+
+  private updateMissRate(): void {
+    if (typeof this.stats.missRate === 'number') {
+      this.stats.missRate++;
+    } else {
+      this.stats.missRate = 1;
+    }
+  }
+
+  private updateHitRate(): void {
+    if (typeof this.stats.hitRate === 'number') {
+      this.stats.hitRate++;
+    } else {
+      this.stats.hitRate = 1;
     }
   }
 
@@ -667,7 +698,7 @@ export const CacheMonitor: React.FC = () => {
     updateStats();
     const interval = setInterval(updateStats, 5000);
 
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, [cache]);
 
   if (!stats) return null;

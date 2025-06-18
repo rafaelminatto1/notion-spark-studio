@@ -69,12 +69,12 @@ export const usePerformanceToasts = (alerts: PerformanceAlert[], isMonitoring: b
     if (!isMonitoring) return;
 
     // Agrupar alertas por tipo para evitar spam
-    const alertGroups = alerts.reduce((groups, alert) => {
+    const alertGroups = alerts.reduce<Record<string, PerformanceAlert[]>>((groups, alert) => {
       const key = alert.message.split(' ')[0]; // Primeira palavra como chave
       if (!groups[key]) groups[key] = [];
       groups[key].push(alert);
       return groups;
-    }, {} as Record<string, PerformanceAlert[]>);
+    }, {});
 
     Object.entries(alertGroups).forEach(([type, typeAlerts]) => {
       const recentAlerts = typeAlerts.filter(

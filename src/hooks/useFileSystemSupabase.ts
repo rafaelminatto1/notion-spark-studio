@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
-import { useSupabaseFiles, SupabaseFile } from './useSupabaseFiles';
-import { FileItem } from '@/types';
+import type { SupabaseFile } from './useSupabaseFiles';
+import { useSupabaseFiles } from './useSupabaseFiles';
+import type { FileItem } from '@/types';
 
 export const useFileSystemSupabase = () => {
   const supabaseFiles = useSupabaseFiles();

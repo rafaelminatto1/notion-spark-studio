@@ -21,7 +21,7 @@ import {
   AlertCircle,
   Loader2
 } from 'lucide-react';
-import { GraphNode, GraphLink } from './types';
+import type { GraphNode, GraphLink } from './types';
 import { toast } from '@/components/ui/use-toast';
 
 interface GraphExporterProps {
@@ -151,7 +151,7 @@ export const GraphExporter: React.FC<GraphExporterProps> = ({
       nodes: exportOptions.includeMetadata 
         ? nodes 
         : nodes.map(({ metadata, ...node }) => node),
-      links: links,
+      links,
       ...(exportOptions.includePositions && {
         layout: {
           type: 'force',
@@ -291,7 +291,7 @@ export const GraphExporter: React.FC<GraphExporterProps> = ({
     }
 
     // Download do arquivo
-    const blob = new Blob([content as string], { type: mimeType });
+    const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -354,7 +354,7 @@ export const GraphExporter: React.FC<GraphExporterProps> = ({
                         ? 'border-blue-500 bg-blue-50 dark:bg-blue-950'
                         : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
                     }`}
-                    onClick={() => handleOptionChange('format', format.value as ExportFormat)}
+                    onClick={() => { handleOptionChange('format', format.value as ExportFormat); }}
                   >
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
@@ -397,7 +397,7 @@ export const GraphExporter: React.FC<GraphExporterProps> = ({
                   <Label className="text-sm">Incluir Metadados</Label>
                   <Switch
                     checked={exportOptions.includeMetadata}
-                    onCheckedChange={(checked) => handleOptionChange('includeMetadata', checked)}
+                    onCheckedChange={(checked) => { handleOptionChange('includeMetadata', checked); }}
                   />
                 </div>
 
@@ -405,7 +405,7 @@ export const GraphExporter: React.FC<GraphExporterProps> = ({
                   <Label className="text-sm">Incluir Posições</Label>
                   <Switch
                     checked={exportOptions.includePositions}
-                    onCheckedChange={(checked) => handleOptionChange('includePositions', checked)}
+                    onCheckedChange={(checked) => { handleOptionChange('includePositions', checked); }}
                   />
                 </div>
 
@@ -413,7 +413,7 @@ export const GraphExporter: React.FC<GraphExporterProps> = ({
                   <Label className="text-sm">Incluir Filtros</Label>
                   <Switch
                     checked={exportOptions.includeFilters}
-                    onCheckedChange={(checked) => handleOptionChange('includeFilters', checked)}
+                    onCheckedChange={(checked) => { handleOptionChange('includeFilters', checked); }}
                   />
                 </div>
 
@@ -421,7 +421,7 @@ export const GraphExporter: React.FC<GraphExporterProps> = ({
                   <Label className="text-sm">Incluir Estilos</Label>
                   <Switch
                     checked={exportOptions.includeStyles}
-                    onCheckedChange={(checked) => handleOptionChange('includeStyles', checked)}
+                    onCheckedChange={(checked) => { handleOptionChange('includeStyles', checked); }}
                   />
                 </div>
               </div>
@@ -434,7 +434,7 @@ export const GraphExporter: React.FC<GraphExporterProps> = ({
                     <Label className="text-sm">Resolução</Label>
                     <Select
                       value={exportOptions.imageResolution}
-                      onValueChange={(value) => handleOptionChange('imageResolution', value as any)}
+                      onValueChange={(value) => { handleOptionChange('imageResolution', value as any); }}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -453,7 +453,7 @@ export const GraphExporter: React.FC<GraphExporterProps> = ({
                 <Label className="text-sm">Nome do Arquivo (opcional)</Label>
                 <Textarea
                   value={exportOptions.customFilename}
-                  onChange={(e) => handleOptionChange('customFilename', e.target.value)}
+                  onChange={(e) => { handleOptionChange('customFilename', e.target.value); }}
                   placeholder="Deixe vazio para nome automático..."
                   className="h-10"
                 />
@@ -525,7 +525,7 @@ export const GraphExporter: React.FC<GraphExporterProps> = ({
             </div>
             
             <div className="flex gap-3">
-              <Button variant="outline" onClick={() => setIsOpen(false)}>
+              <Button variant="outline" onClick={() => { setIsOpen(false); }}>
                 Cancelar
               </Button>
               <Button

@@ -1,7 +1,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useIndexedDB } from './useIndexedDB';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 export interface ActivityItem {
   id: string;

@@ -1,6 +1,6 @@
 
 import { useState, useCallback, useEffect } from 'react';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 export interface FileVersion {
   id: string;
@@ -93,7 +93,7 @@ export const useVersionHistory = (fileId: string | null) => {
     };
   }, [versions]);
 
-  const cleanupOldVersions = useCallback((daysToKeep: number = 30) => {
+  const cleanupOldVersions = useCallback((daysToKeep = 30) => {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
     

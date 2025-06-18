@@ -1,8 +1,9 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback, useMemo } from 'react';
+import type { ReactNode} from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import { useCollaboration } from '@/hooks/useCollaboration';
-import { CollaboratorCursor } from './LiveCursors';
-import { Operation } from './OperationalTransform';
-import { Comment } from './CommentsSystem';
+import type { CollaboratorCursor } from './LiveCursors';
+import type { Operation } from './OperationalTransform';
+import type { Comment } from './CommentsSystem';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Users, Wifi, WifiOff } from 'lucide-react';
@@ -97,7 +98,7 @@ export const CollaborationProvider: React.FC<CollaborationProviderProps> = ({
         description: 'Não foi possível conectar ao servidor de colaboração. Tentando reconectar...',
         action: {
           label: 'Reconectar',
-          onClick: () => collaboration.reconnect()
+          onClick: () => { collaboration.reconnect(); }
         }
       });
     }
@@ -158,7 +159,7 @@ export const CollaborationProvider: React.FC<CollaborationProviderProps> = ({
         setLastSyncTime(new Date());
       }, 30000); // Update every 30 seconds
 
-      return () => clearInterval(interval);
+      return () => { clearInterval(interval); };
     }
   }, [collaboration.isConnected]);
 

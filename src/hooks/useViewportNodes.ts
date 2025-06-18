@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { GraphNode, GraphLink } from '@/components/GraphView/types';
+import type { GraphNode, GraphLink } from '@/components/GraphView/types';
 import { safeGetEnv } from '@/utils/env';
 
 interface ViewportBounds {
@@ -33,7 +33,7 @@ const DEFAULT_VIEWPORT: ViewportBounds = {
 export function useViewportNodes(
   nodes: GraphNode[],
   links: GraphLink[],
-  maxVisibleNodes: number = 1000
+  maxVisibleNodes = 1000
 ): UseViewportNodesReturn {
   const [viewport, setViewport] = useState<ViewportBounds>(DEFAULT_VIEWPORT);
   const [lastUpdateTime, setLastUpdateTime] = useState(0);

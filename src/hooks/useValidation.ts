@@ -1,6 +1,6 @@
 
 import { useCallback } from 'react';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 export interface ValidationRule {
   id: string;

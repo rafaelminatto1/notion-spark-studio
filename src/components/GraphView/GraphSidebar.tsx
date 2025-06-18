@@ -4,7 +4,7 @@ import { X, Info, Users, Tag, Clock, FileText, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { GraphNode } from './types';
+import type { GraphNode } from './types';
 import { cn } from '@/lib/utils';
 
 interface GraphSidebarProps {
@@ -282,7 +282,7 @@ export const GraphSidebar: React.FC<GraphSidebarProps> = ({
 
           <div className="mt-4 pt-4 border-t border-white/10">
             <Button
-              onClick={() => onPathFinding(nodeData.id)}
+              onClick={() => { onPathFinding(nodeData.id); }}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white"
             >
               <Target className="h-4 w-4 mr-2" />

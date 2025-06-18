@@ -14,7 +14,7 @@ import {
   HardDrive,
   Clock
 } from 'lucide-react';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { useDataIntegrity } from '@/hooks/useDataIntegrity';
 import { useBackupSystem } from '@/hooks/useBackupSystem';
 

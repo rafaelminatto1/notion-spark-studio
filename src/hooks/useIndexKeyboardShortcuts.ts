@@ -1,6 +1,6 @@
 
 import { useCallback } from 'react';
-import { ViewMode } from '@/components/ViewTabs';
+import type { ViewMode } from '@/components/ViewTabs';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
 interface UseIndexKeyboardShortcutsProps {
@@ -20,7 +20,7 @@ export const useIndexKeyboardShortcuts = ({
 
   useKeyboardShortcuts({
     onViewChange: handleViewChangeFromKeyboard,
-    onOpenCommandPalette: () => setIsCommandPaletteOpen(true),
-    onOpenSettings: () => setShowWorkspaceSettings(true)
+    onOpenCommandPalette: () => { setIsCommandPaletteOpen(true); },
+    onOpenSettings: () => { setShowWorkspaceSettings(true); }
   });
 };

@@ -28,7 +28,7 @@ import {
   Volume2,
   VolumeX
 } from 'lucide-react';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 import { cn } from '@/lib/utils';
 
 interface Message {
@@ -162,7 +162,7 @@ export const IntelligentAssistant: React.FC<IntelligentAssistantProps> = ({
     };
 
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    return () => { document.removeEventListener('keydown', handleKeyDown); };
   }, [isOpen]);
 
   const processUserInput = useCallback(async (input: string) => {
@@ -183,7 +183,7 @@ export const IntelligentAssistant: React.FC<IntelligentAssistantProps> = ({
     const command = availableCommands.find(cmd => cmd.pattern.test(input));
     let response = '';
     let actions: AssistantAction[] = [];
-    let metadata = { confidence: 85, executionTime: 1200 };
+    const metadata = { confidence: 85, executionTime: 1200 };
 
     if (command) {
       switch (command.action) {
@@ -337,7 +337,7 @@ export const IntelligentAssistant: React.FC<IntelligentAssistantProps> = ({
       utterance.rate = 0.9;
       speechSynthesis.speak(utterance);
       setIsSpeaking(true);
-      utterance.onend = () => setIsSpeaking(false);
+      utterance.onend = () => { setIsSpeaking(false); };
     }
   }, [files, voiceEnabled]);
 
@@ -395,7 +395,7 @@ export const IntelligentAssistant: React.FC<IntelligentAssistantProps> = ({
           whileTap={{ scale: 0.95 }}
         >
           <Button
-            onClick={() => setIsOpen(true)}
+            onClick={() => { setIsOpen(true); }}
             size="lg"
             className="relative h-14 w-14 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-xl border-0"
           >
@@ -463,7 +463,7 @@ export const IntelligentAssistant: React.FC<IntelligentAssistantProps> = ({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setIsMinimized(!isMinimized)}
+              onClick={() => { setIsMinimized(!isMinimized); }}
               className="h-8 w-8 p-0"
             >
               {isMinimized ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
@@ -471,7 +471,7 @@ export const IntelligentAssistant: React.FC<IntelligentAssistantProps> = ({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setIsOpen(false)}
+              onClick={() => { setIsOpen(false); }}
               className="h-8 w-8 p-0"
             >
               <X className="h-4 w-4" />
@@ -542,7 +542,7 @@ export const IntelligentAssistant: React.FC<IntelligentAssistantProps> = ({
                               key={action.id}
                               variant="outline"
                               size="sm"
-                              onClick={() => handleActionClick(action)}
+                              onClick={() => { handleActionClick(action); }}
                               className="w-full justify-start text-xs h-8"
                             >
                               {action.icon}
@@ -604,7 +604,7 @@ export const IntelligentAssistant: React.FC<IntelligentAssistantProps> = ({
                   <Input
                     ref={inputRef}
                     value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
+                    onChange={(e) => { setInputValue(e.target.value); }}
                     onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                     placeholder="Digite sua mensagem..."
                     className="pr-10"

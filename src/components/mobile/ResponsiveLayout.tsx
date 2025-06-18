@@ -184,7 +184,7 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
+              onChange={(e) => { handleSearch(e.target.value); }}
               placeholder="Buscar..."
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500"
               autoFocus
@@ -197,7 +197,7 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({
       <div className="flex items-center gap-2">
         {showSearch && (
           <button
-            onClick={() => setSearchMode(!searchMode)}
+            onClick={() => { setSearchMode(!searchMode); }}
             className="p-2 text-gray-600 hover:text-gray-900 transition-colors"
           >
             {searchMode ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
@@ -247,7 +247,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ currentScreen, onNa
           return (
             <button
               key={tab.id}
-              onClick={() => onNavigate(tab.id)}
+              onClick={() => { onNavigate(tab.id); }}
               className={cn(
                 "flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors",
                 isActive 
@@ -305,7 +305,7 @@ const NotebooksScreen: React.FC<{ onNavigate: (screen: string, params?: any) => 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
-            onClick={() => onNavigate('notes', { notebookId: notebook.id, notebookName: notebook.name })}
+            onClick={() => { onNavigate('notes', { notebookId: notebook.id, notebookName: notebook.name }); }}
             className="w-full flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
           >
             <div className="flex items-center gap-3">
@@ -336,7 +336,7 @@ const NotebooksScreen: React.FC<{ onNavigate: (screen: string, params?: any) => 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: (index + notebooks.length) * 0.05 }}
-              onClick={() => onNavigate('editor', { noteId: note.id, noteName: note.name })}
+              onClick={() => { onNavigate('editor', { noteId: note.id, noteName: note.name }); }}
               className="w-full flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
             >
               <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
@@ -401,7 +401,7 @@ const NotesScreen: React.FC<{
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              onClick={() => onNavigate('editor', { noteId: note.id, noteName: note.name })}
+              onClick={() => { onNavigate('editor', { noteId: note.id, noteName: note.name }); }}
               className="w-full flex items-start gap-3 p-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left"
             >
               <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
@@ -445,7 +445,7 @@ const EditorScreen: React.FC<{
         updateFile(noteId, { content });
       }, 1000);
 
-      return () => clearTimeout(timer);
+      return () => { clearTimeout(timer); };
     }
   }, [content, note, noteId, updateFile]);
 
@@ -473,7 +473,7 @@ const EditorScreen: React.FC<{
       <div className="flex-1 p-4">
         <textarea
           value={content}
-          onChange={(e) => setContent(e.target.value)}
+          onChange={(e) => { setContent(e.target.value); }}
           placeholder="Comece a escrever..."
           className="w-full h-full resize-none border-0 outline-none text-base"
           style={{ font: 'inherit' }}
@@ -496,8 +496,8 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children, cl
       component: NotebooksScreen,
       showSearch: true,
       actions: [
-        { icon: Plus, label: 'Novo', onClick: () => console.log('Novo') },
-        { icon: MoreVertical, label: 'Menu', onClick: () => console.log('Menu') }
+        { icon: Plus, label: 'Novo', onClick: () => { console.log('Novo'); } },
+        { icon: MoreVertical, label: 'Menu', onClick: () => { console.log('Menu'); } }
       ]
     },
     notes: {
@@ -507,7 +507,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children, cl
       showBackButton: true,
       showSearch: true,
       actions: [
-        { icon: Plus, label: 'Nova Nota', onClick: () => console.log('Nova nota') }
+        { icon: Plus, label: 'Nova Nota', onClick: () => { console.log('Nova nota'); } }
       ]
     },
     editor: {
@@ -516,8 +516,8 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children, cl
       component: EditorScreen,
       showBackButton: true,
       actions: [
-        { icon: Share2, label: 'Compartilhar', onClick: () => console.log('Compartilhar') },
-        { icon: MoreVertical, label: 'Menu', onClick: () => console.log('Menu') }
+        { icon: Share2, label: 'Compartilhar', onClick: () => { console.log('Compartilhar'); } },
+        { icon: MoreVertical, label: 'Menu', onClick: () => { console.log('Menu'); } }
       ]
     }
   };
@@ -543,7 +543,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children, cl
         showSearch={currentScreen?.showSearch}
         actions={currentScreen?.actions}
         onBack={goBack}
-        onSearch={(query) => console.log('Search:', query)}
+        onSearch={(query) => { console.log('Search:', query); }}
       />
 
       {/* Screen Content */}

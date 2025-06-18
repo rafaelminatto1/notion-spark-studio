@@ -1,4 +1,5 @@
-import { useEffect, useCallback, RefObject, useState } from 'react';
+import type { RefObject} from 'react';
+import { useEffect, useCallback, useState } from 'react';
 
 interface UseAutoResizeOptions {
   minHeight?: number;
@@ -42,15 +43,15 @@ export function useAutoResize(
     );
 
     // Set the new height
-    textarea.style.height = calculatedHeight + 'px';
+    textarea.style.height = `${calculatedHeight  }px`;
     setCurrentHeight(calculatedHeight);
 
     // Update CSS custom properties for styling
     textarea.style.setProperty('--line-count', lines.toString());
-    textarea.style.setProperty('--content-height', contentHeight + 'px');
+    textarea.style.setProperty('--content-height', `${contentHeight  }px`);
 
     // Reset resizing state after a short delay
-    setTimeout(() => setIsResizing(false), 150);
+    setTimeout(() => { setIsResizing(false); }, 150);
 
   }, [content, minHeight, maxHeight, lineHeight, padding]);
 
@@ -68,13 +69,13 @@ export function useAutoResize(
       if (textarea) {
         const currentHeight = parseInt(textarea.style.height);
         if (currentHeight > newMaxHeight) {
-          textarea.style.height = newMaxHeight + 'px';
+          textarea.style.height = `${newMaxHeight  }px`;
         }
       }
     };
 
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => { window.removeEventListener('resize', handleResize); };
   }, []);
 
   return { 

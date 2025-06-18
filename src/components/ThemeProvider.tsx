@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { CustomTheme } from '@/types/workspace';
+import type { CustomTheme } from '@/types/workspace';
 import { useWorkspaceThemes } from '@/hooks/useWorkspaceThemes';
 import { useThemeApplicator } from '@/hooks/useThemeApplicator';
 
@@ -74,7 +74,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       };
       
       mediaQuery.addEventListener('change', handler);
-      return () => mediaQuery.removeEventListener('change', handler);
+      return () => { mediaQuery.removeEventListener('change', handler); };
     } else {
       setActualTheme(theme);
     }

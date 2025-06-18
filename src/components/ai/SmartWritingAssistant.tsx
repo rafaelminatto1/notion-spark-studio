@@ -51,7 +51,7 @@ interface SmartWritingAssistantProps {
 
 // Writing Analysis Engine
 class WritingAnalyzer {
-  static analyzeText(text: string, language: string = 'pt-BR'): {
+  static analyzeText(text: string, language = 'pt-BR'): {
     suggestions: WritingSuggestion[];
     stats: WritingStats;
   } {
@@ -495,7 +495,7 @@ export const SmartWritingAssistant: React.FC<SmartWritingAssistantProps> = ({
                     <Switch
                       checked={settings.autoCorrect}
                       onCheckedChange={(checked) => 
-                        setSettings(prev => ({ ...prev, autoCorrect: checked }))
+                        { setSettings(prev => ({ ...prev, autoCorrect: checked })); }
                       }
                     />
                   </div>
@@ -505,7 +505,7 @@ export const SmartWritingAssistant: React.FC<SmartWritingAssistantProps> = ({
                     <Switch
                       checked={settings.realTimeAnalysis}
                       onCheckedChange={(checked) => 
-                        setSettings(prev => ({ ...prev, realTimeAnalysis: checked }))
+                        { setSettings(prev => ({ ...prev, realTimeAnalysis: checked })); }
                       }
                     />
                   </div>
@@ -515,7 +515,7 @@ export const SmartWritingAssistant: React.FC<SmartWritingAssistantProps> = ({
                     <Slider
                       value={[settings.aggressiveness]}
                       onValueChange={([value]) => 
-                        setSettings(prev => ({ ...prev, aggressiveness: value }))
+                        { setSettings(prev => ({ ...prev, aggressiveness: value })); }
                       }
                       max={100}
                       step={10}
@@ -600,9 +600,9 @@ export const SmartWritingAssistant: React.FC<SmartWritingAssistantProps> = ({
                     getColorForSeverity(suggestion.severity),
                     selectedSuggestionId === suggestion.id && "ring-2 ring-blue-400"
                   )}
-                  onClick={() => setSelectedSuggestionId(
+                  onClick={() => { setSelectedSuggestionId(
                     selectedSuggestionId === suggestion.id ? null : suggestion.id
-                  )}
+                  ); }}
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-2">

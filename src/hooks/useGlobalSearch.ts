@@ -1,6 +1,6 @@
 
 import { useState, useMemo } from 'react';
-import { FileItem } from '@/types';
+import type { FileItem } from '@/types';
 
 export interface SearchResult {
   file: FileItem;
@@ -71,13 +71,13 @@ export const useGlobalSearch = (files: FileItem[]) => {
           
           while (index !== -1 && matchCount < 3) { // Limit to 3 matches per term
             const start = Math.max(0, index - 50);
-            const end = Math.min(file.content!.length, index + term.length + 50);
-            const context = file.content!.slice(start, end);
+            const end = Math.min(file.content.length, index + term.length + 50);
+            const context = file.content.slice(start, end);
             
             matches.push({
               type: 'content',
               text: term,
-              context: context,
+              context,
               startIndex: index - start + (start > 0 ? 3 : 0), // Account for "..."
               endIndex: index - start + term.length + (start > 0 ? 3 : 0)
             });
@@ -158,7 +158,7 @@ export const useGlobalSearch = (files: FileItem[]) => {
       }
     });
 
-    setTimeout(() => setIsSearching(false), 100);
+    setTimeout(() => { setIsSearching(false); }, 100);
     return sortedResults;
   }, [files, query, filters]);
 

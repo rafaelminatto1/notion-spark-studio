@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useCallback, useRef, useEffect } from 'react';
-import { FixedSizeList as List, ListChildComponentProps } from 'react-window';
+import type { ListChildComponentProps } from 'react-window';
+import { FixedSizeList as List } from 'react-window';
 import { VariableSizeList } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { Search, Filter, SortAsc, SortDesc } from 'lucide-react';
@@ -213,7 +214,7 @@ export const VirtualizedList: React.FC<VirtualizedListProps> = ({
   }, []);
 
   // Handler para seleção
-  const handleItemSelection = useCallback((itemId: string, ctrlKey: boolean = false) => {
+  const handleItemSelection = useCallback((itemId: string, ctrlKey = false) => {
     if (!enableSelection) return;
 
     setSelectedItems(prev => {
@@ -321,7 +322,7 @@ export const VirtualizedList: React.FC<VirtualizedListProps> = ({
               <Input
                 placeholder="Buscar items..."
                 value={filterConfig.searchTerm}
-                onChange={(e) => setFilterConfig(prev => ({ ...prev, searchTerm: e.target.value }))}
+                onChange={(e) => { setFilterConfig(prev => ({ ...prev, searchTerm: e.target.value })); }}
                 className="pl-10"
               />
             </div>
@@ -332,7 +333,7 @@ export const VirtualizedList: React.FC<VirtualizedListProps> = ({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handleSort('title')}
+                onClick={() => { handleSort('title'); }}
                 className="flex items-center gap-1"
               >
                 Título
@@ -344,7 +345,7 @@ export const VirtualizedList: React.FC<VirtualizedListProps> = ({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handleSort('modifiedAt')}
+                onClick={() => { handleSort('modifiedAt'); }}
                 className="flex items-center gap-1"
               >
                 Data
@@ -356,7 +357,7 @@ export const VirtualizedList: React.FC<VirtualizedListProps> = ({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handleSort('size')}
+                onClick={() => { handleSort('size'); }}
                 className="flex items-center gap-1"
               >
                 Tamanho

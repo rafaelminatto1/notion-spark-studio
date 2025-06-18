@@ -1,33 +1,81 @@
 // Web Worker para cálculos pesados do Graph View
+
+// Interfaces específicas para melhor type safety
+interface GraphNode {
+  id: string;
+  x?: number;
+  y?: number;
+  fx?: number;
+  fy?: number;
+  [key: string]: unknown;
+}
+
+interface GraphLink {
+  source: string | GraphNode;
+  target: string | GraphNode;
+  [key: string]: unknown;
+}
+
+interface LayoutSettings {
+  width: number;
+  height: number;
+  iterations?: number;
+  damping?: number;
+}
+
+interface NetworkAnalysis {
+  nodeCount: number;
+  linkCount: number;
+  density: number;
+  avgDegree: number;
+  avgClustering: number;
+  degrees: Record<string, number>;
+}
+
+interface CommunityResult {
+  communities: Record<string, number>;
+  groups: Array<{
+    id: number;
+    nodes: string[];
+    size: number;
+  }>;
+}
+
+type WorkerPayload = 
+  | { nodes: GraphNode[]; links: GraphLink[]; settings: LayoutSettings }
+  | { nodes: GraphNode[]; links: GraphLink[] }
+  | NetworkAnalysis
+  | CommunityResult;
+
 export type GraphWorkerMessage = {
   type: 'CALCULATE_LAYOUT' | 'ANALYZE_NETWORK' | 'FIND_COMMUNITIES' | 'CALCULATE_CENTRALITY';
-  payload: any;
+  payload: WorkerPayload;
   id: string;
 };
 
 export type GraphWorkerResponse = {
   type: 'LAYOUT_CALCULATED' | 'NETWORK_ANALYZED' | 'COMMUNITIES_FOUND' | 'CENTRALITY_CALCULATED' | 'ERROR';
-  payload: any;
+  payload: WorkerPayload | { error: string };
   id: string;
 };
 
 // Force-directed layout calculation
-function calculateForceLayout(nodes: any[], links: any[], settings: any) {
+function calculateForceLayout(nodes: GraphNode[], links: GraphLink[], settings: LayoutSettings): GraphNode[] {
   const nodeMap = new Map(nodes.map(n => [n.id, { ...n }]));
-  const iterations = 100;
+  const iterations = settings.iterations ?? 100;
   const k = Math.sqrt((settings.width * settings.height) / nodes.length);
   
   for (let iter = 0; iter < iterations; iter++) {
     // Repulsive forces between all nodes
     for (const node1 of nodeMap.values()) {
-      node1.fx = node1.fx || 0;
-      node1.fy = node1.fy || 0;
+      node1.fx = node1.fx ?? 0;
+      node1.fy = node1.fy ?? 0;
       
       for (const node2 of nodeMap.values()) {
         if (node1.id === node2.id) continue;
         
-        const dx = (node1.x || 0) - (node2.x || 0);
-        const dy = (node1.y || 0) - (node2.y || 0);
+        const dx = (node1.x ?? 0) - (node2.x ?? 0);
+        const dy = (node1.y ?? 0) - (node2.y ?? 0);
         const distance = Math.sqrt(dx * dx + dy * dy) || 1;
         
         const repulsion = (k * k) / distance;
@@ -46,27 +94,27 @@ function calculateForceLayout(nodes: any[], links: any[], settings: any) {
       
       if (!source || !target) continue;
       
-      const dx = (target.x || 0) - (source.x || 0);
-      const dy = (target.y || 0) - (source.y || 0);
+      const dx = (target.x ?? 0) - (source.x ?? 0);
+      const dy = (target.y ?? 0) - (source.y ?? 0);
       const distance = Math.sqrt(dx * dx + dy * dy) || 1;
       
       const attraction = (distance * distance) / k;
       const fx = (dx / distance) * attraction * 0.5;
       const fy = (dy / distance) * attraction * 0.5;
       
-      source.fx += fx;
-      source.fy += fy;
-      target.fx -= fx;
-      target.fy -= fy;
+      source.fx = (source.fx ?? 0) + fx;
+      source.fy = (source.fy ?? 0) + fy;
+      target.fx = (target.fx ?? 0) - fx;
+      target.fy = (target.fy ?? 0) - fy;
     }
     
     // Apply forces and damping
-    const damping = 0.9;
+    const damping = settings.damping ?? 0.9;
     for (const node of nodeMap.values()) {
-      node.x = (node.x || 0) + (node.fx || 0) * damping;
-      node.y = (node.y || 0) + (node.fy || 0) * damping;
-      node.fx *= 0.8;
-      node.fy *= 0.8;
+      node.x = (node.x ?? 0) + (node.fx ?? 0) * damping;
+      node.y = (node.y ?? 0) + (node.fy ?? 0) * damping;
+      node.fx = (node.fx ?? 0) * 0.8;
+      node.fy = (node.fy ?? 0) * 0.8;
     }
   }
   
@@ -74,7 +122,7 @@ function calculateForceLayout(nodes: any[], links: any[], settings: any) {
 }
 
 // Network analysis calculations
-function analyzeNetwork(nodes: any[], links: any[]) {
+function analyzeNetwork(nodes: GraphNode[], links: GraphLink[]): NetworkAnalysis {
   const nodeCount = nodes.length;
   const linkCount = links.length;
   
@@ -88,8 +136,8 @@ function analyzeNetwork(nodes: any[], links: any[]) {
     const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
     const targetId = typeof link.target === 'object' ? link.target.id : link.target;
     
-    degrees.set(sourceId, (degrees.get(sourceId) || 0) + 1);
-    degrees.set(targetId, (degrees.get(targetId) || 0) + 1);
+    degrees.set(sourceId, (degrees.get(sourceId) ?? 0) + 1);
+    degrees.set(targetId, (degrees.get(targetId) ?? 0) + 1);
   }
   
   // Calculate clustering coefficient
@@ -131,7 +179,7 @@ function analyzeNetwork(nodes: any[], links: any[]) {
 }
 
 // Community detection using simple modularity
-function findCommunities(nodes: any[], links: any[]) {
+function findCommunities(nodes: GraphNode[], links: GraphLink[]): CommunityResult {
   // Simplified Louvain algorithm
   const communities = new Map<string, number>();
   
@@ -161,11 +209,11 @@ function findCommunities(nodes: any[], links: any[]) {
         const sourceSize = Array.from(communities.values()).filter(c => c === sourceCommunity).length;
         const targetSize = Array.from(communities.values()).filter(c => c === targetCommunity).length;
         
-        if (sourceSize < targetSize) {
-          communities.set(sourceId, targetCommunity!);
+        if (sourceSize < targetSize && targetCommunity !== undefined) {
+          communities.set(sourceId, targetCommunity);
           changed = true;
-        } else {
-          communities.set(targetId, sourceCommunity!);
+        } else if (sourceCommunity !== undefined) {
+          communities.set(targetId, sourceCommunity);
           changed = true;
         }
       }
@@ -178,7 +226,10 @@ function findCommunities(nodes: any[], links: any[]) {
     if (!communityGroups.has(communityId)) {
       communityGroups.set(communityId, []);
     }
-    communityGroups.get(communityId)!.push(nodeId);
+    const group = communityGroups.get(communityId);
+    if (group) {
+      group.push(nodeId);
+    }
   }
   
   return {
@@ -191,43 +242,63 @@ function findCommunities(nodes: any[], links: any[]) {
   };
 }
 
+// Type guards para verificar payload
+function isLayoutPayload(payload: WorkerPayload): payload is { nodes: GraphNode[]; links: GraphLink[]; settings: LayoutSettings } {
+  return 'nodes' in payload && 'links' in payload && 'settings' in payload;
+}
+
+function isAnalysisPayload(payload: WorkerPayload): payload is { nodes: GraphNode[]; links: GraphLink[] } {
+  return 'nodes' in payload && 'links' in payload && !('settings' in payload);
+}
+
 // Message handler
 self.onmessage = function(e: MessageEvent<GraphWorkerMessage>) {
   const { type, payload, id } = e.data;
   
   try {
-    let result: any;
-    
     switch (type) {
-      case 'CALCULATE_LAYOUT':
-        result = calculateForceLayout(payload.nodes, payload.links, payload.settings);
+      case 'CALCULATE_LAYOUT': {
+        if (!isLayoutPayload(payload)) {
+          throw new Error('Invalid payload for CALCULATE_LAYOUT');
+        }
+        const result = calculateForceLayout(payload.nodes, payload.links, payload.settings);
         self.postMessage({
           type: 'LAYOUT_CALCULATED',
-          payload: result,
+          payload: { nodes: result, links: payload.links, settings: payload.settings },
           id
         } as GraphWorkerResponse);
         break;
+      }
         
-      case 'ANALYZE_NETWORK':
-        result = analyzeNetwork(payload.nodes, payload.links);
+      case 'ANALYZE_NETWORK': {
+        if (!isAnalysisPayload(payload)) {
+          throw new Error('Invalid payload for ANALYZE_NETWORK');
+        }
+        const result = analyzeNetwork(payload.nodes, payload.links);
         self.postMessage({
           type: 'NETWORK_ANALYZED',
           payload: result,
           id
         } as GraphWorkerResponse);
         break;
+      }
         
-      case 'FIND_COMMUNITIES':
-        result = findCommunities(payload.nodes, payload.links);
+      case 'FIND_COMMUNITIES': {
+        if (!isAnalysisPayload(payload)) {
+          throw new Error('Invalid payload for FIND_COMMUNITIES');
+        }
+        const result = findCommunities(payload.nodes, payload.links);
         self.postMessage({
           type: 'COMMUNITIES_FOUND',
           payload: result,
           id
         } as GraphWorkerResponse);
         break;
+      }
         
-      default:
-        throw new Error(`Unknown message type: ${type}`);
+      default: {
+        throw new Error(`Unknown message type: ${type as string}`);
+      }
     }
   } catch (error) {
     self.postMessage({

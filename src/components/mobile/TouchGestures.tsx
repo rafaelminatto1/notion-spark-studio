@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { motion, useMotionValue, useTransform, PanInfo } from 'framer-motion';
+import type { PanInfo } from 'framer-motion';
+import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { RefreshCw, ArrowLeft, ArrowRight, MoreHorizontal, Heart, Share2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -484,12 +485,12 @@ export const GestureDemo: React.FC = () => {
   return (
     <div className="h-screen bg-gray-50">
       <TouchGestures
-        onSwipeLeft={() => setLastGesture('Swipe Left')}
-        onSwipeRight={() => setLastGesture('Swipe Right')}
-        onSwipeUp={() => setLastGesture('Swipe Up')}
-        onSwipeDown={() => setLastGesture('Swipe Down')}
-        onDoubleTap={() => setLastGesture('Double Tap')}
-        onLongPress={() => setLastGesture('Long Press')}
+        onSwipeLeft={() => { setLastGesture('Swipe Left'); }}
+        onSwipeRight={() => { setLastGesture('Swipe Right'); }}
+        onSwipeUp={() => { setLastGesture('Swipe Up'); }}
+        onSwipeDown={() => { setLastGesture('Swipe Down'); }}
+        onDoubleTap={() => { setLastGesture('Double Tap'); }}
+        onLongPress={() => { setLastGesture('Long Press'); }}
         onPullToRefresh={handleRefresh}
         className="p-4"
       >
@@ -513,7 +514,7 @@ export const GestureDemo: React.FC = () => {
                   label: 'Curtir',
                   icon: Heart,
                   color: 'red',
-                  onAction: () => setLastGesture(`Curtir item ${item}`)
+                  onAction: () => { setLastGesture(`Curtir item ${item}`); }
                 }
               ]}
               rightActions={[
@@ -521,16 +522,16 @@ export const GestureDemo: React.FC = () => {
                   label: 'Compartilhar',
                   icon: Share2,
                   color: 'blue',
-                  onAction: () => setLastGesture(`Compartilhar item ${item}`)
+                  onAction: () => { setLastGesture(`Compartilhar item ${item}`); }
                 },
                 {
                   label: 'Mais',
                   icon: MoreHorizontal,
                   color: 'orange',
-                  onAction: () => setLastGesture(`Mais opções item ${item}`)
+                  onAction: () => { setLastGesture(`Mais opções item ${item}`); }
                 }
               ]}
-              onSwipeComplete={(direction) => setLastGesture(`Swipe ${direction} completo`)}
+              onSwipeComplete={(direction) => { setLastGesture(`Swipe ${direction} completo`); }}
               className="bg-white rounded-lg"
             >
               <div className="p-4">

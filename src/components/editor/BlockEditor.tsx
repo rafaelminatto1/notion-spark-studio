@@ -1,7 +1,8 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Plus, GripVertical, MoreHorizontal, Type, Image, List, Hash, Quote, Code, Calendar, Users, FileText, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import type { DropResult } from '@hello-pangea/dnd';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
 export interface Block {
   id: string;
@@ -190,7 +191,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
     ));
   }, []);
 
-  const addBlock = useCallback((type: BlockType, afterId?: string, content: string = '') => {
+  const addBlock = useCallback((type: BlockType, afterId?: string, content = '') => {
     const newBlock: Block = {
       id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       type,
@@ -312,7 +313,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => { document.removeEventListener('mousedown', handleClickOutside); };
   }, []);
 
   // Notify parent of changes
@@ -345,9 +346,9 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
                       <BlockComponent
                         block={block}
                         dragHandleProps={provided.dragHandleProps}
-                        onUpdate={(updates) => updateBlock(block.id, updates)}
-                        onKeyDown={(e) => handleKeyDown(e, block.id)}
-                        onDelete={() => deleteBlock(block.id)}
+                        onUpdate={(updates) => { updateBlock(block.id, updates); }}
+                        onKeyDown={(e) => { handleKeyDown(e, block.id); }}
+                        onDelete={() => { deleteBlock(block.id); }}
                         placeholder={index === 0 ? placeholder : "Digite algo..."}
                       />
                     </div>
@@ -371,7 +372,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
               type="text"
               placeholder="Buscar comandos..."
               value={commandQuery}
-              onChange={(e) => setCommandQuery(e.target.value)}
+              onChange={(e) => { setCommandQuery(e.target.value); }}
               className="w-full px-3 py-2 text-sm bg-transparent border-none outline-none placeholder:text-slate-400"
               autoFocus
             />
@@ -382,7 +383,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
               filteredCommands.map((command) => (
                 <button
                   key={command.id}
-                  onClick={() => handleCommandSelect(command)}
+                  onClick={() => { handleCommandSelect(command); }}
                   className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-left"
                 >
                   <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center">

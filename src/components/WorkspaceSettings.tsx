@@ -100,7 +100,7 @@ export const WorkspaceSettings: React.FC = () => {
                     max={24}
                     step={1}
                     value={[currentWorkspace.settings.fontSize]}
-                    onValueChange={(value) => handleSettingChange('fontSize', value[0])}
+                    onValueChange={(value) => { handleSettingChange('fontSize', value[0]); }}
                     className="w-full"
                   />
                   <span className="text-sm text-muted-foreground">
@@ -116,7 +116,7 @@ export const WorkspaceSettings: React.FC = () => {
                     max={2.0}
                     step={0.1}
                     value={[currentWorkspace.settings.lineHeight]}
-                    onValueChange={(value) => handleSettingChange('lineHeight', value[0])}
+                    onValueChange={(value) => { handleSettingChange('lineHeight', value[0]); }}
                     className="w-full"
                   />
                   <span className="text-sm text-muted-foreground">
@@ -131,7 +131,7 @@ export const WorkspaceSettings: React.FC = () => {
                   <Switch
                     id="autoSave"
                     checked={currentWorkspace.settings.autoSave}
-                    onCheckedChange={(checked) => handleSettingChange('autoSave', checked)}
+                    onCheckedChange={(checked) => { handleSettingChange('autoSave', checked); }}
                   />
                 </div>
 
@@ -140,7 +140,7 @@ export const WorkspaceSettings: React.FC = () => {
                   <Switch
                     id="showLineNumbers"
                     checked={currentWorkspace.settings.showLineNumbers}
-                    onCheckedChange={(checked) => handleSettingChange('showLineNumbers', checked)}
+                    onCheckedChange={(checked) => { handleSettingChange('showLineNumbers', checked); }}
                   />
                 </div>
 
@@ -149,7 +149,7 @@ export const WorkspaceSettings: React.FC = () => {
                   <Switch
                     id="wordWrap"
                     checked={currentWorkspace.settings.wordWrap}
-                    onCheckedChange={(checked) => handleSettingChange('wordWrap', checked)}
+                    onCheckedChange={(checked) => { handleSettingChange('wordWrap', checked); }}
                   />
                 </div>
 
@@ -158,7 +158,7 @@ export const WorkspaceSettings: React.FC = () => {
                   <Switch
                     id="minimap"
                     checked={currentWorkspace.settings.minimap}
-                    onCheckedChange={(checked) => handleSettingChange('minimap', checked)}
+                    onCheckedChange={(checked) => { handleSettingChange('minimap', checked); }}
                   />
                 </div>
 
@@ -167,7 +167,7 @@ export const WorkspaceSettings: React.FC = () => {
                   <Switch
                     id="animations"
                     checked={currentWorkspace.settings.animations}
-                    onCheckedChange={(checked) => handleSettingChange('animations', checked)}
+                    onCheckedChange={(checked) => { handleSettingChange('animations', checked); }}
                   />
                 </div>
 
@@ -176,7 +176,7 @@ export const WorkspaceSettings: React.FC = () => {
                   <Switch
                     id="compactMode"
                     checked={currentWorkspace.settings.compactMode}
-                    onCheckedChange={(checked) => handleSettingChange('compactMode', checked)}
+                    onCheckedChange={(checked) => { handleSettingChange('compactMode', checked); }}
                   />
                 </div>
               </div>
@@ -185,7 +185,7 @@ export const WorkspaceSettings: React.FC = () => {
                 <Label htmlFor="sidebarPosition">Posição da Sidebar</Label>
                 <Select
                   value={currentWorkspace.settings.sidebarPosition}
-                  onValueChange={(value) => handleSettingChange('sidebarPosition', value)}
+                  onValueChange={(value) => { handleSettingChange('sidebarPosition', value); }}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -220,7 +220,7 @@ export const WorkspaceSettings: React.FC = () => {
                     </div>
                     <Switch
                       checked={panel.isVisible}
-                      onCheckedChange={(checked) => updatePanelVisibility(panel.id, checked)}
+                      onCheckedChange={(checked) => { updatePanelVisibility(panel.id, checked); }}
                     />
                   </div>
                 ))}
@@ -257,7 +257,7 @@ export const WorkspaceSettings: React.FC = () => {
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => handleEditTheme(customTheme)}
+                          onClick={() => { handleEditTheme(customTheme); }}
                         >
                           <Edit className="h-4 w-4 mr-2" />
                           Editar
@@ -279,7 +279,7 @@ export const WorkspaceSettings: React.FC = () => {
                     <Button 
                       variant="outline" 
                       size="sm"
-                      onClick={() => handleEditTheme()}
+                      onClick={() => { handleEditTheme(); }}
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       Novo Tema
@@ -319,7 +319,7 @@ export const WorkspaceSettings: React.FC = () => {
                             <Button 
                               variant="ghost" 
                               size="sm"
-                              onClick={() => setCustomTheme(theme)}
+                              onClick={() => { setCustomTheme(theme); }}
                             >
                               Aplicar
                             </Button>
@@ -327,7 +327,7 @@ export const WorkspaceSettings: React.FC = () => {
                           <Button 
                             variant="ghost" 
                             size="sm"
-                            onClick={() => handleEditTheme(theme)}
+                            onClick={() => { handleEditTheme(theme); }}
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -368,7 +368,7 @@ export const WorkspaceSettings: React.FC = () => {
                   </div>
                   <Switch
                     checked={currentWorkspace.settings.animations}
-                    onCheckedChange={(checked) => handleSettingChange('animations', checked)}
+                    onCheckedChange={(checked) => { handleSettingChange('animations', checked); }}
                   />
                 </div>
 
@@ -405,7 +405,7 @@ export const WorkspaceSettings: React.FC = () => {
 
       <ThemeEditor
         isOpen={isThemeEditorOpen}
-        onClose={() => setIsThemeEditorOpen(false)}
+        onClose={() => { setIsThemeEditorOpen(false); }}
         selectedTheme={editingTheme}
       />
     </div>

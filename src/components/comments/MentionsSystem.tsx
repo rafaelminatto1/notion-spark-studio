@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useUsers } from '@/hooks/useUsers';
-import { CommentMention } from '@/types/comments';
+import type { CommentMention } from '@/types/comments';
 import { Avatar } from '@/components/ui/avatar';
 import { Command } from '@/components/ui/command';
 
@@ -80,9 +80,9 @@ export const MentionsSystem: React.FC<MentionsSystemProps> = ({
     const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
 
     if (mentionMatch) {
-      const newText = textBeforeCursor.slice(0, -mentionMatch[0].length) +
-        `@[${user.name}](${user.id})` +
-        textAfterCursor;
+      const newText = `${textBeforeCursor.slice(0, -mentionMatch[0].length) 
+        }@[${user.name}](${user.id})${ 
+        textAfterCursor}`;
 
       onChange(newText, []);
       setShowMentions(false);
@@ -151,7 +151,7 @@ export const MentionsSystem: React.FC<MentionsSystemProps> = ({
                 className={`p-2 flex items-center space-x-2 cursor-pointer hover:bg-gray-100 ${
                   index === selectedMentionIndex ? 'bg-gray-100' : ''
                 }`}
-                onClick={() => handleMentionSelect(user)}
+                onClick={() => { handleMentionSelect(user); }}
               >
                 <Avatar src={user.avatar} alt={user.name} size="sm" />
                 <span className="text-sm">{user.name}</span>

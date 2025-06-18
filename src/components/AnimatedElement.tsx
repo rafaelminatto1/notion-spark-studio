@@ -1,7 +1,8 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { useAnimations, AnimationType, AnimationConfig } from '@/hooks/useAnimations';
+import type { AnimationType, AnimationConfig } from '@/hooks/useAnimations';
+import { useAnimations } from '@/hooks/useAnimations';
 
 interface AnimatedElementProps {
   children: React.ReactNode;
@@ -42,7 +43,7 @@ export const AnimatedElement: React.FC<AnimatedElementProps> = ({
         onAnimationEnd?.();
       }, (config.duration || 300) + (config.delay || 0));
 
-      return () => clearTimeout(timeout);
+      return () => { clearTimeout(timeout); };
     }
   }, [trigger, animation, config, hasAnimated, startAnimation, onAnimationStart, onAnimationEnd]);
 
@@ -64,7 +65,7 @@ export const AnimatedElement: React.FC<AnimatedElementProps> = ({
         observer.observe(elementRef.current);
       }
 
-      return () => observer.disconnect();
+      return () => { observer.disconnect(); };
     }
   }, [trigger, animation, config, hasAnimated, startAnimation, onAnimationStart]);
 

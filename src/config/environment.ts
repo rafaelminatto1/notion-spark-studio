@@ -35,7 +35,7 @@ export interface EnvironmentConfig {
 }
 
 // 🚀 CORREÇÃO: Função para obter variáveis de ambiente de forma compatível
-function getEnvVar(key: string, defaultValue: string = ''): string {
+function getEnvVar(key: string, defaultValue = ''): string {
   // Tentar import.meta.env primeiro (Vite)
   if (typeof window !== 'undefined') {
     try {

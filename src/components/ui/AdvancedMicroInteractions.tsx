@@ -105,7 +105,7 @@ export const MicroInteractionsProvider: React.FC<{ children: React.ReactNode }> 
             <ToastNotification 
               key={toast.id} 
               toast={toast}
-              onRemove={() => setToasts(prev => prev.filter(t => t.id !== toast.id))}
+              onRemove={() => { setToasts(prev => prev.filter(t => t.id !== toast.id)); }}
             />
           ))}
         </AnimatePresence>
