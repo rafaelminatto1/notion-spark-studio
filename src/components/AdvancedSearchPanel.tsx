@@ -7,7 +7,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import type { SearchFilters } from '@/hooks/useAdvancedSearch';
+// SearchFilters interface local
+interface SearchFilters {
+  type: string[];
+  tags: string[];
+  author: string[];
+  category: string[];
+  priority: string[];
+}
 import { cn } from '@/lib/utils';
 
 interface AdvancedSearchPanelProps {
@@ -82,7 +89,7 @@ export const AdvancedSearchPanel: React.FC<AdvancedSearchPanelProps> = ({
               <FileText className="h-4 w-4" />
               Tipo
             </label>
-            <Select value={filters.type} onValueChange={(value) => { updateFilter('type', value); }}>
+            <Select value={filters.type[0] || ''} onValueChange={(value) => { updateFilter('type', value); }}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

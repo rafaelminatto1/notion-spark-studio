@@ -12,11 +12,14 @@ export interface FileItem {
   collaborators?: string[];
   created_at?: string;
   updated_at?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
   user_id?: string;
   favorite?: boolean;
   shared?: boolean;
   tags?: string[];
   color?: string;
+  emoji?: string;
 }
 
 export interface Comment {
