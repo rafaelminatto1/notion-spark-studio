@@ -1,521 +1,611 @@
-// Notion Spark Studio - Advanced Service Worker
-// Version: 4.0.0
+// Notion Spark Studio - Service Worker
+// Advanced PWA Service Worker with Offline Sync and Push Notifications
 
-const CACHE_NAME = 'notion-spark-v1';
-const STATIC_CACHE = 'static-v1';
-const DYNAMIC_CACHE = 'dynamic-v1';
-const API_CACHE = 'api-v1';
-const IMAGE_CACHE = 'images-v4.0.0';
+const CACHE_NAME = 'notion-spark-v1.0.0';
+const OFFLINE_URL = '/offline';
+const SYNC_TAG = 'background-sync';
 
-// Recursos críticos para cache imediato
-const CRITICAL_RESOURCES = [
-  '/',
-  '/offline.html',
-  '/manifest.json'
-];
-
-// Estratégias de cache por tipo de recurso
+// Cache strategies
 const CACHE_STRATEGIES = {
-  images: 'cache-first',
-  apis: 'network-first', 
-  chunks: 'stale-while-revalidate',
-  fonts: 'cache-first',
-  static: 'cache-first'
+  CACHE_FIRST: 'cache-first',
+  NETWORK_FIRST: 'network-first', 
+  STALE_WHILE_REVALIDATE: 'stale-while-revalidate',
+  NETWORK_ONLY: 'network-only',
+  CACHE_ONLY: 'cache-only'
 };
 
-// Resource patterns
-const STATIC_RESOURCES = [
+// URLs to cache on install
+const URLS_TO_CACHE = [
   '/',
+  '/offline',
+  '/dashboard',
+  '/app.js',
+  '/app.css',
   '/manifest.json',
-  '/favicon.ico',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png',
-  // Add other static assets
+  '/icon-192x192.png',
+  '/icon-512x512.png'
 ];
 
-const API_PATTERNS = [
-  /\/api\//,
-  /\/trpc\//,
-  /\/auth\//
-];
-
-const IMAGE_PATTERNS = [
-  /\.(?:png|jpg|jpeg|svg|gif|webp|avif)$/i
-];
-
-const FONT_PATTERNS = [
-  /\.(?:woff|woff2|ttf|eot)$/i,
-  /fonts\.googleapis\.com/,
-  /fonts\.gstatic\.com/
-];
-
-// Performance monitoring
-let performanceMetrics = {
-  cacheHits: 0,
-  cacheMisses: 0,
-  networkRequests: 0,
-  errors: 0,
-  avgResponseTime: 0
+// API endpoints for different strategies
+const CACHE_CONFIG = {
+  [CACHE_STRATEGIES.CACHE_FIRST]: [
+    '/static/',
+    '/assets/',
+    '/icons/',
+    '/images/',
+    '.css',
+    '.js',
+    '.woff2',
+    '.woff',
+    '.ttf',
+    '.png',
+    '.jpg',
+    '.jpeg',
+    '.svg',
+    '.webp'
+  ],
+  [CACHE_STRATEGIES.NETWORK_FIRST]: [
+    '/api/user',
+    '/api/settings',
+    '/api/auth'
+  ],
+  [CACHE_STRATEGIES.STALE_WHILE_REVALIDATE]: [
+    '/api/documents',
+    '/api/notes',
+    '/api/workspaces'
+  ],
+  [CACHE_STRATEGIES.NETWORK_ONLY]: [
+    '/api/auth/login',
+    '/api/auth/logout',
+    '/api/sync',
+    '/api/analytics/events'
+  ]
 };
 
-// Advanced cache management
-class CacheManager {
-  static async getCacheStrategy(request) {
-    const url = new URL(request.url);
-    
-    // API requests - Network first with cache fallback
-    if (API_PATTERNS.some(pattern => pattern.test(url.pathname))) {
-      return CACHE_STRATEGIES.apis;
-    }
-    
-    // Images - Cache first with network fallback
-    if (IMAGE_PATTERNS.some(pattern => pattern.test(url.pathname))) {
-      return CACHE_STRATEGIES.images;
-    }
-    
-    // Static resources - Cache first
-    if (STATIC_RESOURCES.includes(url.pathname) || 
-        url.pathname.includes('/_next/static/') ||
-        FONT_PATTERNS.some(pattern => pattern.test(url.href))) {
-      return CACHE_STRATEGIES.static;
-    }
-    
-    // Dynamic content - Stale while revalidate
-    return CACHE_STRATEGIES.chunks;
-  }
+// Offline queue for failed requests
+let offlineQueue = [];
 
-  static getCacheName(request) {
-    const url = new URL(request.url);
-    
-    if (API_PATTERNS.some(pattern => pattern.test(url.pathname))) {
-      return API_CACHE;
-    }
-    
-    if (IMAGE_PATTERNS.some(pattern => pattern.test(url.pathname))) {
-      return IMAGE_CACHE;
-    }
-    
-    if (STATIC_RESOURCES.includes(url.pathname) || 
-        url.pathname.includes('/_next/static/')) {
-      return STATIC_CACHE;
-    }
-    
-    return DYNAMIC_CACHE;
-  }
-
-  static async cleanupOldCaches() {
-    const cacheNames = await caches.keys();
-    const validCaches = [CACHE_NAME, STATIC_CACHE, DYNAMIC_CACHE, API_CACHE, IMAGE_CACHE];
-    
-    return Promise.all(
-      cacheNames
-        .filter(cacheName => !validCaches.includes(cacheName))
-        .map(cacheName => caches.delete(cacheName))
-    );
-  }
-
-  static async limitCacheSize(cacheName, maxItems) {
-    const cache = await caches.open(cacheName);
-    const keys = await cache.keys();
-    
-    if (keys.length > maxItems) {
-      // Remove oldest entries
-      const keysToDelete = keys.slice(0, keys.length - maxItems);
-      await Promise.all(keysToDelete.map(key => cache.delete(key)));
-    }
-  }
-}
-
-// Network strategies implementation
-class NetworkStrategies {
-  static async cacheFirst(request, cacheName) {
-    const startTime = performance.now();
-    
-    try {
-      const cache = await caches.open(cacheName);
-      const cachedResponse = await cache.match(request);
-      
-      if (cachedResponse) {
-        performanceMetrics.cacheHits++;
-        return cachedResponse;
-      }
-      
-      const networkResponse = await fetch(request);
-      
-      if (networkResponse.ok) {
-        cache.put(request, networkResponse.clone());
-      }
-      
-      performanceMetrics.networkRequests++;
-      return networkResponse;
-      
-    } catch (error) {
-      performanceMetrics.errors++;
-      // Try to serve from cache as fallback
-      const cache = await caches.open(cacheName);
-      const cachedResponse = await cache.match(request);
-      return cachedResponse || new Response('Offline', { status: 503 });
-    } finally {
-      const endTime = performance.now();
-      this.updateResponseTime(endTime - startTime);
-    }
-  }
-
-  static async networkFirst(request, cacheName) {
-    const startTime = performance.now();
-    
-    try {
-      const networkResponse = await fetch(request);
-      
-      if (networkResponse.ok) {
-        const cache = await caches.open(cacheName);
-        cache.put(request, networkResponse.clone());
-      }
-      
-      performanceMetrics.networkRequests++;
-      return networkResponse;
-      
-    } catch (error) {
-      performanceMetrics.errors++;
-      // Fallback to cache
-      const cache = await caches.open(cacheName);
-      const cachedResponse = await cache.match(request);
-      
-      if (cachedResponse) {
-        performanceMetrics.cacheHits++;
-        return cachedResponse;
-      }
-      
-      return new Response('Offline', { status: 503 });
-    } finally {
-      const endTime = performance.now();
-      this.updateResponseTime(endTime - startTime);
-    }
-  }
-
-  static async staleWhileRevalidate(request, cacheName) {
-    const startTime = performance.now();
-    const cache = await caches.open(cacheName);
-    
-    // Get from cache immediately
-    const cachedResponse = await cache.match(request);
-    
-    // Update cache in background
-    const networkUpdate = fetch(request).then(response => {
-      if (response.ok) {
-        cache.put(request, response.clone());
-      }
-      return response;
-    }).catch(() => {
-      performanceMetrics.errors++;
-    });
-    
-    performanceMetrics.networkRequests++;
-    
-    if (cachedResponse) {
-      performanceMetrics.cacheHits++;
-      // Return cached version immediately, update in background
-      return cachedResponse;
-    }
-    
-    // Wait for network if no cache
-    try {
-      const endTime = performance.now();
-      this.updateResponseTime(endTime - startTime);
-      return await networkUpdate;
-    } catch {
-      return new Response('Offline', { status: 503 });
-    }
-  }
-
-  static updateResponseTime(responseTime) {
-    performanceMetrics.avgResponseTime = 
-      (performanceMetrics.avgResponseTime + responseTime) / 2;
-  }
-}
-
-// Background sync for offline actions
-class BackgroundSync {
-  static async queueRequest(request, data) {
-    const queue = await this.getQueue();
-    queue.push({ request: request.url, data, timestamp: Date.now() });
-    await this.saveQueue(queue);
-  }
-
-  static async getQueue() {
-    try {
-      const cache = await caches.open(DYNAMIC_CACHE);
-      const response = await cache.match('/offline-queue');
-      if (response) {
-        return await response.json();
-      }
-    } catch (error) {
-      console.warn('Error reading offline queue:', error);
-    }
-    return [];
-  }
-
-  static async saveQueue(queue) {
-    try {
-      const cache = await caches.open(DYNAMIC_CACHE);
-      const response = new Response(JSON.stringify(queue));
-      await cache.put('/offline-queue', response);
-    } catch (error) {
-      console.warn('Error saving offline queue:', error);
-    }
-  }
-
-  static async processQueue() {
-    const queue = await this.getQueue();
-    const processedItems = [];
-    
-    for (const item of queue) {
-      try {
-        await fetch(item.request, {
-          method: 'POST',
-          body: JSON.stringify(item.data),
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-        processedItems.push(item);
-      } catch (error) {
-        // Keep item in queue if it fails
-        console.warn('Failed to sync item:', error);
-      }
-    }
-    
-    // Remove processed items
-    const remainingQueue = queue.filter(item => !processedItems.includes(item));
-    await this.saveQueue(remainingQueue);
-    
-    return processedItems.length;
-  }
-}
-
-// Push notification handler
-class NotificationManager {
-  static async showNotification(data) {
-    const options = {
-      body: data.body || 'Nova notificação',
-      icon: '/icons/icon-192x192.png',
-      badge: '/icons/badge-72x72.png',
-      image: data.image,
-      actions: [
-        { action: 'open', title: 'Abrir' },
-        { action: 'dismiss', title: 'Dispensar' }
-      ],
-      data: data,
-      requireInteraction: data.requireInteraction || false,
-      silent: data.silent || false,
-      vibrate: data.vibrate || [200, 100, 200]
-    };
-
-    return self.registration.showNotification(data.title || 'Notion Spark', options);
-  }
-}
-
-// Install event
+// Install event - cache essential resources
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing...');
+  console.log('[SW] Installing Service Worker...');
   
   event.waitUntil(
-    caches.open(STATIC_CACHE)
-      .then(cache => {
-        console.log('[SW] Caching critical resources');
-        return cache.addAll(CRITICAL_RESOURCES);
+    caches.open(CACHE_NAME)
+      .then((cache) => {
+        console.log('[SW] Caching essential resources');
+        return cache.addAll(URLS_TO_CACHE);
       })
-      .then(() => self.skipWaiting())
+      .then(() => {
+        console.log('[SW] Installation complete');
+        return self.skipWaiting();
+      })
+      .catch((error) => {
+        console.error('[SW] Installation failed:', error);
+      })
   );
 });
 
-// Activate event
+// Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating...');
+  console.log('[SW] Activating Service Worker...');
   
   event.waitUntil(
     caches.keys()
-      .then(cacheNames => {
+      .then((cacheNames) => {
         return Promise.all(
-          cacheNames.map(cacheName => {
-            // Limpar caches antigos
-            if (cacheName !== CACHE_NAME && 
-                cacheName !== STATIC_CACHE && 
-                cacheName !== DYNAMIC_CACHE &&
-                cacheName !== API_CACHE) {
+          cacheNames.map((cacheName) => {
+            if (cacheName !== CACHE_NAME) {
               console.log('[SW] Deleting old cache:', cacheName);
               return caches.delete(cacheName);
             }
           })
         );
       })
-      .then(() => self.clients.claim())
+      .then(() => {
+        console.log('[SW] Activation complete');
+        return self.clients.claim();
+      })
+      .catch((error) => {
+        console.error('[SW] Activation failed:', error);
+      })
   );
 });
 
-// Fetch event with intelligent caching
+// Fetch event - implement caching strategies
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
   
-  // Determinar estratégia de cache
-  let strategy = 'network-first';
-  let cacheName = DYNAMIC_CACHE;
-  
-  if (request.destination === 'image') {
-    strategy = CACHE_STRATEGIES.images;
-    cacheName = STATIC_CACHE;
-  } else if (url.pathname.startsWith('/api/')) {
-    strategy = CACHE_STRATEGIES.apis;
-    cacheName = API_CACHE;
-  } else if (url.pathname.includes('chunk') || url.pathname.includes('.js')) {
-    strategy = CACHE_STRATEGIES.chunks;
-    cacheName = STATIC_CACHE;
-  } else if (url.pathname.includes('.woff') || url.pathname.includes('.woff2')) {
-    strategy = CACHE_STRATEGIES.fonts;
-    cacheName = STATIC_CACHE;
+  // Skip non-GET requests for caching
+  if (request.method !== 'GET') {
+    // Handle offline POST/PUT/DELETE requests
+    if (!navigator.onLine) {
+      handleOfflineRequest(event);
+      return;
+    }
+    return;
   }
+
+  // Determine cache strategy
+  const strategy = getCacheStrategy(url.pathname);
   
-  event.respondWith(handleRequest(request, strategy, cacheName));
+  event.respondWith(
+    handleRequest(request, strategy)
+      .catch((error) => {
+        console.error('[SW] Fetch failed:', error);
+        return getOfflineFallback(request);
+      })
+  );
 });
 
-// Background sync event
-self.addEventListener('sync', event => {
-  console.log('Background sync triggered:', event.tag);
-  
-  if (event.tag === 'background-sync') {
-    event.waitUntil(BackgroundSync.processQueue());
-  }
-});
-
-// Push notification event
-self.addEventListener('push', event => {
-  console.log('Push notification received:', event);
-  
-  let data = {};
-  
-  if (event.data) {
-    try {
-      data = event.data.json();
-    } catch (error) {
-      data = { title: 'Notion Spark', body: event.data.text() };
+// Determine appropriate cache strategy for URL
+function getCacheStrategy(pathname) {
+  for (const [strategy, patterns] of Object.entries(CACHE_CONFIG)) {
+    if (patterns.some(pattern => pathname.includes(pattern))) {
+      return strategy;
     }
   }
   
-  event.waitUntil(NotificationManager.showNotification(data));
+  // Default strategy for navigation requests
+  if (pathname === '/' || pathname.startsWith('/app/')) {
+    return CACHE_STRATEGIES.NETWORK_FIRST;
+  }
+  
+  return CACHE_STRATEGIES.STALE_WHILE_REVALIDATE;
+}
+
+// Handle request based on strategy
+async function handleRequest(request, strategy) {
+  const cache = await caches.open(CACHE_NAME);
+  
+  switch (strategy) {
+    case CACHE_STRATEGIES.CACHE_FIRST:
+      return handleCacheFirst(request, cache);
+      
+    case CACHE_STRATEGIES.NETWORK_FIRST:
+      return handleNetworkFirst(request, cache);
+      
+    case CACHE_STRATEGIES.STALE_WHILE_REVALIDATE:
+      return handleStaleWhileRevalidate(request, cache);
+      
+    case CACHE_STRATEGIES.NETWORK_ONLY:
+      return fetch(request);
+      
+    case CACHE_STRATEGIES.CACHE_ONLY:
+      return cache.match(request);
+      
+    default:
+      return handleNetworkFirst(request, cache);
+  }
+}
+
+// Cache First Strategy
+async function handleCacheFirst(request, cache) {
+  const cachedResponse = await cache.match(request);
+  
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+  
+  try {
+    const networkResponse = await fetch(request);
+    
+    if (networkResponse.status === 200) {
+      cache.put(request, networkResponse.clone());
+    }
+    
+    return networkResponse;
+  } catch (error) {
+    throw new Error(`Network failed and no cache available: ${error.message}`);
+  }
+}
+
+// Network First Strategy
+async function handleNetworkFirst(request, cache) {
+  try {
+    const networkResponse = await fetch(request);
+    
+    if (networkResponse.status === 200) {
+      cache.put(request, networkResponse.clone());
+    }
+    
+    return networkResponse;
+  } catch (error) {
+    const cachedResponse = await cache.match(request);
+    
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+    
+    throw new Error(`Network failed and no cache available: ${error.message}`);
+  }
+}
+
+// Stale While Revalidate Strategy
+async function handleStaleWhileRevalidate(request, cache) {
+  const cachedResponse = cache.match(request);
+  
+  const networkResponsePromise = fetch(request)
+    .then((networkResponse) => {
+      if (networkResponse.status === 200) {
+        cache.put(request, networkResponse.clone());
+      }
+      return networkResponse;
+    })
+    .catch((error) => {
+      console.warn('[SW] Network update failed:', error);
+    });
+  
+  return cachedResponse || networkResponsePromise;
+}
+
+// Handle offline requests (POST/PUT/DELETE)
+function handleOfflineRequest(event) {
+  const { request } = event;
+  
+  // Queue the request for later sync
+  const requestData = {
+    id: Date.now() + Math.random().toString(36),
+    url: request.url,
+    method: request.method,
+    headers: [...request.headers.entries()],
+    body: request.body,
+    timestamp: Date.now()
+  };
+  
+  offlineQueue.push(requestData);
+  
+  // Store in IndexedDB for persistence
+  storeOfflineRequest(requestData);
+  
+  // Return a synthetic response
+  event.respondWith(
+    new Response(
+      JSON.stringify({
+        success: false,
+        message: 'Request queued for sync when online',
+        requestId: requestData.id
+      }),
+      {
+        status: 202,
+        statusText: 'Accepted',
+        headers: { 'Content-Type': 'application/json' }
+      }
+    )
+  );
+  
+  // Register background sync
+  if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
+    self.registration.sync.register(SYNC_TAG);
+  }
+}
+
+// Store offline request in IndexedDB
+async function storeOfflineRequest(requestData) {
+  try {
+    const db = await openOfflineDB();
+    const transaction = db.transaction(['requests'], 'readwrite');
+    const store = transaction.objectStore('requests');
+    await store.add(requestData);
+    console.log('[SW] Offline request stored:', requestData.id);
+  } catch (error) {
+    console.error('[SW] Failed to store offline request:', error);
+  }
+}
+
+// Open IndexedDB for offline storage
+function openOfflineDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('notion-spark-offline', 1);
+    
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
+    
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      
+      if (!db.objectStoreNames.contains('requests')) {
+        const store = db.createObjectStore('requests', { keyPath: 'id' });
+        store.createIndex('timestamp', 'timestamp');
+      }
+    };
+  });
+}
+
+// Get offline fallback response
+async function getOfflineFallback(request) {
+  const cache = await caches.open(CACHE_NAME);
+  
+  // Try to get cached version first
+  const cachedResponse = await cache.match(request);
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+  
+  // Check if it's a navigation request
+  if (request.mode === 'navigate') {
+    const offlineResponse = await cache.match(OFFLINE_URL);
+    if (offlineResponse) {
+      return offlineResponse;
+    }
+  }
+  
+  // Return generic offline response
+  return new Response(
+    JSON.stringify({
+      error: 'Offline',
+      message: 'You are currently offline. Please check your connection.',
+      timestamp: new Date().toISOString()
+    }),
+    {
+      status: 503,
+      statusText: 'Service Unavailable',
+      headers: { 'Content-Type': 'application/json' }
+    }
+  );
+}
+
+// Background Sync event
+self.addEventListener('sync', (event) => {
+  console.log('[SW] Background sync triggered:', event.tag);
+  
+  if (event.tag === SYNC_TAG) {
+    event.waitUntil(syncOfflineRequests());
+  }
+});
+
+// Sync offline requests when back online
+async function syncOfflineRequests() {
+  try {
+    const db = await openOfflineDB();
+    const transaction = db.transaction(['requests'], 'readwrite');
+    const store = transaction.objectStore('requests');
+    const requests = await store.getAll();
+    
+    console.log(`[SW] Syncing ${requests.length} offline requests`);
+    
+    for (const requestData of requests) {
+      try {
+        // Reconstruct and send the request
+        const response = await fetch(requestData.url, {
+          method: requestData.method,
+          headers: new Headers(requestData.headers),
+          body: requestData.body
+        });
+        
+        if (response.ok) {
+          // Remove from offline storage
+          await store.delete(requestData.id);
+          console.log('[SW] Synced offline request:', requestData.id);
+          
+          // Notify client about successful sync
+          self.clients.matchAll().then(clients => {
+            clients.forEach(client => {
+              client.postMessage({
+                type: 'SYNC_SUCCESS',
+                requestId: requestData.id,
+                response: response.status
+              });
+            });
+          });
+        } else {
+          console.warn('[SW] Sync failed for request:', requestData.id, response.status);
+        }
+      } catch (error) {
+        console.error('[SW] Failed to sync request:', requestData.id, error);
+      }
+    }
+  } catch (error) {
+    console.error('[SW] Background sync failed:', error);
+  }
+}
+
+// Push event for notifications
+self.addEventListener('push', (event) => {
+  console.log('[SW] Push message received');
+  
+  const options = {
+    icon: '/icon-192x192.png',
+    badge: '/badge-72x72.png',
+    vibrate: [100, 50, 100],
+    data: {
+      dateOfArrival: Date.now(),
+      primaryKey: '1'
+    },
+    actions: [
+      {
+        action: 'explore',
+        title: 'Open App',
+        icon: '/icons/checkmark.png'
+      },
+      {
+        action: 'close',
+        title: 'Close',
+        icon: '/icons/xmark.png'
+      }
+    ]
+  };
+  
+  let notificationData = {
+    title: 'Notion Spark Studio',
+    body: 'You have new updates!',
+    ...options
+  };
+  
+  if (event.data) {
+    try {
+      const data = event.data.json();
+      notificationData = {
+        ...notificationData,
+        title: data.title || notificationData.title,
+        body: data.body || notificationData.body,
+        icon: data.icon || notificationData.icon,
+        image: data.image,
+        data: { ...notificationData.data, ...data.data }
+      };
+    } catch (error) {
+      console.error('[SW] Error parsing push data:', error);
+    }
+  }
+  
+  event.waitUntil(
+    self.registration.showNotification(notificationData.title, notificationData)
+  );
 });
 
 // Notification click event
-self.addEventListener('notificationclick', event => {
-  console.log('Notification clicked:', event);
+self.addEventListener('notificationclick', (event) => {
+  console.log('[SW] Notification click received');
   
   event.notification.close();
   
-  if (event.action === 'dismiss') {
+  const action = event.action;
+  const notification = event.notification;
+  
+  if (action === 'close') {
     return;
   }
   
-  const urlToOpen = event.notification.data?.url || '/';
+  // Default action or 'explore' action
+  const urlToOpen = notification.data?.url || '/dashboard';
   
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true })
-      .then(clientList => {
-        // Try to focus existing window
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+      .then((clientList) => {
+        // Check if app is already open
         for (const client of clientList) {
-          if (client.url === urlToOpen && 'focus' in client) {
-            return client.focus();
+          if (client.url.includes(self.location.origin) && 'focus' in client) {
+            client.focus();
+            client.navigate(urlToOpen);
+            return;
           }
         }
         
         // Open new window
-        if (clients.openWindow) {
-          return clients.openWindow(urlToOpen);
+        if (self.clients.openWindow) {
+          return self.clients.openWindow(urlToOpen);
         }
       })
   );
 });
 
-// Message handling for communication with main app
+// Message event for communication with main app
 self.addEventListener('message', (event) => {
-  const { type, data } = event.data;
+  console.log('[SW] Message received:', event.data);
+  
+  const { type, payload } = event.data;
   
   switch (type) {
-    case 'CACHE_STRATEGY':
-      updateCacheStrategies(data.strategy);
+    case 'SKIP_WAITING':
+      self.skipWaiting();
       break;
       
-    case 'PRELOAD_RESOURCES':
-      preloadResources(data.resources);
+    case 'GET_VERSION':
+      event.ports[0].postMessage({ version: CACHE_NAME });
       break;
       
     case 'CLEAR_CACHE':
-      clearAllCaches();
+      clearAllCaches().then(() => {
+        event.ports[0].postMessage({ success: true });
+      });
       break;
+      
+    case 'CACHE_URLS':
+      cacheSpecificUrls(payload.urls).then(() => {
+        event.ports[0].postMessage({ success: true });
+      });
+      break;
+      
+    case 'GET_OFFLINE_QUEUE':
+      getOfflineQueueStatus().then((status) => {
+        event.ports[0].postMessage(status);
+      });
+      break;
+      
+    default:
+      console.warn('[SW] Unknown message type:', type);
   }
 });
 
-// Periodic cache cleanup
-setInterval(() => {
-  // Limit cache sizes
-  CacheManager.limitCacheSize(DYNAMIC_CACHE, 50);
-  CacheManager.limitCacheSize(API_CACHE, 100);
-  CacheManager.limitCacheSize(IMAGE_CACHE, 200);
-}, 60000); // Every minute
-
-// Performance metrics reset
-setInterval(() => {
-  performanceMetrics = {
-    cacheHits: 0,
-    cacheMisses: 0,
-    networkRequests: 0,
-    errors: 0,
-    avgResponseTime: 0
-  };
-}, 3600000); // Every hour
-
-console.log('Notion Spark Service Worker v4.0.0 loaded');
-
-async function handleRequest(request, strategy, cacheName) {
-  switch (strategy) {
-    case 'cache-first':
-      return NetworkStrategies.cacheFirst(request, cacheName);
-      
-    case 'network-first':
-      return NetworkStrategies.networkFirst(request, cacheName);
-      
-    case 'stale-while-revalidate':
-      return NetworkStrategies.staleWhileRevalidate(request, cacheName);
-      
-    default:
-      return fetch(request);
-  }
-}
-
-function updateCacheStrategies(newStrategies) {
-  Object.assign(CACHE_STRATEGIES, newStrategies);
-  console.log('[SW] Cache strategies updated:', CACHE_STRATEGIES);
-}
-
-async function preloadResources(resources) {
-  console.log('[SW] Preloading resources:', resources);
-  
-  const cache = await caches.open(STATIC_CACHE);
-  
-  for (const resource of resources) {
-    try {
-      const response = await fetch(resource);
-      if (response.ok) {
-        await cache.put(resource, response);
-        console.log('[SW] Preloaded:', resource);
-      }
-    } catch (error) {
-      console.warn('[SW] Failed to preload:', resource, error);
-    }
-  }
-}
-
+// Clear all caches
 async function clearAllCaches() {
   const cacheNames = await caches.keys();
-  await Promise.all(cacheNames.map(name => caches.delete(name)));
-  console.log('[SW] All caches cleared');
-} 
+  
+  return Promise.all(
+    cacheNames.map(cacheName => caches.delete(cacheName))
+  );
+}
+
+// Cache specific URLs
+async function cacheSpecificUrls(urls) {
+  const cache = await caches.open(CACHE_NAME);
+  
+  return cache.addAll(urls);
+}
+
+// Get offline queue status
+async function getOfflineQueueStatus() {
+  try {
+    const db = await openOfflineDB();
+    const transaction = db.transaction(['requests'], 'readonly');
+    const store = transaction.objectStore('requests');
+    const requests = await store.getAll();
+    
+    return {
+      totalRequests: requests.length,
+      pendingRequests: requests.filter(r => !r.synced).length,
+      oldestRequest: requests.length > 0 ? Math.min(...requests.map(r => r.timestamp)) : null
+    };
+  } catch (error) {
+    console.error('[SW] Failed to get offline queue status:', error);
+    return { totalRequests: 0, pendingRequests: 0, oldestRequest: null };
+  }
+}
+
+// Periodic sync for better reliability
+self.addEventListener('periodicsync', (event) => {
+  if (event.tag === 'background-sync') {
+    event.waitUntil(syncOfflineRequests());
+  }
+});
+
+// Error handling
+self.addEventListener('error', (event) => {
+  console.error('[SW] Service Worker error:', event.error);
+});
+
+self.addEventListener('unhandledrejection', (event) => {
+  console.error('[SW] Unhandled promise rejection:', event.reason);
+});
+
+console.log('[SW] Service Worker loaded successfully');
+
+// Service Worker Analytics
+function trackEvent(eventName, data = {}) {
+  self.clients.matchAll().then(clients => {
+    clients.forEach(client => {
+      client.postMessage({
+        type: 'SW_ANALYTICS',
+        event: eventName,
+        data: {
+          ...data,
+          timestamp: Date.now(),
+          swVersion: CACHE_NAME
+        }
+      });
+    });
+  });
+}
+
+// Track cache hits and misses
+const originalCacheMatch = Cache.prototype.match;
+Cache.prototype.match = function(request, options) {
+  return originalCacheMatch.call(this, request, options).then(response => {
+    if (response) {
+      trackEvent('cache_hit', { url: request.url });
+    } else {
+      trackEvent('cache_miss', { url: request.url });
+    }
+    return response;
+  });
+}; 

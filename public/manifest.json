@@ -1,53 +1,73 @@
 {
-  "name": "Notion Spark Studio",
-  "short_name": "Spark Studio",
-  "description": "Plataforma avançada de notas e produtividade com IA integrada",
+  "name": "Notion Spark Studio - Enterprise Productivity Platform",
+  "short_name": "NotionSpark",
+  "description": "AI-powered enterprise productivity platform with real-time collaboration, advanced analytics, and mobile-first design. Transform your workflow with intelligent automation and seamless synchronization.",
   "version": "1.0.0",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "portrait-primary",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "any",
   "theme_color": "#3B82F6",
   "background_color": "#FFFFFF",
-  "lang": "pt-BR",
+  "lang": "en-US",
   "dir": "ltr",
   "scope": "/",
-  "categories": ["productivity", "office", "education"],
+  "categories": [
+    "productivity",
+    "business",
+    "collaboration",
+    "office",
+    "utilities"
+  ],
   "prefer_related_applications": false,
   "shortcuts": [
     {
-      "name": "Nova Nota",
-      "short_name": "Nova Nota",
-      "description": "Criar uma nova nota rapidamente",
-      "url": "/new-note",
+      "name": "New Document",
+      "short_name": "New Doc",
+      "description": "Create a new document",
+      "url": "/new?type=document",
       "icons": [
         {
-          "src": "/icons/shortcut-new-note.png",
+          "src": "/shortcuts/new-document-96x96.png",
           "sizes": "96x96",
           "type": "image/png"
         }
       ]
     },
     {
-      "name": "Buscar",
-      "short_name": "Buscar",
-      "description": "Buscar nas suas notas",
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Open dashboard",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/shortcuts/dashboard-96x96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Search",
+      "short_name": "Search",
+      "description": "Search documents",
       "url": "/search",
       "icons": [
         {
-          "src": "/icons/shortcut-search.png",
+          "src": "/shortcuts/search-96x96.png",
           "sizes": "96x96",
           "type": "image/png"
         }
       ]
     },
     {
-      "name": "Analytics",
-      "short_name": "Analytics",
-      "description": "Ver suas estatísticas",
-      "url": "/analytics",
+      "name": "Offline Sync",
+      "short_name": "Sync",
+      "description": "Sync offline changes",
+      "url": "/sync",
       "icons": [
         {
-          "src": "/icons/shortcut-analytics.png",
+          "src": "/shortcuts/sync-96x96.png",
           "sizes": "96x96",
           "type": "image/png"
         }
@@ -56,92 +76,111 @@
   ],
   "icons": [
     {
-      "src": "/icons/icon-72x72.png",
+      "src": "/icon-72x72.png",
       "sizes": "72x72",
       "type": "image/png",
       "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-96x96.png",
+      "src": "/icon-96x96.png",
       "sizes": "96x96",
       "type": "image/png",
       "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-128x128.png",
+      "src": "/icon-128x128.png",
       "sizes": "128x128",
       "type": "image/png",
       "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-144x144.png",
+      "src": "/icon-144x144.png",
       "sizes": "144x144",
       "type": "image/png",
       "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-152x152.png",
+      "src": "/icon-152x152.png",
       "sizes": "152x152",
       "type": "image/png",
       "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-192x192.png",
+      "src": "/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-384x384.png",
+      "src": "/icon-384x384.png",
       "sizes": "384x384",
       "type": "image/png",
       "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-512x512.png",
+      "src": "/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "screenshots": [
     {
-      "src": "/screenshots/desktop-1.png",
+      "src": "/screenshots/mobile-dashboard-375x812.png",
+      "sizes": "375x812",
       "type": "image/png",
-      "sizes": "1280x720",
-      "form_factor": "wide",
-      "label": "Interface principal do Notion Spark Studio"
+      "platform": "narrow",
+      "label": "Mobile Dashboard - Quick access to all your productivity tools"
     },
     {
-      "src": "/screenshots/desktop-2.png", 
+      "src": "/screenshots/mobile-editor-375x812.png",
+      "sizes": "375x812",
       "type": "image/png",
-      "sizes": "1280x720",
-      "form_factor": "wide",
-      "label": "Editor de notas com colaboração em tempo real"
+      "platform": "narrow",
+      "label": "Mobile Editor - Write and edit documents on the go"
     },
     {
-      "src": "/screenshots/mobile-1.png",
-      "type": "image/png", 
-      "sizes": "360x640",
-      "form_factor": "narrow",
-      "label": "Interface mobile adaptativa"
+      "src": "/screenshots/mobile-collaboration-375x812.png",
+      "sizes": "375x812",
+      "type": "image/png",
+      "platform": "narrow",
+      "label": "Real-time Collaboration - Work together seamlessly"
     },
     {
-      "src": "/screenshots/mobile-2.png",
+      "src": "/screenshots/desktop-dashboard-1920x1080.png",
+      "sizes": "1920x1080",
       "type": "image/png",
-      "sizes": "360x640", 
-      "form_factor": "narrow",
-      "label": "Assistente IA no mobile"
+      "platform": "wide",
+      "label": "Desktop Dashboard - Complete overview of your workspace"
+    },
+    {
+      "src": "/screenshots/desktop-analytics-1920x1080.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "Advanced Analytics - AI-powered insights and metrics"
     }
   ],
   "protocol_handlers": [
     {
-      "protocol": "web+notionspark",
-      "url": "/handle/%s"
+      "protocol": "notion-spark",
+      "url": "/protocol-handler?url=%s"
     }
   ],
   "share_target": {
-    "action": "/share",
+    "action": "/share-target",
     "method": "POST",
     "enctype": "multipart/form-data",
     "params": {
@@ -150,11 +189,15 @@
       "url": "url",
       "files": [
         {
-          "name": "file",
+          "name": "files",
           "accept": [
-            "text/plain",
-            "text/markdown",
-            "application/json"
+            "image/*",
+            "text/*",
+            ".pdf",
+            ".doc",
+            ".docx",
+            ".txt",
+            ".md"
           ]
         }
       ]
@@ -162,26 +205,104 @@
   },
   "file_handlers": [
     {
-      "action": "/open-file",
+      "action": "/file-handler",
       "accept": {
         "text/plain": [".txt"],
-        "text/markdown": [".md", ".markdown"],
-        "application/json": [".json"]
+        "text/markdown": [".md"],
+        "application/pdf": [".pdf"],
+        "application/msword": [".doc"],
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
+        "application/json": [".json"],
+        "text/csv": [".csv"]
       }
     }
   ],
-  "display_override": ["window-controls-overlay", "minimal-ui"],
+  "launch_handler": {
+    "client_mode": "navigate-new"
+  },
+  "handle_links": "preferred",
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=com.notionspark.mobile",
+      "id": "com.notionspark.mobile"
+    },
+    {
+      "platform": "itunes",
+      "url": "https://apps.apple.com/app/notion-spark-studio/id123456789",
+      "id": "123456789"
+    }
+  ],
+  "prefer_related_applications": false,
   "edge_side_panel": {
     "preferred_width": 400
   },
-  "launch_handler": {
-    "client_mode": "focus-existing"
-  },
-  "permissions": [
-    "background-sync",
-    "notifications",
-    "persistent-storage"
+  "widgets": [
+    {
+      "name": "Quick Note",
+      "short_name": "Note",
+      "description": "Create a quick note",
+      "tag": "quick-note",
+      "template": "quick-note-template",
+      "ms_ac_template": "quick-note-adaptive-card.json",
+      "data": "/api/widgets/quick-note",
+      "type": "application/json",
+      "screenshots": [
+        {
+          "src": "/widgets/quick-note-screenshot.png",
+          "sizes": "320x160",
+          "label": "Quick note widget"
+        }
+      ],
+      "icons": [
+        {
+          "src": "/widgets/quick-note-icon.png",
+          "sizes": "64x64",
+          "type": "image/png"
+        }
+      ],
+      "auth": false,
+      "update": 900
+    },
+    {
+      "name": "Daily Metrics",
+      "short_name": "Metrics",
+      "description": "View daily productivity metrics",
+      "tag": "daily-metrics",
+      "template": "metrics-template",
+      "ms_ac_template": "metrics-adaptive-card.json",
+      "data": "/api/widgets/daily-metrics",
+      "type": "application/json",
+      "screenshots": [
+        {
+          "src": "/widgets/metrics-screenshot.png",
+          "sizes": "320x160",
+          "label": "Daily metrics widget"
+        }
+      ],
+      "icons": [
+        {
+          "src": "/widgets/metrics-icon.png",
+          "sizes": "64x64",
+          "type": "image/png"
+        }
+      ],
+      "auth": true,
+      "update": 300
+    }
   ],
-  "related_applications": [],
-  "prefer_related_applications": false
+  "permissions": [
+    "geolocation",
+    "notifications",
+    "persistent-storage",
+    "background-sync",
+    "camera",
+    "microphone"
+  ],
+  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
+  "serviceworker": {
+    "src": "/sw.js",
+    "scope": "/",
+    "update_via_cache": "none"
+  }
 } 
