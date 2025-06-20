@@ -1,17 +1,6 @@
 {
   "version": 2,
   "framework": "nextjs",
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next",
-  "installCommand": "npm ci",
-  "devCommand": "npm run dev",
-  
-  "build": {
-    "env": {
-      "NODE_ENV": "production",
-      "NEXT_TELEMETRY_DISABLED": "1"
-    }
-  },
   
   "env": {
     "NODE_ENV": "production",
@@ -24,9 +13,6 @@
 
   "functions": {
     "app/**/*.js": {
-      "maxDuration": 30
-    },
-    "pages/api/**/*.js": {
       "maxDuration": 30
     }
   },
@@ -46,23 +32,6 @@
         {
           "key": "X-XSS-Protection",
           "value": "1; mode=block"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
-        },
-        {
-          "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https:; connect-src 'self' https:; frame-src 'self';"
-        }
-      ]
-    },
-    {
-      "source": "/sw.js",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
         }
       ]
     },
@@ -85,16 +54,5 @@
     }
   ],
 
-  "rewrites": [
-    {
-      "source": "/api/health",
-      "destination": "/health"
-    }
-  ],
-
-  "regions": ["iad1", "sfo1", "fra1"],
-  
-  "github": {
-    "autoAlias": false
-  }
-} 
+  "regions": ["iad1"]
+}

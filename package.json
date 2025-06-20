@@ -3,9 +3,9 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "echo '⚠️ Use deploy direto na Vercel' && exit 1",
-    "build": "node scripts/build-vercel.js",
-    "vercel-build": "node scripts/build-vercel.js",
+    "dev": "next dev",
+    "build": "next build",
+    "vercel-build": "next build",
     "start": "next start",
     "preview": "next start",
     "lint": "eslint .",
