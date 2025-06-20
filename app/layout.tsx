@@ -1,35 +1,19 @@
 import React from 'react';
-import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import { Providers } from './providers';
 
 const inter = Inter({ subsets: ['latin'] });
 
-export const metadata: Metadata = {
+export const metadata = {
   title: 'Notion Spark Studio',
   description: 'Plataforma de Templates para Notion',
-  keywords: ['notion', 'templates', 'productivity', 'workspace'],
-  authors: [{ name: 'Notion Spark Team' }],
 };
 
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  themeColor: '#ffffff',
-};
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR">
       <body className={inter.className}>
-        <Providers>
-          {children}
-        </Providers>
+        {children}
       </body>
     </html>
   );
