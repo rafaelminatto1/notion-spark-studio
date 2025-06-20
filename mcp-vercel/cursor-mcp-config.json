@@ -1,0 +1,39 @@
+{
+  "name": "Vercel MCP - Notion Spark",
+  "description": "Integração MCP com API da Vercel para gerenciar deployments e projetos",
+  "command": "node",
+  "args": ["C:\\Users\\rafal\\cursor ai\\Notion Spark 2\\notion-spark-studio\\mcp-vercel\\dist\\index.js"],
+  "env": {
+    "VERCEL_API_TOKEN": "Lm96ITyzKUtvkgCA8ZjzOJXH"
+  },
+  "tools": [
+    {
+      "name": "vercel-list-deployments",
+      "description": "Lista deployments da Vercel com filtros opcionais"
+    },
+    {
+      "name": "vercel-get-deployment", 
+      "description": "Obtém detalhes específicos de um deployment"
+    },
+    {
+      "name": "vercel-get-latest-deployment",
+      "description": "Obtém o deployment mais recente de um projeto"
+    },
+    {
+      "name": "vercel-list-projects",
+      "description": "Lista projetos da Vercel"
+    },
+    {
+      "name": "vercel-get-project",
+      "description": "Obtém detalhes específicos de um projeto"
+    },
+    {
+      "name": "vercel-find-project-by-name",
+      "description": "Encontra projeto pelo nome"
+    },
+    {
+      "name": "vercel-get-environment-variables",
+      "description": "Lista variáveis de ambiente de um projeto"
+    }
+  ]
+} 
