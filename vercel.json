@@ -11,9 +11,19 @@
     "VITE_WS_URL": "wss://ws.notion-spark.com"
   },
 
+  "buildCommand": "npm run build",
+  "installCommand": "npm ci",
+
   "functions": {
     "app/**/*.js": {
-      "maxDuration": 30
+      "maxDuration": 30,
+      "memory": 1024,
+      "runtime": "nodejs18.x"
+    },
+    "pages/api/**/*.js": {
+      "maxDuration": 10,
+      "memory": 512,
+      "runtime": "nodejs18.x"
     }
   },
 
@@ -32,11 +42,41 @@
         {
           "key": "X-XSS-Protection",
           "value": "1; mode=block"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
         }
       ]
     },
     {
       "source": "/_next/static/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
+      "source": "/(.*\\.(ico|png|jpg|jpeg|gif|webp|svg|css|js)$)",
       "headers": [
         {
           "key": "Cache-Control",
@@ -51,8 +91,29 @@
       "source": "/auth",
       "destination": "/login",
       "permanent": false
+    },
+    {
+      "source": "/home",
+      "destination": "/",
+      "permanent": true
     }
   ],
 
-  "regions": ["iad1"]
+  "rewrites": [
+    {
+      "source": "/api/v1/:path*",
+      "destination": "https://api.notion-spark.com/:path*"
+    }
+  ],
+
+  "regions": ["iad1"],
+  
+  "crons": [
+    {
+      "path": "/api/health",
+      "schedule": "*/5 * * * *"
+    }
+  ],
+
+  "outputFileTracing": true
 }

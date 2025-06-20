@@ -39,8 +39,16 @@ function getEnvVar(key: string, defaultValue = ''): string {
   // Tentar import.meta.env primeiro (Vite)
   if (typeof window !== 'undefined') {
     try {
-      // @ts-expect-error - Acesso dinâmico para evitar erro de compilação
-      const importMeta = (globalThis as Record<string, unknown>).import?.meta;
+      // Type-safe acesso para import.meta
+      const globalScope = globalThis as { 
+        import?: { 
+          meta?: { 
+            env?: Record<string, string> 
+          } 
+        } 
+      };
+      
+      const importMeta = globalScope.import?.meta;
       if (importMeta?.env?.[key]) {
         return importMeta.env[key];
       }
@@ -51,7 +59,7 @@ function getEnvVar(key: string, defaultValue = ''): string {
   
   // Fallback para process.env (Next.js)
   if (typeof process !== 'undefined' && process.env?.[key]) {
-    return process.env[key];
+    return process.env[key] || defaultValue;
   }
   
   return defaultValue;

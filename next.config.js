@@ -21,19 +21,40 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
 
-  // Otimizações de performance
-  swcMinify: true,
+  // Configurações de packages externos para Vercel
+  serverExternalPackages: [
+    '@supabase/supabase-js',
+    '@tanstack/react-query',
+    'fuse.js',
+    'd3',
+    'chart.js'
+  ],
   
-  // Configurações experimentais para produção
+  // Configurações experimentais para produção Vercel
   experimental: {
-    // Melhor performance em produção
-    serverComponentsExternalPackages: ['@supabase/supabase-js'],
     optimizeCss: true,
     optimizePackageImports: [
       'lucide-react',
       '@radix-ui/react-icons',
-      'framer-motion'
+      'framer-motion',
+      '@radix-ui/react-accordion',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-popover',
+      '@radix-ui/react-select',
+      '@radix-ui/react-tabs',
+      '@radix-ui/react-toast',
+      '@radix-ui/react-tooltip',
+      'react-chartjs-2',
+      'recharts'
     ],
+    serverComponentsExternalPackages: [
+      '@supabase/supabase-js'
+    ],
+    esmExternals: 'loose',
+    turbotrace: {
+      logLevel: 'error'
+    }
   },
 
   // Configurações de imagem para Vercel
@@ -41,8 +62,10 @@ const nextConfig = {
     formats: ['image/avif', 'image/webp'],
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    domains: ['vercel.app', 'supabase.co'],
+    domains: ['vercel.app', 'supabase.co', 'notion-spark.com'],
     minimumCacheTTL: 60,
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384]
   },
 
   // Headers de segurança
@@ -92,6 +115,11 @@ const nextConfig = {
         destination: '/',
         permanent: true,
       },
+      {
+        source: '/auth',
+        destination: '/login',
+        permanent: false,
+      }
     ];
   },
 
@@ -105,13 +133,40 @@ const nextConfig = {
     ];
   },
 
-  // Webpack otimizations para Vercel
+  // Webpack otimizations para Vercel Edge Runtime
   webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
+    // Alias para resolução rápida
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': require('path').resolve(__dirname, 'src'),
+    };
+
     // Otimizações para produção
     if (!dev) {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        '@': require('path').resolve(__dirname, 'src'),
+      // Tree shaking agressivo
+      config.optimization = {
+        ...config.optimization,
+        usedExports: true,
+        sideEffects: false,
+        moduleIds: 'deterministic',
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              chunks: 'all',
+              priority: 10
+            },
+            common: {
+              name: 'common',
+              minChunks: 2,
+              chunks: 'all',
+              priority: 5,
+              reuseExistingChunk: true
+            }
+          }
+        }
       };
 
       // Análise de bundle em produção
@@ -123,7 +178,7 @@ const nextConfig = {
       }
     }
 
-    // Worker files
+    // Worker files para Vercel
     config.module.rules.push({
       test: /\.worker\.ts$/,
       use: {
@@ -135,6 +190,31 @@ const nextConfig = {
       },
     });
 
+    // Fallbacks para Node.js APIs no browser
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      net: false,
+      tls: false,
+      crypto: false,
+      stream: false,
+      url: false,
+      zlib: false,
+      http: false,
+      https: false,
+      assert: false,
+      os: false,
+      path: false
+    };
+
+    // Ignora warnings específicos
+    config.ignoreWarnings = [
+      /Critical dependency: the request of a dependency is an expression/,
+      /Module not found: Can't resolve 'fs'/,
+      /Module not found: Can't resolve 'net'/,
+      /Module not found: Can't resolve 'tls'/
+    ];
+
     return config;
   },
 
@@ -143,7 +223,8 @@ const nextConfig = {
     VERCEL_ENV: process.env.VERCEL_ENV || 'production',
     VERCEL_URL: process.env.VERCEL_URL,
     VERCEL_GIT_COMMIT_SHA: process.env.VERCEL_GIT_COMMIT_SHA,
-  },
+    NEXT_TELEMETRY_DISABLED: '1'
+  }
 };
 
 module.exports = nextConfig; 

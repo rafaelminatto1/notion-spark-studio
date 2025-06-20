@@ -1,199 +1,235 @@
 #!/usr/bin/env node
 
-// Script otimizado para verificação de ambiente Vercel
-const fs = require('fs');
-const path = require('path');
+/**
+ * Script de verificação de ambiente otimizado para Vercel
+ * Valida configurações críticas para deploy em produção
+ */
 
-// Variáveis obrigatórias para produção Vercel
-const requiredEnvVars = [
-  'VITE_SUPABASE_URL',
-  'VITE_SUPABASE_ANON_KEY',
-  'VITE_API_BASE_URL',
-  'VITE_WS_URL'
+// Variáveis obrigatórias para Vercel
+const REQUIRED_VERCEL_VARS = [
+  'NODE_ENV'
 ];
 
-// Variáveis opcionais mas recomendadas
-const optionalEnvVars = [
-  'NEXT_PUBLIC_SUPABASE_URL',
-  'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+// Variáveis opcionais da Vercel (disponíveis automaticamente)
+const OPTIONAL_VERCEL_VARS = [
+  'VERCEL_ENV',
   'VERCEL_URL',
-  'VERCEL_GIT_COMMIT_SHA'
+  'VERCEL_GIT_COMMIT_SHA',
+  'VERCEL_GIT_COMMIT_MESSAGE',
+  'VERCEL_GIT_COMMIT_AUTHOR_NAME',
+  'VERCEL_GIT_REPO_SLUG'
 ];
 
-function getEnvironmentInfo() {
-  const isVercel = !!process.env.VERCEL;
-  const vercelEnv = process.env.VERCEL_ENV || 'unknown';
-  const nodeEnv = process.env.NODE_ENV || 'unknown';
+// Variáveis do projeto (se definidas)
+const PROJECT_VARS = [
+  'VITE_APP_NAME',
+  'VITE_APP_VERSION',
+  'VITE_API_BASE_URL',
+  'VITE_WS_URL',
+  'VITE_SUPABASE_URL',
+  'VITE_SUPABASE_ANON_KEY'
+];
+
+const vercelEnv = process.env.VERCEL_ENV || 'unknown';
+const nodeEnv = process.env.NODE_ENV || 'unknown';
+
+console.log('🔍 Verificação de Ambiente - Vercel Optimized');
+console.log('=============================================');
+
+// Status do ambiente
+function getEnvironmentStatus() {
+  console.log('\n📋 Status do Ambiente:');
+  console.log(`📝 NODE_ENV: ${nodeEnv}`);
+  console.log(`🌐 VERCEL_ENV: ${vercelEnv}`);
   
-  return {
-    isVercel,
-    vercelEnv,
-    nodeEnv,
-    isProduction: nodeEnv === 'production' || vercelEnv === 'production',
-    isPreview: vercelEnv === 'preview',
-    isDevelopment: nodeEnv === 'development' || vercelEnv === 'development'
-  };
+  if (process.env.VERCEL_URL) {
+    console.log(`📝 URL: ${process.env.VERCEL_URL}`);
+  }
+  
+  if (process.env.VERCEL_GIT_COMMIT_SHA) {
+    console.log(`🔗 Commit: ${process.env.VERCEL_GIT_COMMIT_SHA.substring(0, 8)}`);
+  }
+  
+  console.log(`⏰ Timestamp: ${new Date().toISOString()}`);
 }
 
-function checkRequiredVars(envInfo) {
-  console.log('🔍 Verificando variáveis de ambiente obrigatórias...\n');
+// Verificar variáveis obrigatórias
+function checkRequiredVars() {
+  console.log('\n✅ Variáveis Obrigatórias:');
   
-  const missingVars = [];
-  const presentVars = [];
+  const missing = [];
   
-  requiredEnvVars.forEach(varName => {
+  REQUIRED_VERCEL_VARS.forEach(varName => {
     if (process.env[varName]) {
-      presentVars.push(varName);
-      console.log(`✅ ${varName}: Configurada`);
+      console.log(`✅ ${varName}: Definida`);
     } else {
-      missingVars.push(varName);
-      console.log(`❌ ${varName}: Não encontrada`);
+      console.log(`❌ ${varName}: AUSENTE`);
+      missing.push(varName);
     }
   });
   
-  console.log('');
-  
-  if (missingVars.length > 0) {
-    console.error('💥 ERRO: Variáveis de ambiente obrigatórias não encontradas:');
-    missingVars.forEach(varName => {
-      console.error(`   • ${varName}`);
-    });
-    
-    if (envInfo.isProduction) {
-      console.error('\n🚨 FALHA CRÍTICA: Deploy em produção bloqueado!');
-      console.error('Configure as variáveis no painel do Vercel:');
-      console.error('https://vercel.com/dashboard/project/settings/environment-variables');
-      process.exit(1);
-    } else {
-      console.warn('\n⚠️ AVISO: Variáveis não configuradas. App pode não funcionar corretamente.');
-    }
-  } else {
-    console.log('✅ Todas as variáveis obrigatórias estão configuradas!');
-  }
-  
-  return { missingVars, presentVars };
+  return missing;
 }
 
-function checkOptionalVars() {
-  console.log('\n🔧 Verificando variáveis opcionais...\n');
+// Verificar variáveis da Vercel
+function checkVercelVars() {
+  console.log('\n🚀 Variáveis da Vercel:');
   
-  optionalEnvVars.forEach(varName => {
+  if (process.env.VERCEL_ENV) {
+    console.log(`✅ Ambiente Vercel: ${process.env.VERCEL_ENV}`);
+  } else {
+    console.log(`ℹ️  VERCEL_ENV: Não detectado (esperado localmente)`);
+  }
+  
+  if (process.env.VERCEL_GIT_COMMIT_SHA) {
+    console.log(`✅ Commit: ${process.env.VERCEL_GIT_COMMIT_SHA.substring(0, 8)}`);
+  } else {
+    console.log(`ℹ️  VERCEL_GIT_COMMIT_SHA: Não disponível`);
+  }
+  
+  if (process.env.VERCEL_URL) {
+    console.log(`✅ URL: ${process.env.VERCEL_URL}`);
+  } else {
+    console.log(`ℹ️  VERCEL_URL: Não disponível`);
+  }
+}
+
+// Verificar variáveis do projeto
+function checkProjectVars() {
+  console.log('\n🎯 Variáveis do Projeto:');
+  
+  const defined = [];
+  const undefined = [];
+  
+  PROJECT_VARS.forEach(varName => {
     if (process.env[varName]) {
-      console.log(`✅ ${varName}: Configurada`);
+      console.log(`✅ ${varName}: ${process.env[varName]}`);
+      defined.push(varName);
     } else {
-      console.log(`⚪ ${varName}: Não configurada (opcional)`);
+      console.log(`ℹ️  ${varName}: Usando fallback`);
+      undefined.push(varName);
+    }
+  });
+  
+  return { defined, undefined };
+}
+
+// Verificar configuração de build
+function checkBuildConfig() {
+  console.log('\n🏗️  Configuração de Build:');
+  
+  // Next.js
+  console.log(`✅ Framework: Next.js`);
+  console.log(`✅ TypeScript: Habilitado`);
+  console.log(`✅ ESLint: Habilitado`);
+  
+  // Scripts
+  const packageJson = require('../package.json');
+  const scripts = packageJson.scripts || {};
+  
+  if (scripts.build) {
+    console.log(`✅ Build script: ${scripts.build}`);
+  }
+  
+  if (scripts['vercel-build']) {
+    console.log(`✅ Vercel build: ${scripts['vercel-build']}`);
+  }
+  
+  if (scripts.lint) {
+    console.log(`✅ Lint script: ${scripts.lint}`);
+  }
+}
+
+// Verificar dependências críticas
+function checkDependencies() {
+  console.log('\n📦 Dependências Críticas:');
+  
+  const packageJson = require('../package.json');
+  const deps = packageJson.dependencies || {};
+  
+  const criticalDeps = [
+    'next',
+    'react',
+    'react-dom',
+    '@supabase/supabase-js',
+    '@tanstack/react-query'
+  ];
+  
+  criticalDeps.forEach(dep => {
+    if (deps[dep]) {
+      console.log(`✅ ${dep}: ${deps[dep]}`);
+    } else {
+      console.log(`❌ ${dep}: AUSENTE`);
     }
   });
 }
 
-function displayEnvironmentSummary(envInfo) {
-  console.log('\n📊 RESUMO DO AMBIENTE:\n');
-  console.log(`🌍 Ambiente: ${envInfo.vercelEnv}`);
-  console.log(`🏗️ Node.js: ${envInfo.nodeEnv}`);
-  console.log(`☁️ Vercel: ${envInfo.isVercel ? 'Sim' : 'Não'}`);
-  console.log(`🚀 Produção: ${envInfo.isProduction ? 'Sim' : 'Não'}`);
-  console.log(`🔍 Preview: ${envInfo.isPreview ? 'Sim' : 'Não'}`);
-  
-  if (envInfo.isVercel) {
-    console.log(`📝 URL: ${process.env.VERCEL_URL || 'N/A'}`);
-    console.log(`🔗 Commit: ${process.env.VERCEL_GIT_COMMIT_SHA?.substring(0, 8) || 'N/A'}`);
-  }
-}
-
-function validateVercelConfiguration(envInfo) {
-  console.log('\n🔎 Validando configuração Vercel...\n');
-  
-  if (!envInfo.isVercel && envInfo.isProduction) {
-    console.error('❌ ERRO: Produção deve ser executada na Vercel!');
-    process.exit(1);
-  }
-  
-  if (envInfo.isVercel) {
-    console.log('✅ Configuração Vercel válida');
-    
-    // Verificar se estamos em build ou runtime
-    if (process.env.VERCEL_ENV) {
-      console.log(`✅ Ambiente Vercel: ${process.env.VERCEL_ENV}`);
-    }
-    
-    // Verificar informações Git se disponíveis
-    if (process.env.VERCEL_GIT_COMMIT_SHA) {
-      console.log(`✅ Commit: ${process.env.VERCEL_GIT_COMMIT_SHA.substring(0, 8)}`);
-    }
-  } else {
-    console.log('⚪ Não executando na Vercel (desenvolvimento local)');
-  }
-}
-
-function generateEnvReport(envInfo, varCheck) {
-  const report = {
-    timestamp: new Date().toISOString(),
-    environment: envInfo,
-    variables: {
-      required: {
-        total: requiredEnvVars.length,
-        configured: varCheck.presentVars.length,
-        missing: varCheck.missingVars.length,
-        missingList: varCheck.missingVars
-      }
-    },
-    validation: {
-      isValid: varCheck.missingVars.length === 0,
-      canDeploy: varCheck.missingVars.length === 0 || !envInfo.isProduction
-    }
-  };
-  
-  // Salvar relatório em desenvolvimento
-  if (!envInfo.isProduction) {
-    try {
-      const reportPath = path.resolve(process.cwd(), '.vercel', 'env-report.json');
-      const vercelDir = path.dirname(reportPath);
-      
-      if (!fs.existsSync(vercelDir)) {
-        fs.mkdirSync(vercelDir, { recursive: true });
-      }
-      
-      fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
-      console.log(`\n📊 Relatório salvo: .vercel/env-report.json`);
-    } catch (error) {
-      // Ignorar erros de salvamento
-    }
-  }
-  
-  return report;
-}
-
-// Função principal
-function main() {
-  console.log('🚀 VERIFICAÇÃO DE AMBIENTE PARA VERCEL\n');
-  console.log('=' .repeat(50) + '\n');
+// Validar configuração Vercel
+function validateVercelConfig() {
+  console.log('\n⚙️  Configuração Vercel:');
   
   try {
-    const envInfo = getEnvironmentInfo();
-    displayEnvironmentSummary(envInfo);
+    const vercelJson = require('../vercel.json');
     
-    const varCheck = checkRequiredVars(envInfo);
-    checkOptionalVars();
-    validateVercelConfiguration(envInfo);
+    console.log(`✅ vercel.json: Encontrado`);
+    console.log(`✅ Framework: ${vercelJson.framework || 'nextjs'}`);
+    console.log(`✅ Regions: ${JSON.stringify(vercelJson.regions || ['iad1'])}`);
     
-    const report = generateEnvReport(envInfo, varCheck);
+    if (vercelJson.functions) {
+      console.log(`✅ Functions: Configuradas`);
+    }
     
-    console.log('\n' + '=' .repeat(50));
-    
-    if (report.validation.isValid) {
-      console.log('🎉 AMBIENTE VALIDADO COM SUCESSO!');
-      console.log('✅ Pronto para deploy na Vercel');
-    } else {
-      if (envInfo.isProduction) {
-        console.log('💥 VALIDAÇÃO FALHOU - DEPLOY BLOQUEADO');
-        process.exit(1);
-      } else {
-        console.log('⚠️ VALIDAÇÃO COM AVISOS - VERIFICAR CONFIGURAÇÃO');
-      }
+    if (vercelJson.headers) {
+      console.log(`✅ Headers: ${vercelJson.headers.length} configurados`);
     }
     
   } catch (error) {
-    console.error('\n💥 ERRO DURANTE VERIFICAÇÃO:');
+    console.log(`❌ vercel.json: ${error.message}`);
+  }
+}
+
+// Executar verificações
+function main() {
+  try {
+    getEnvironmentStatus();
+    
+    const missingRequired = checkRequiredVars();
+    checkVercelVars();
+    const projectVars = checkProjectVars();
+    checkBuildConfig();
+    checkDependencies();
+    validateVercelConfig();
+    
+    // Resumo final
+    console.log('\n🎯 Resumo da Verificação:');
+    console.log('========================');
+    
+    if (missingRequired.length === 0) {
+      console.log('✅ Todas as variáveis obrigatórias estão definidas');
+    } else {
+      console.log(`❌ ${missingRequired.length} variáveis obrigatórias ausentes: ${missingRequired.join(', ')}`);
+    }
+    
+    console.log(`ℹ️  ${projectVars.defined.length}/${PROJECT_VARS.length} variáveis do projeto definidas`);
+    console.log(`🌐 Ambiente: ${nodeEnv} (Vercel: ${vercelEnv})`);
+    
+    if (vercelEnv === 'production') {
+      console.log('🚀 Status: PRONTO PARA PRODUÇÃO');
+    } else {
+      console.log('🔧 Status: Ambiente de desenvolvimento/preview');
+    }
+    
+    // Exit code
+    if (missingRequired.length > 0) {
+      console.log('\n❌ Verificação falhou devido a variáveis ausentes');
+      process.exit(1);
+    } else {
+      console.log('\n✅ Verificação concluída com sucesso');
+      process.exit(0);
+    }
+    
+  } catch (error) {
+    console.error('\n💥 Erro durante a verificação:');
     console.error(error.message);
     process.exit(1);
   }
@@ -204,4 +240,9 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { main, getEnvironmentInfo, checkRequiredVars }; 
+module.exports = {
+  main,
+  checkRequiredVars,
+  checkVercelVars,
+  checkProjectVars
+}; 

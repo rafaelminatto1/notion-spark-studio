@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
+import { cn } from '@/lib/utils';
+
 // SearchFilters interface local
 interface SearchFilters {
   type: string[];
@@ -14,14 +16,15 @@ interface SearchFilters {
   author: string[];
   category: string[];
   priority: string[];
+  dateRange?: string;
+  hasContent?: boolean;
 }
-import { cn } from '@/lib/utils';
 
 interface AdvancedSearchPanelProps {
   query: string;
   setQuery: (query: string) => void;
   filters: SearchFilters;
-  updateFilter: (key: keyof SearchFilters, value: any) => void;
+  updateFilter: (key: keyof SearchFilters, value: unknown) => void;
   clearFilters: () => void;
   isAdvancedMode: boolean;
   setIsAdvancedMode: (advanced: boolean) => void;
