@@ -1,168 +1,31 @@
 import React from 'react';
 import { SupabaseStatus } from '@/components/SupabaseStatus';
-import { NextApiRequest, NextApiResponse } from 'next';
-
-interface HealthStatus {
-  status: 'healthy' | 'unhealthy' | 'degraded';
-  timestamp: string;
-  version: string;
-  environment: string;
-  uptime: number;
-  services: {
-    database: 'connected' | 'disconnected' | 'error';
-    cache: 'available' | 'unavailable';
-    storage: 'available' | 'unavailable';
-  };
-  performance: {
-    memoryUsage: NodeJS.MemoryUsage;
-    responseTime: number;
-  };
-  build: {
-    commit: string;
-    timestamp: string;
-    vercelUrl?: string;
-  };
-}
 
 export default function HealthPage() {
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold mb-6">Sistema de Monitoramento</h1>
-      
-      {/* Status do Supabase */}
-      <SupabaseStatus />
-      
-      {/* Status Geral do Sistema */}
-      <div className="bg-card text-card-foreground p-6 rounded-lg border">
-        <h2 className="text-xl font-semibold mb-4">Status do Sistema</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-            <h3 className="font-medium text-green-800">Aplicação</h3>
-            <p className="text-green-600">✅ Online</p>
-          </div>
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h3 className="font-medium text-blue-800">Next.js</h3>
-            <p className="text-blue-600">✅ Funcionando</p>
-          </div>
-          <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-            <h3 className="font-medium text-purple-800">Performance</h3>
-            <p className="text-purple-600">✅ Ótima</p>
+    <div className="min-h-screen bg-gray-900 text-white p-8">
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+          <h1 className="text-2xl font-bold mb-6">System Health</h1>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold">Database Status</h2>
+              <SupabaseStatus />
+            </div>
+            
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold">Performance Metrics</h2>
+              <div className="text-sm text-gray-300">
+                <p>Memory Usage: {typeof window !== 'undefined' && (performance as any).memory ? 
+                  Math.round(((performance as any).memory.usedJSHeapSize / 1024 / 1024)) + ' MB' : 'N/A'}
+                </p>
+                <p>Status: Online</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
-}
-
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<HealthStatus>
-) {
-  const startTime = Date.now();
-
-  try {
-    // Verificar informações do ambiente
-    const environment = process.env.NODE_ENV || 'development';
-    const vercelEnv = process.env.VERCEL_ENV || 'unknown';
-    const version = process.env.npm_package_version || '2.0.0';
-    
-    // Verificar serviços
-    const services = {
-      database: await checkDatabase(),
-      cache: await checkCache(),
-      storage: await checkStorage()
-    };
-
-    // Calcular métricas de performance
-    const memoryUsage = process.memoryUsage();
-    const responseTime = Date.now() - startTime;
-
-    // Informações de build
-    const build = {
-      commit: process.env.VERCEL_GIT_COMMIT_SHA?.substring(0, 8) || 'local',
-      timestamp: process.env.VERCEL_GIT_COMMIT_DATE || new Date().toISOString(),
-      vercelUrl: process.env.VERCEL_URL
-    };
-
-    // Determinar status geral
-    const allServicesHealthy = Object.values(services).every(
-      status => status === 'connected' || status === 'available'
-    );
-    
-    const status: HealthStatus['status'] = allServicesHealthy ? 'healthy' : 'degraded';
-
-    const healthStatus: HealthStatus = {
-      status,
-      timestamp: new Date().toISOString(),
-      version,
-      environment: `${environment} (${vercelEnv})`,
-      uptime: process.uptime(),
-      services,
-      performance: {
-        memoryUsage,
-        responseTime
-      },
-      build
-    };
-
-    // Definir status code baseado na saúde
-    const statusCode = status === 'healthy' ? 200 : 503;
-    
-    res.status(statusCode).json(healthStatus);
-    
-  } catch (error) {
-    const errorResponse: HealthStatus = {
-      status: 'unhealthy',
-      timestamp: new Date().toISOString(),
-      version: process.env.npm_package_version || '2.0.0',
-      environment: process.env.NODE_ENV || 'development',
-      uptime: process.uptime(),
-      services: {
-        database: 'error',
-        cache: 'unavailable',
-        storage: 'unavailable'
-      },
-      performance: {
-        memoryUsage: process.memoryUsage(),
-        responseTime: Date.now() - startTime
-      },
-      build: {
-        commit: process.env.VERCEL_GIT_COMMIT_SHA?.substring(0, 8) || 'local',
-        timestamp: process.env.VERCEL_GIT_COMMIT_DATE || new Date().toISOString(),
-        vercelUrl: process.env.VERCEL_URL
-      }
-    };
-
-    res.status(500).json(errorResponse);
-  }
-}
-
-async function checkDatabase(): Promise<'connected' | 'disconnected' | 'error'> {
-  try {
-    // Verificação rápida do Supabase
-    if (process.env.VITE_SUPABASE_URL) {
-      return 'connected';
-    }
-    return 'disconnected';
-  } catch {
-    return 'error';
-  }
-}
-
-async function checkCache(): Promise<'available' | 'unavailable'> {
-  try {
-    // Verificação de cache local/Redis se configurado
-    return 'available';
-  } catch {
-    return 'unavailable';
-  }
-}
-
-async function checkStorage(): Promise<'available' | 'unavailable'> {
-  try {
-    // Verificação de storage (Supabase Storage, S3, etc.)
-    return 'available';
-  } catch {
-    return 'unavailable';
-  }
 } 
