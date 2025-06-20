@@ -597,6 +597,32 @@ export const useMobileEcosystem = (settings: Partial<MobileOptimizationSettings>
     }
   }, [swRegistration, state.features.notifications]);
 
+  // Request notification permission
+  const requestNotificationPermission = useCallback(async () => {
+    if (!('Notification' in window)) {
+      console.warn('[Mobile] This browser does not support notifications');
+      return false;
+    }
+
+    try {
+      const permission = await Notification.requestPermission();
+      const granted = permission === 'granted';
+      
+      setState(prev => ({
+        ...prev,
+        features: {
+          ...prev.features,
+          notifications: granted,
+        },
+      }));
+
+      return granted;
+    } catch (error) {
+      console.error('[Mobile] Failed to request notification permission:', error);
+      return false;
+    }
+  }, []);
+
   // Install PWA
   const installPWA = useCallback(async () => {
     if (!state.pwa.installPrompt) {
@@ -815,6 +841,7 @@ export const useMobileEcosystem = (settings: Partial<MobileOptimizationSettings>
     
     // Push notifications
     sendPushNotification,
+    requestNotificationPermission,
     
     // Utilities
     getAdaptiveQuality,

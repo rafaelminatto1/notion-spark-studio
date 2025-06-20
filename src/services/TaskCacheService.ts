@@ -25,8 +25,30 @@ export class TaskCacheService {
   private generateCacheKey(operation: string, params?: any): string {
     if (!params) return `task:${operation}`;
     
-    const sortedParams = JSON.stringify(params, Object.keys(params).sort());
-    return `task:${operation}:${btoa(sortedParams)}`;
+    // Função para ordenar recursivamente objetos
+    const sortObject = (obj: any): any => {
+      if (obj === null || typeof obj !== 'object' || obj instanceof Date) {
+        return obj;
+      }
+      
+      if (Array.isArray(obj)) {
+        return obj.map(sortObject);
+      }
+      
+      const sortedObj: any = {};
+      Object.keys(obj)
+        .sort()
+        .forEach(key => {
+          sortedObj[key] = sortObject(obj[key]);
+        });
+      
+      return sortedObj;
+    };
+    
+    const sortedParams = JSON.stringify(sortObject(params));
+    const key = `task:${operation}:${btoa(sortedParams)}`;
+    
+    return key;
   }
 
   /**

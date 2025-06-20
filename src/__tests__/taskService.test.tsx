@@ -187,7 +187,8 @@ describe('TaskService', () => {
 
   describe('deleteTask', () => {
     it('deve deletar uma tarefa com sucesso', async () => {
-      mockSupabaseQuery.delete.mockResolvedValue({
+      // Mock da cadeia: .delete().eq('id', id)
+      mockSupabaseQuery.eq.mockResolvedValue({
         error: null
       });
 

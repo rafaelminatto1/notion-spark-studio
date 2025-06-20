@@ -155,8 +155,30 @@ describe('TaskCacheService', () => {
       const params1 = { filters: { status: 'todo' } };
       const params2 = { filters: { status: 'done' } };
       
-      const task1 = { ...mockTask, status: 'todo' as const };
-      const task2 = { ...mockTask, status: 'done' as const };
+      // Criar objetos completamente independentes
+      const task1: Task = {
+        id: '1',
+        title: 'Test Task',
+        description: 'Test Description',
+        status: 'todo',
+        priority: 'medium',
+        tags: ['test'],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        userId: 'user1'
+      };
+      
+      const task2: Task = {
+        id: '2',
+        title: 'Test Task 2',
+        description: 'Test Description 2',
+        status: 'done',
+        priority: 'high',
+        tags: ['test', 'completed'],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        userId: 'user1'
+      };
       
       // Armazenar primeiro item
       cacheService.set('getTasks', task1, params1);
@@ -169,12 +191,8 @@ describe('TaskCacheService', () => {
       cacheService.set('getTasks', task2, params2);
       
       // Verificar se ambos os itens existem (chaves diferentes)
-      const cached1 = cacheService.get('getTasks', params1);
-      const cached2 = cacheService.get('getTasks', params2);
-      
-      // Debug: verificar se as chaves são realmente diferentes
-      console.log('Cache1:', cached1);
-      console.log('Cache2:', cached2);
+      const cached1 = cacheService.get<Task>('getTasks', params1);
+      const cached2 = cacheService.get<Task>('getTasks', params2);
       
       expect(cached1).toBeDefined();
       expect(cached2).toBeDefined();
