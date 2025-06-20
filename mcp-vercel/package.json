@@ -1,0 +1,33 @@
+{
+  "name": "notion-spark-mcp-vercel",
+  "version": "1.0.0",
+  "description": "MCP server para integração com Vercel API - Notion Spark Studio",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "watch": "tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  },
+  "keywords": [
+    "mcp",
+    "vercel",
+    "deployment",
+    "claude",
+    "cursor",
+    "ai"
+  ],
+  "author": "Notion Spark Studio",
+  "license": "MIT"
+} 
