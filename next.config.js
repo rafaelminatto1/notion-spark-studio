@@ -20,4 +20,4 @@ const nextConfig = {
   }
 };
 
-module.exports = nextConfig; 
+module.exports = nextConfig; // Force rebuild: 06/21/2025 00:40:28
