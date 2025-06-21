@@ -73,14 +73,18 @@ class SupabaseMonitoringService {
   constructor() {
     this.sessionId = this.generateSessionId();
     this.isEnabled = safeGetEnv('NODE_ENV', 'development') === 'production';
-    this.setupUserTracking();
-    this.setupWebVitals();
-    this.setupErrorTracking();
     
-    if (this.isEnabled) {
-      console.log('🔍 Supabase Monitoring enabled');
-    } else {
-      console.log('🔍 Supabase Monitoring disabled (development mode)');
+    // Só configurar monitoramento no cliente
+    if (typeof window !== 'undefined') {
+      this.setupUserTracking();
+      this.setupWebVitals();
+      this.setupErrorTracking();
+      
+      if (this.isEnabled) {
+        console.log('🔍 Supabase Monitoring enabled');
+      } else {
+        console.log('🔍 Supabase Monitoring disabled (development mode)');
+      }
     }
   }
 
@@ -110,7 +114,7 @@ class SupabaseMonitoringService {
   }
 
   private setupWebVitals(): void {
-    if (!('PerformanceObserver' in window)) return;
+    if (typeof window === 'undefined' || !('PerformanceObserver' in window)) return;
 
     try {
       // Largest Contentful Paint
@@ -199,6 +203,8 @@ class SupabaseMonitoringService {
   }
 
   private setupErrorTracking(): void {
+    if (typeof window === 'undefined') return;
+    
     // Global error handler
     window.addEventListener('error', (event) => {
       this.recordError({
