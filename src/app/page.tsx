@@ -13,6 +13,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useNavigation } from './layout';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { PageLoader } from '@/components/LoadingSpinner';
 import { 
   Activity, 
@@ -63,18 +65,39 @@ const mockFavorites = ['1', '2'];
 export default function HomePage() {
   const { currentSection, setCurrentSection } = useNavigation();
   const { user, loading } = useAuth();
-  const { signInWithGoogle } = useSupabaseAuth();
+  const { signInWithGoogle, signInWithEmail } = useSupabaseAuth();
+  const [demoMode, setDemoMode] = React.useState(false);
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [isLoggingIn, setIsLoggingIn] = React.useState(false);
+
+  // Função para fazer login com email e senha
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) return;
+    
+    setIsLoggingIn(true);
+    try {
+      await signInWithEmail(email, password);
+      console.log('Login realizado com sucesso!');
+    } catch (error) {
+      console.error('Erro no login:', error);
+      alert('Erro no login. Verifique suas credenciais.');
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
 
   // Mostrar loading enquanto verifica autenticação
   if (loading) {
     return <PageLoader text="Verificando autenticação..." />;
   }
 
-  // Se não estiver logado, mostrar tela de login
-  if (!user) {
+  // Se não estiver logado e não estiver em modo demo, mostrar tela de login
+  if (!user && !demoMode) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <Card className="w-[400px]">
+        <Card className="w-[450px] max-w-md">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">Bem-vindo ao Notion Spark Studio</CardTitle>
             <CardDescription>
@@ -87,13 +110,59 @@ export default function HomePage() {
               <p>📋 Gerenciamento de Tarefas Inteligente</p>
               <p>🚀 Interface Moderna e Responsiva</p>
             </div>
+            
+            {/* Formulário de Login */}
+            <form onSubmit={handleEmailLogin} className="space-y-3">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="seu@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Senha</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Digite sua senha"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <Button 
+                type="submit"
+                className="w-full"
+                disabled={isLoggingIn}
+                size="lg"
+              >
+                {isLoggingIn ? 'Entrando...' : 'Entrar'}
+              </Button>
+            </form>
+            
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">Ou</span>
+              </div>
+            </div>
+            
             <Button 
               className="w-full"
               onClick={() => signInWithGoogle()}
+              variant="outline"
               size="lg"
             >
               Entrar com Google
             </Button>
+            
             <div className="text-center text-xs text-gray-500">
               Ou continue sem fazer login para testar as funcionalidades
             </div>
@@ -101,8 +170,8 @@ export default function HomePage() {
               variant="outline"
               className="w-full"
               onClick={() => {
-                // Simular login para demo
-                console.log('Continuando sem login para demonstração');
+                console.log('Ativando modo demonstração');
+                setDemoMode(true);
               }}
             >
               Continuar sem Login (Demo)
