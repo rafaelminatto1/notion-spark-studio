@@ -1,99 +1,62 @@
 'use client';
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 
 export default function HomePage() {
   const [demoMode, setDemoMode] = React.useState(false);
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
-  const [isLoggingIn, setIsLoggingIn] = React.useState(false);
 
-  // Função para fazer login com email e senha
-  const handleEmailLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password) return;
-    
-    setIsLoggingIn(true);
-    try {
-      // Simular login
-      console.log('Login realizado com sucesso!');
-      alert('Login simulado com sucesso! (Demo)');
-      setDemoMode(true);
-    } catch (error) {
-      console.error('Erro no login:', error);
-      alert('Erro no login. Verifique suas credenciais.');
-    } finally {
-      setIsLoggingIn(false);
-    }
-  };
-
-  // Função para login com Google (simulado)
-  const handleGoogleLogin = () => {
-    console.log('Login com Google simulado');
-    alert('Login com Google simulado! (Demo)');
-    setDemoMode(true);
-  };
-
-  // Se estiver em modo demo, mostrar dashboard simples
+  // Se estiver em modo demo, mostrar dashboard
   if (demoMode) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
-        <div className="max-w-4xl mx-auto">
-          <header className="flex justify-between items-center mb-8">
+      <div style={{ minHeight: '100vh', background: '#f9fafb', padding: '24px' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Notion Spark Studio</h1>
-              <p className="text-gray-600">v2.0 - Modo Demonstração</p>
+              <h1 style={{ fontSize: '2rem', fontWeight: 'bold', color: '#111827', margin: '0' }}>Notion Spark Studio</h1>
+              <p style={{ color: '#6b7280', margin: '4px 0 0 0' }}>v2.0 - Modo Demonstração</p>
             </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">demo@exemplo.com</span>
-              <Button 
-                variant="outline" 
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <span style={{ fontSize: '14px', color: '#6b7280' }}>demo@exemplo.com</span>
+              <button 
                 onClick={() => setDemoMode(false)}
+                style={{ 
+                  padding: '8px 16px', 
+                  border: '1px solid #d1d5db', 
+                  borderRadius: '6px',
+                  background: 'white',
+                  cursor: 'pointer'
+                }}
               >
                 Sair
-              </Button>
+              </button>
             </div>
           </header>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>📋 Projetos</CardTitle>
-                <CardDescription>Gerencie seus projetos</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600">3 projetos ativos</p>
-              </CardContent>
-            </Card>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+            <div style={{ background: 'white', padding: '24px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: '600', margin: '0 0 8px 0' }}>📋 Projetos</h3>
+              <p style={{ color: '#6b7280', margin: '0 0 16px 0' }}>Gerencie seus projetos</p>
+              <p style={{ fontSize: '14px', color: '#6b7280', margin: '0' }}>3 projetos ativos</p>
+            </div>
             
-            <Card>
-              <CardHeader>
-                <CardTitle>📊 Analytics</CardTitle>
-                <CardDescription>Métricas e relatórios</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600">Performance: 98%</p>
-              </CardContent>
-            </Card>
+            <div style={{ background: 'white', padding: '24px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: '600', margin: '0 0 8px 0' }}>📊 Analytics</h3>
+              <p style={{ color: '#6b7280', margin: '0 0 16px 0' }}>Métricas e relatórios</p>
+              <p style={{ fontSize: '14px', color: '#6b7280', margin: '0' }}>Performance: 98%</p>
+            </div>
             
-            <Card>
-              <CardHeader>
-                <CardTitle>🚀 Sistema</CardTitle>
-                <CardDescription>Status do sistema</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-green-600">✅ Todos os sistemas funcionando</p>
-              </CardContent>
-            </Card>
+            <div style={{ background: 'white', padding: '24px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: '600', margin: '0 0 8px 0' }}>🚀 Sistema</h3>
+              <p style={{ color: '#6b7280', margin: '0 0 16px 0' }}>Status do sistema</p>
+              <p style={{ fontSize: '14px', color: '#16a34a', margin: '0' }}>✅ Todos os sistemas funcionando</p>
+            </div>
           </div>
           
-          <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-            <h3 className="font-semibold text-blue-900 mb-2">🎮 Modo Demonstração Ativo</h3>
-            <p className="text-sm text-blue-700">
+          <div style={{ marginTop: '32px', padding: '16px', background: '#dbeafe', borderRadius: '8px' }}>
+            <h3 style={{ fontWeight: '600', color: '#1e40af', margin: '0 0 8px 0' }}>🎮 Modo Demonstração Ativo</h3>
+            <p style={{ fontSize: '14px', color: '#1e40af', margin: '0' }}>
               Você está visualizando uma versão demo do Notion Spark Studio. 
               Todas as funcionalidades estão simuladas para demonstração.
             </p>
@@ -103,90 +66,152 @@ export default function HomePage() {
     );
   }
 
-  // Tela de login
+  // Tela de login com estilos inline
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <Card className="w-[450px] max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Bem-vindo ao Notion Spark Studio</CardTitle>
-          <CardDescription>
+    <div style={{ 
+      display: 'flex', 
+      minHeight: '100vh', 
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      background: '#f9fafb' 
+    }}>
+      <div style={{ 
+        width: '100%', 
+        maxWidth: '450px', 
+        background: 'white', 
+        borderRadius: '8px', 
+        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+        padding: '32px'
+      }}>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#111827', margin: '0 0 8px 0' }}>
+            Bem-vindo ao Notion Spark Studio
+          </h1>
+          <p style={{ color: '#6b7280', margin: '0' }}>
             Uma plataforma moderna para produtividade e colaboração
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="text-center text-sm text-gray-600">
-            <p>✨ Monitor de Performance em Tempo Real</p>
-            <p>📋 Gerenciamento de Tarefas Inteligente</p>
-            <p>🚀 Interface Moderna e Responsiva</p>
+          </p>
+        </div>
+        
+        <div style={{ textAlign: 'center', fontSize: '14px', color: '#6b7280', marginBottom: '24px' }}>
+          <p style={{ margin: '4px 0' }}>✨ Monitor de Performance em Tempo Real</p>
+          <p style={{ margin: '4px 0' }}>📋 Gerenciamento de Tarefas Inteligente</p>
+          <p style={{ margin: '4px 0' }}>🚀 Interface Moderna e Responsiva</p>
+        </div>
+        
+        {/* Formulário de Login */}
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          if (email && password) {
+            alert('Login simulado com sucesso! (Demo)');
+            setDemoMode(true);
+          }
+        }} style={{ marginBottom: '24px' }}>
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', marginBottom: '8px' }}>
+              Email
+            </label>
+            <input
+              type="email"
+              placeholder="seu@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              style={{ 
+                width: '100%', 
+                padding: '12px', 
+                border: '1px solid #d1d5db', 
+                borderRadius: '6px',
+                fontSize: '14px'
+              }}
+            />
           </div>
-          
-          {/* Formulário de Login */}
-          <form onSubmit={handleEmailLogin} className="space-y-3">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="seu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Digite sua senha"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <Button 
-              type="submit"
-              className="w-full"
-              disabled={isLoggingIn}
-              size="lg"
-            >
-              {isLoggingIn ? 'Entrando...' : 'Entrar'}
-            </Button>
-          </form>
-          
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Ou</span>
-            </div>
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', marginBottom: '8px' }}>
+              Senha
+            </label>
+            <input
+              type="password"
+              placeholder="Digite sua senha"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              style={{ 
+                width: '100%', 
+                padding: '12px', 
+                border: '1px solid #d1d5db', 
+                borderRadius: '6px',
+                fontSize: '14px'
+              }}
+            />
           </div>
-          
-          <Button 
-            className="w-full"
-            onClick={handleGoogleLogin}
-            variant="outline"
-            size="lg"
-          >
-            Entrar com Google
-          </Button>
-          
-          <div className="text-center text-xs text-gray-500">
-            Ou continue sem fazer login para testar as funcionalidades
-          </div>
-          <Button 
-            variant="outline"
-            className="w-full"
-            onClick={() => {
-              console.log('Ativando modo demonstração');
-              setDemoMode(true);
+          <button 
+            type="submit"
+            style={{ 
+              width: '100%', 
+              padding: '12px', 
+              background: '#2563eb', 
+              color: 'white', 
+              border: 'none', 
+              borderRadius: '6px',
+              fontSize: '16px',
+              fontWeight: '500',
+              cursor: 'pointer'
             }}
           >
-            Continuar sem Login (Demo)
-          </Button>
-        </CardContent>
-      </Card>
+            Entrar
+          </button>
+        </form>
+        
+        <div style={{ textAlign: 'center', margin: '24px 0', position: 'relative' }}>
+          <div style={{ position: 'absolute', top: '50%', left: '0', right: '0', height: '1px', background: '#e5e7eb' }}></div>
+          <span style={{ background: 'white', padding: '0 16px', fontSize: '12px', color: '#6b7280' }}>OU</span>
+        </div>
+        
+        <button 
+          onClick={() => {
+            alert('Login com Google simulado! (Demo)');
+            setDemoMode(true);
+          }}
+          style={{ 
+            width: '100%', 
+            padding: '12px', 
+            background: 'white', 
+            color: '#374151', 
+            border: '1px solid #d1d5db', 
+            borderRadius: '6px',
+            fontSize: '16px',
+            fontWeight: '500',
+            cursor: 'pointer',
+            marginBottom: '16px'
+          }}
+        >
+          Entrar com Google
+        </button>
+        
+        <div style={{ textAlign: 'center', fontSize: '12px', color: '#6b7280', marginBottom: '16px' }}>
+          Ou continue sem fazer login para testar as funcionalidades
+        </div>
+        
+        <button 
+          onClick={() => {
+            console.log('Ativando modo demonstração');
+            setDemoMode(true);
+          }}
+          style={{ 
+            width: '100%', 
+            padding: '12px', 
+            background: 'white', 
+            color: '#374151', 
+            border: '1px solid #d1d5db', 
+            borderRadius: '6px',
+            fontSize: '16px',
+            fontWeight: '500',
+            cursor: 'pointer'
+          }}
+        >
+          Continuar sem Login (Demo)
+        </button>
+      </div>
     </div>
   );
 }
