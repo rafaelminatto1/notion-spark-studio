@@ -11,7 +11,6 @@ import { Badge } from '@/components/ui/badge';
 import type { FileItem } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
-import { useNavigation } from './layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -63,8 +62,8 @@ const mockFiles: FileItem[] = [
 const mockFavorites = ['1', '2'];
 
 export default function HomePage() {
-  const { currentSection, setCurrentSection } = useNavigation();
   const { user, loading } = useAuth();
+  const [currentSection, setCurrentSection] = React.useState('dashboard');
   const { signInWithGoogle, signInWithEmail } = useSupabaseAuth();
   const [demoMode, setDemoMode] = React.useState(false);
   const [email, setEmail] = React.useState('');
