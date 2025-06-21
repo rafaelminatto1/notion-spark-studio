@@ -116,6 +116,14 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
   
+  // DEBUG: Log para identificar problemas com recursos externos
+  console.log('[DEBUG SW] Fetch interceptado:', {
+    url: request.url,
+    method: request.method,
+    destination: request.destination,
+    isExternal: !url.origin.includes(self.location.origin)
+  });
+  
   // Skip non-GET requests for caching
   if (request.method !== 'GET') {
     // Handle offline POST/PUT/DELETE requests
@@ -125,8 +133,33 @@ self.addEventListener('fetch', (event) => {
     }
     return;
   }
+  
+  // CORREÇÃO: Tratar recursos externos (como Google Fonts) sem cache
+  if (!url.origin.includes(self.location.origin)) {
+    console.log('[DEBUG SW] Recurso externo detectado, fazendo fetch direto:', url.href);
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          console.log('[DEBUG SW] Fetch externo bem-sucedido:', response.status);
+          return response;
+        })
+        .catch(error => {
+          console.error('[DEBUG SW] Erro no fetch externo:', error);
+          // Retornar uma resposta de fallback válida para CSS
+          if (request.destination === 'style' || url.pathname.includes('.css')) {
+            return new Response('/* External CSS failed to load */', {
+              status: 200,
+              statusText: 'OK',
+              headers: { 'Content-Type': 'text/css' }
+            });
+          }
+          throw error;
+        })
+    );
+    return;
+  }
 
-  // Determine cache strategy
+  // Determine cache strategy para recursos internos
   const strategy = getCacheStrategy(url.pathname);
   
   event.respondWith(
