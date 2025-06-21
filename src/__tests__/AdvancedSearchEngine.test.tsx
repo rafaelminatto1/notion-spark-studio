@@ -119,7 +119,7 @@ describe('AdvancedSearchEngine', () => {
         await searchEngine.indexDocument(doc);
       }
       
-      // All documents should have embeddings
+      // Verify all documents have embeddings
       expect(mockDocuments.every(doc => doc.embedding)).toBe(true);
     });
   });

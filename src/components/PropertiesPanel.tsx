@@ -141,13 +141,16 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
         </h3>
         
         <div className="space-y-2 text-xs text-gray-400">
-          <div className="flex justify-between">
-            <span>Criado:</span>
-            <span>{format(file.createdAt, 'dd/MM/yyyy HH:mm')}</span>
+          <div className="flex items-center gap-3 text-sm text-gray-400">
+            <Calendar className="h-4 w-4" />
+            <span>Criado em:</span>
+            <span>{file.createdAt ? format(new Date(file.createdAt), 'dd/MM/yyyy HH:mm') : 'Data não disponível'}</span>
           </div>
-          <div className="flex justify-between">
-            <span>Modificado:</span>
-            <span>{format(file.updatedAt, 'dd/MM/yyyy HH:mm')}</span>
+
+          <div className="flex items-center gap-3 text-sm text-gray-400">
+            <Calendar className="h-4 w-4" />
+            <span>Modificado em:</span>
+            <span>{file.updatedAt ? format(new Date(file.updatedAt), 'dd/MM/yyyy HH:mm') : 'Data não disponível'}</span>
           </div>
           <div className="flex justify-between">
             <span>Tipo:</span>

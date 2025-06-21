@@ -1,10 +1,11 @@
 import type { ReactNode} from 'react';
 import React, { createContext, useContext, useMemo } from 'react';
+import type { User, Session } from '@supabase/supabase-js';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 
 interface AuthContextType {
-  user: any;
-  session: any;
+  user: User | null;
+  session: Session | null;
   loading: boolean;
 }
 
@@ -40,16 +41,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const useAuth = () => {
+export const useAuthContext = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    // Retornar um estado padrão em vez de lançar erro
-    console.warn('[AuthContext] useAuth chamado fora do AuthProvider, retornando estado padrão');
-    return {
-      user: null,
-      session: null,
-      loading: true
-    };
+    throw new Error('useAuthContext deve ser usado dentro de um AuthProvider');
   }
   return context;
 }; 

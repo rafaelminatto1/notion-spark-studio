@@ -20,6 +20,10 @@ export interface FileItem {
   tags?: string[];
   color?: string;
   emoji?: string;
+  description?: string;
+  isPublic?: boolean;
+  isProtected?: boolean;
+  showInSidebar?: boolean;
 }
 
 export interface Comment {
