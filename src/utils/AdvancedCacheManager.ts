@@ -8,7 +8,7 @@
  */
 
 // Tipos para o sistema de cache
-interface CacheEntry<T = any> {
+interface CacheEntry<T = unknown> {
   key: string;
   data: T;
   timestamp: number;

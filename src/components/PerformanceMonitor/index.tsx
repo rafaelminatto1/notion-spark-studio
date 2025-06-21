@@ -54,8 +54,9 @@ export const PerformanceMonitor: React.FC = () => {
       }
 
       // Monitor memory if available
-      const memoryUsage = (performance as any).memory?.usedJSHeapSize 
-        ? Math.round((performance as any).memory.usedJSHeapSize / 1024 / 1024) 
+      const perfMemory = performance as unknown as { memory?: { usedJSHeapSize: number } };
+      const memoryUsage = perfMemory.memory?.usedJSHeapSize 
+        ? Math.round(perfMemory.memory.usedJSHeapSize / 1024 / 1024) 
         : 0;
 
       const sessionMetrics = supabaseMonitoring.getSessionMetrics();
