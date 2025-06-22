@@ -17,6 +17,26 @@ const nextConfig = {
   images: {
     dangerouslyAllowSVG: true,
     domains: ['vercel.app', 'supabase.co']
+  },
+
+  // FORCE CACHE BREAK - Timestamp: 2025-06-22-05:10
+  generateBuildId: () => `build-${Date.now()}-cache-break`,
+  
+  env: {
+    FORCE_REBUILD: '2025-06-22-05-10',
+    BUILD_TIMESTAMP: Date.now().toString(),
+    VERSION: '2.3'
+  },
+  
+  experimental: {
+    optimizeCss: false, // Disable CSS optimization to force rebuild
+    isrMemoryCacheSize: 0, // Disable static optimization to force SSR
+  },
+  
+  // Force no caching during build
+  onDemandEntries: {
+    maxInactiveAge: 0,
+    pagesBufferLength: 0,
   }
 };
 
