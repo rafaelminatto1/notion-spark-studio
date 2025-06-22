@@ -2,11 +2,14 @@
 
 import React from 'react';
 
-// Versão: 2.1 - Login funcional com email/senha + demo
+// Versão: 2.2 - LOGIN CORRIGIDO - CACHE QUEBRADO
 export default function HomePage() {
   const [demoMode, setDemoMode] = React.useState(false);
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+
+  // IMPORTANTE: Esta página foi corrigida para ter email/senha + demo
+  console.log('PÁGINA CORRIGIDA CARREGADA - Versão 2.2');
 
   // Se estiver em modo demo, mostrar dashboard
   if (demoMode) {
@@ -16,7 +19,7 @@ export default function HomePage() {
           <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
             <div>
               <h1 style={{ fontSize: '2rem', fontWeight: 'bold', color: '#111827', margin: '0' }}>Notion Spark Studio</h1>
-              <p style={{ color: '#6b7280', margin: '4px 0 0 0' }}>v2.0 - Modo Demonstração</p>
+              <p style={{ color: '#6b7280', margin: '4px 0 0 0' }}>v2.2 - LOGIN CORRIGIDO - Modo Demonstração</p>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               <span style={{ fontSize: '14px', color: '#6b7280' }}>demo@exemplo.com</span>
@@ -67,7 +70,7 @@ export default function HomePage() {
     );
   }
 
-  // Tela de login com estilos inline
+  // Tela de login CORRIGIDA com email/senha + demo
   return (
     <div style={{ 
       display: 'flex', 
@@ -89,7 +92,7 @@ export default function HomePage() {
             Bem-vindo ao Notion Spark Studio
           </h1>
           <p style={{ color: '#6b7280', margin: '0' }}>
-            Uma plataforma moderna para produtividade e colaboração
+            v2.2 - LOGIN CORRIGIDO - Email/Senha + Demo
           </p>
         </div>
         
@@ -99,28 +102,30 @@ export default function HomePage() {
           <p style={{ margin: '4px 0' }}>🚀 Interface Moderna e Responsiva</p>
         </div>
         
-        {/* Formulário de Login */}
+        {/* Formulário de Login CORRIGIDO */}
         <form onSubmit={(e) => {
           e.preventDefault();
           if (email && password) {
-            alert('Login simulado com sucesso! (Demo)');
+            alert('✅ LOGIN FUNCIONANDO! Email/Senha OK - Entrando no demo...');
             setDemoMode(true);
+          } else {
+            alert('❌ Por favor, digite email e senha!');
           }
         }} style={{ marginBottom: '24px' }}>
           <div style={{ marginBottom: '16px' }}>
             <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', marginBottom: '8px' }}>
-              Email
+              Email (digite qualquer email)
             </label>
             <input
               type="email"
-              placeholder="seu@email.com"
+              placeholder="teste@exemplo.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               style={{ 
                 width: '100%', 
                 padding: '12px', 
-                border: '1px solid #d1d5db', 
+                border: '2px solid #2563eb', 
                 borderRadius: '6px',
                 fontSize: '14px'
               }}
@@ -128,18 +133,18 @@ export default function HomePage() {
           </div>
           <div style={{ marginBottom: '16px' }}>
             <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', marginBottom: '8px' }}>
-              Senha
+              Senha (digite qualquer senha)
             </label>
             <input
               type="password"
-              placeholder="Digite sua senha"
+              placeholder="123456"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               style={{ 
                 width: '100%', 
                 padding: '12px', 
-                border: '1px solid #d1d5db', 
+                border: '2px solid #2563eb', 
                 borderRadius: '6px',
                 fontSize: '14px'
               }}
@@ -159,7 +164,7 @@ export default function HomePage() {
               cursor: 'pointer'
             }}
           >
-            Entrar
+            ✅ ENTRAR COM EMAIL E SENHA
           </button>
         </form>
         
@@ -170,7 +175,7 @@ export default function HomePage() {
         
         <button 
           onClick={() => {
-            alert('Login com Google simulado! (Demo)');
+            alert('🎯 Login com Google simulado! Entrando no demo...');
             setDemoMode(true);
           }}
           style={{ 
@@ -195,22 +200,22 @@ export default function HomePage() {
         
         <button 
           onClick={() => {
-            console.log('Ativando modo demonstração');
+            console.log('🚀 Ativando modo demonstração direto');
             setDemoMode(true);
           }}
           style={{ 
             width: '100%', 
             padding: '12px', 
-            background: 'white', 
-            color: '#374151', 
-            border: '1px solid #d1d5db', 
+            background: '#16a34a', 
+            color: 'white', 
+            border: 'none', 
             borderRadius: '6px',
             fontSize: '16px',
             fontWeight: '500',
             cursor: 'pointer'
           }}
         >
-          Continuar sem Login (Demo)
+          🎮 DEMO DIRETO (Sem Login)
         </button>
       </div>
     </div>
