@@ -2,6 +2,7 @@
 
 import React from 'react';
 
+// Versão: 2.1 - Login funcional com email/senha + demo
 export default function HomePage() {
   const [demoMode, setDemoMode] = React.useState(false);
   const [email, setEmail] = React.useState('');
