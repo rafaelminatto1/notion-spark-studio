@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { User, Session, AuthError } from '@supabase/supabase-js';
 import { getSupabaseClient, initializeSupabase } from '@/lib/supabase-config';
 
@@ -24,8 +24,6 @@ export const useSupabaseAuth = () => {
 
     const initAuth = async () => {
       try {
-        console.log('[useSupabaseAuth] Inicializando autenticação...');
-        
         // Inicializar Supabase
         const { client, isConnected, isOfflineMode } = await initializeSupabase();
         
@@ -112,8 +110,6 @@ export const useSupabaseAuth = () => {
         };
 
       } catch (error) {
-        console.error('[useSupabaseAuth] Erro na inicialização:', error);
-        
         if (!mounted) return;
 
         setAuthState(prev => ({
@@ -131,6 +127,15 @@ export const useSupabaseAuth = () => {
       mounted = false;
     };
   }, []);
+
+  // Memoizar o objeto retornado para garantir estabilidade
+  const stableAuthState = useMemo(() => authState, [
+    authState.user,
+    authState.session,
+    authState.loading,
+    authState.error,
+    authState.isOfflineMode,
+  ]);
 
   // Funções de autenticação
   const signIn = async (email: string, password: string) => {
@@ -257,7 +262,7 @@ export const useSupabaseAuth = () => {
   };
 
   return {
-    ...authState,
+    ...stableAuthState,
     signIn,
     signUp,
     signOut,
