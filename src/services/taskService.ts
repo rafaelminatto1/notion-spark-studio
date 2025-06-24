@@ -105,9 +105,9 @@ class TaskService {
     options: {
       userId?: string;
       cacheKey?: string;
-      cacheParams?: any;
+      cacheParams?: Record<string, unknown>;
       changes?: { before?: Partial<Task>; after?: Partial<Task> };
-      metadata?: any;
+      metadata?: Record<string, unknown>;
       invalidateCache?: boolean;
     } = {}
   ): Promise<T> {

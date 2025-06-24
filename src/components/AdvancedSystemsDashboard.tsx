@@ -40,10 +40,10 @@ export function AdvancedSystemsDashboard() {
 
   // Hooks para os sistemas avançados
   const aiOptimizer = useAIPerformanceOptimizer({
-    enabled: true,
-    autoApply: true,
-    confidenceThreshold: 0.87,
-    learningMode: true
+    autoOptimize: true,
+    enablePredictions: true,
+    optimizationThreshold: 87,
+    maxOptimizationsPerHour: 12
   });
 
   const collaboration = useRealTimeCollaboration({

@@ -3,12 +3,12 @@ const nextConfig = {
   // Configurações básicas para Vercel
   reactStrictMode: true,
 
-  // TypeScript - permitir builds mesmo com erros
+  // TypeScript - permitir builds (6,125+ erros com strict mode)
   typescript: {
     ignoreBuildErrors: true,
   },
 
-  // ESLint - ignorar durante builds
+  // ESLint - ignorar durante builds (300+ warnings)
   eslint: {
     ignoreDuringBuilds: true,
   },

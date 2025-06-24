@@ -122,8 +122,8 @@ export default function HomePage() {
                 outline: 'none',
                 transition: 'border-color 0.15s ease'
               }}
-              onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-              onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+              onFocus={(e) => (e.target as HTMLInputElement).style.borderColor = '#3b82f6'}
+              onBlur={(e) => (e.target as HTMLInputElement).style.borderColor = '#d1d5db'}
             />
           </div>
 
@@ -151,8 +151,8 @@ export default function HomePage() {
                 outline: 'none',
                 transition: 'border-color 0.15s ease'
               }}
-              onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-              onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+              onFocus={(e) => (e.target as HTMLInputElement).style.borderColor = '#3b82f6'}
+              onBlur={(e) => (e.target as HTMLInputElement).style.borderColor = '#d1d5db'}
             />
           </div>
 
@@ -171,8 +171,8 @@ export default function HomePage() {
               marginBottom: '16px',
               transition: 'background-color 0.15s ease'
             }}
-            onMouseOver={(e) => e.target.style.background = '#111827'}
-            onMouseOut={(e) => e.target.style.background = '#1f2937'}
+            onMouseOver={(e) => (e.target as HTMLButtonElement).style.background = '#111827'}
+            onMouseOut={(e) => (e.target as HTMLButtonElement).style.background = '#1f2937'}
           >
             Entrar
           </button>

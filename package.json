@@ -27,7 +27,7 @@
     "analyze": "ANALYZE=true npm run build",
     "postinstall": "npm run verify-env || echo 'Skipping env verification in CI'",
     "lint:quick": "eslint . --config eslint.config.quick.js",
-    "lint:hybrid": "eslint . --config eslint.config.hybrid.js", 
+    "lint:hybrid": "eslint . --config eslint.config.hybrid.js",
     "lint:robust": "node scripts/fix-type-safety.js",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
@@ -128,7 +128,9 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.13.0",
+    "@next/eslint-plugin-next": "^15.3.4",
     "@tailwindcss/typography": "^0.5.15",
     "@testing-library/cypress": "^10.0.3",
     "@testing-library/jest-dom": "^6.6.3",
@@ -143,6 +145,8 @@
     "critters": "^0.0.23",
     "cypress": "^14.4.1",
     "eslint": "^9.13.0",
+    "eslint-config-next": "^15.3.4",
+    "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.14",
     "globals": "^15.11.0",

@@ -22,7 +22,11 @@ jest.mock('../services/supabaseMonitoring', () => ({
     recordError: jest.fn(),
     trackPageView: jest.fn(),
     trackUserAction: jest.fn(),
-    trackPerformance: jest.fn()
+    trackPerformance: jest.fn(),
+    getSessionMetrics: jest.fn(() => ({
+      sessionId: 'test-session-123',
+      queueSize: 0
+    }))
   }
 }));
 
@@ -31,7 +35,8 @@ Object.defineProperty(window, 'performance', {
   value: {
     now: jest.fn(() => Date.now()),
     memory: {
-      usedJSHeapSize: 1024 * 1024 * 50
+      usedJSHeapSize: 1024 * 1024 * 50,
+      totalJSHeapSize: 1024 * 1024 * 100
     }
   }
 });
@@ -53,7 +58,7 @@ describe('PerformanceMonitor', () => {
     const button = screen.getByRole('button');
     fireEvent.click(button);
     
-    expect(screen.getByText('Performance')).toBeInTheDocument();
+    expect(screen.getByText('Performance Monitor')).toBeInTheDocument();
   });
 
   it('deve exibir métricas FPS e Memory', () => {
