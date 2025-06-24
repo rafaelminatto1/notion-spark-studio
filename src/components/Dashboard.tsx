@@ -3,8 +3,6 @@ import { FileText, Tag, Clock, Star, TrendingUp, Calendar, Sparkles, Activity, Z
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import type { FileItem } from '@/types';
-import { useAuth } from '@/contexts/AuthContext';
-import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { TaskList } from './tasks/TaskList';
 import { PerformanceMonitor } from './PerformanceMonitor';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -25,31 +23,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onCreateFile,
   className
 }) => {
-  const { user } = useAuth();
-  const { signInWithGoogle } = useSupabaseAuth();
-
-  if (!user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Card className="w-[350px]">
-          <CardHeader>
-            <CardTitle>Bem-vindo ao Notion Spark Studio</CardTitle>
-            <CardDescription>
-              Faça login para começar a usar a plataforma
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button 
-              className="w-full"
-              onClick={() => signInWithGoogle()}
-            >
-              Entrar com Google
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  // Removida verificação de autenticação - acesso direto ao dashboard
 
   const recentFiles = files
     .filter(f => f.type === 'file')
@@ -79,7 +53,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   return (
     <div className={`container mx-auto p-6 ${className}`}>
       <h1 className="text-3xl font-bold mb-6">
-        Olá, {user.user_metadata?.name || user.email}!
+        Bem-vindo ao Notion Spark Studio!
       </h1>
 
       <Tabs defaultValue="tasks" className="space-y-6">
