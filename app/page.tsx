@@ -22,7 +22,14 @@ export default function HomePage() {
 
       if (savedFiles) {
         try {
-          setFiles(JSON.parse(savedFiles));
+          const parsedFiles = JSON.parse(savedFiles);
+          // Converter strings de data de volta para objetos Date
+          const filesWithDates = parsedFiles.map((file: any) => ({
+            ...file,
+            createdAt: new Date(file.createdAt),
+            updatedAt: new Date(file.updatedAt)
+          }));
+          setFiles(filesWithDates);
         } catch (error) {
           console.error('Error parsing saved files:', error);
         }

@@ -27,7 +27,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   const recentFiles = files
     .filter(f => f.type === 'file')
-    .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+    .sort((a, b) => {
+      const dateA = a.updatedAt instanceof Date ? a.updatedAt : new Date(a.updatedAt || new Date());
+      const dateB = b.updatedAt instanceof Date ? b.updatedAt : new Date(b.updatedAt || new Date());
+      return dateB.getTime() - dateA.getTime();
+    })
     .slice(0, 5);
 
   const favoriteFiles = files.filter(f => favorites.includes(f.id));
@@ -128,7 +132,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       <div className="recent-file-details">
                         <p className="recent-file-name">{file.name}</p>
                         <p className="recent-file-date">
-                          {file.updatedAt.toLocaleDateString()}
+                          {(file.updatedAt instanceof Date ? file.updatedAt : new Date(file.updatedAt || new Date())).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
