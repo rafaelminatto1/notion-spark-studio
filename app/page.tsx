@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Dashboard } from '@/components/Dashboard';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { AuthProvider } from '@/contexts/AuthContext';
+
 import type { FileItem } from '@/types';
 
 export default function HomePage() {
@@ -156,13 +156,11 @@ export default function HomePage() {
   }
 
   return (
-    <AuthProvider>
-      <Dashboard
-        files={files}
-        favorites={favorites}
-        onNavigateToFile={handleNavigateToFile}
-        onCreateFile={handleCreateFile}
-      />
-    </AuthProvider>
+    <Dashboard
+      files={files}
+      favorites={favorites}
+      onNavigateToFile={handleNavigateToFile}
+      onCreateFile={handleCreateFile}
+    />
   );
 }
