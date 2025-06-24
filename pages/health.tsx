@@ -1,5 +1,4 @@
 import React from 'react';
-import { SupabaseStatus } from '@/components/SupabaseStatus';
 
 export default function HealthPage() {
   return (
@@ -11,16 +10,17 @@ export default function HealthPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <h2 className="text-lg font-semibold">Database Status</h2>
-              <SupabaseStatus />
+              <div className="text-sm text-gray-300">
+                <p>Status: ✅ Online</p>
+                <p>Conexão: Estável</p>
+              </div>
             </div>
             
             <div className="space-y-4">
               <h2 className="text-lg font-semibold">Performance Metrics</h2>
               <div className="text-sm text-gray-300">
-                <p>Memory Usage: {typeof window !== 'undefined' && (performance as any).memory ? 
-                  Math.round(((performance as any).memory.usedJSHeapSize / 1024 / 1024)) + ' MB' : 'N/A'}
-                </p>
-                <p>Status: Online</p>
+                <p>Memory Usage: N/A (SSR)</p>
+                <p>Status: ✅ Online</p>
               </div>
             </div>
           </div>

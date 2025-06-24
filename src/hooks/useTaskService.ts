@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { taskService, type PaginationOptions, type PaginatedResult } from '@/services/taskService';
+import { taskService, type PaginationOptions, type PaginatedResult } from '@/services/TaskService';
 import type { Task, TaskFilters } from '@/types/task';
 
 interface UseTaskServiceOptions {

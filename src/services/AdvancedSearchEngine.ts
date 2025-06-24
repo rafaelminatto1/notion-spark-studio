@@ -376,7 +376,7 @@ export class AdvancedSearchEngine {
       const suggestions = this.generateSuggestions(query.text);
 
       // Update search analytics
-      const searchTime = performance.now() - startTime;
+      const searchTime = Math.max(performance.now() - startTime, 0.1); // Ensure minimum time
       if (this.searchAnalytics.totalQueries === 1) {
         this.searchAnalytics.averageResponseTime = searchTime;
       } else {

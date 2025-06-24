@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { TaskService, Task } from '@/services/TaskService';
+import { taskService } from '@/services/TaskService';
 import type { Task, TaskFilters } from '@/types/task';
 import { useToast } from '@/hooks/use-toast';
 
@@ -9,24 +9,67 @@ export function useTasks(initialFilters?: TaskFilters) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const { data: tasks = [], isLoading, error } = useQuery({
-    queryKey: ['tasks'],
-    queryFn: TaskService.list,
+  const { data: tasksResult, isLoading, error } = useQuery({
+    queryKey: ['tasks', filters],
+    queryFn: () => taskService.getTasks(filters),
   });
+
+  const tasks = tasksResult?.data || [];
 
   const createTask = useMutation({
-    mutationFn: (title: string) => TaskService.create(title),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tasks'] }),
+    mutationFn: (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => 
+      taskService.createTask(taskData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      toast({
+        title: "Tarefa criada",
+        description: "Tarefa criada com sucesso",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Erro",
+        description: "Erro ao criar tarefa",
+        variant: "destructive",
+      });
+    },
   });
 
-  const toggleTask = useMutation({
-    mutationFn: (id: string) => TaskService.toggle(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tasks'] }),
+  const updateTask = useMutation({
+    mutationFn: ({ id, updates }: { id: string; updates: Partial<Task> }) => 
+      taskService.updateTask(id, updates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      toast({
+        title: "Tarefa atualizada",
+        description: "Tarefa atualizada com sucesso",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar tarefa",
+        variant: "destructive",
+      });
+    },
   });
 
-  const removeTask = useMutation({
-    mutationFn: (id: string) => TaskService.remove(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tasks'] }),
+  const deleteTask = useMutation({
+    mutationFn: (id: string) => taskService.deleteTask(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      toast({
+        title: "Tarefa removida",
+        description: "Tarefa removida com sucesso",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Erro", 
+        description: "Erro ao remover tarefa",
+        variant: "destructive",
+      });
+    },
   });
 
   const updateFilters = useCallback((newFilters: Partial<TaskFilters>) => {
@@ -39,8 +82,11 @@ export function useTasks(initialFilters?: TaskFilters) {
     error,
     filters,
     updateFilters,
-    createTask,
-    toggleTask,
-    removeTask,
+    createTask: createTask.mutate,
+    updateTask: updateTask.mutate,
+    deleteTask: deleteTask.mutate,
+    isCreating: createTask.isPending,
+    isUpdating: updateTask.isPending,
+    isDeleting: deleteTask.isPending,
   };
 } 
