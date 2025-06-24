@@ -30,7 +30,7 @@ const nextConfig = {
   
   experimental: {
     optimizeCss: false, // Disable CSS optimization to force rebuild
-    isrMemoryCacheSize: 0, // Disable static optimization to force SSR
+    // isrMemoryCacheSize removed - deprecated in Next.js 15.3+
   },
   
   // Force no caching during build

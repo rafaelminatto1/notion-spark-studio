@@ -443,13 +443,8 @@ export const useMobileEcosystem = (settings: Partial<MobileOptimizationSettings>
       return updated;
     });
 
-    // Try to sync immediately if online
-    if (state.network.isOnline) {
-      syncOfflineOperations();
-    }
-
     return newOperation.id;
-  }, [state.network.isOnline]);
+  }, []);
 
   // Sync offline operations
   const syncOfflineOperations = useCallback(async () => {
