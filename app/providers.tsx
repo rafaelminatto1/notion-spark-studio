@@ -7,20 +7,28 @@ import { Toaster } from '../src/components/ui/toaster';
 import { TooltipProvider } from '../src/components/ui/tooltip';
 import ErrorBoundary from '../src/components/ErrorBoundary';
 
-// Mover QueryClient para fora do componente para evitar re-criação
+// Configuração robusta do QueryClient para @tanstack/react-query v5
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutos
+      gcTime: 10 * 60 * 1000, // 10 minutos (gcTime substitui cacheTime na v5)
       retry: (failureCount, error: any) => {
-        // Don't retry on auth errors
-        if (error?.status === 401 || error?.status === 403) {
+        // Não retry em erros de autenticação ou cliente
+        if (error?.status >= 400 && error?.status < 500) {
           return false;
         }
-        return failureCount < 2;
+        return failureCount < 3;
       },
-      staleTime: 5 * 60 * 1000,
-      gcTime: 10 * 60 * 1000,
       refetchOnWindowFocus: false,
+      refetchOnMount: true,
+      refetchOnReconnect: true,
+      // Configurações específicas para v5
+      networkMode: 'online',
+    },
+    mutations: {
+      retry: false,
+      networkMode: 'online',
     },
   },
 });
