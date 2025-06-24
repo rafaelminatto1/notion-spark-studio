@@ -99,7 +99,7 @@ export const usePasswordReset = () => {
       if (!validation?.valid) {
         toast({
           title: "Token inválido",
-          description: validation?.message || "Token inválido ou expirado",
+          description: validation?.message ?? "Token inválido ou expirado",
           variant: "destructive"
         });
         return false;

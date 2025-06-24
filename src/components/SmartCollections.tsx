@@ -116,9 +116,9 @@ export const SmartCollections: React.FC<SmartCollectionsProps> = ({
         description: 'Notas com muito conteúdo',
         icon: <FileText className="h-4 w-4" />,
         color: 'bg-purple-500',
-        count: files.filter(f => f.type === 'file' && (f.content?.length || 0) > 1000).length,
-        items: files.filter(f => f.type === 'file' && (f.content?.length || 0) > 1000)
-          .sort((a, b) => (b.content?.length || 0) - (a.content?.length || 0)),
+        count: files.filter(f => f.type === 'file' && (f.content?.length ?? 0) > 1000).length,
+        items: files.filter(f => f.type === 'file' && (f.content?.length ?? 0) > 1000)
+          .sort((a, b) => (b.content?.length ?? 0) - (a.content?.length ?? 0)),
         criteria: { type: 'notes', minSize: 1000 },
         isBuiltIn: true
       },

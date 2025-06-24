@@ -10,7 +10,8 @@ import { Badge } from '../ui/badge';
 import { Progress } from '../ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Alert, AlertDescription } from '../ui/alert';
-import { systemOptimizationEngine, SystemHealth, OptimizationResult } from '../../services/SystemOptimizationEngine';
+import type { SystemHealth, OptimizationResult } from '../../services/SystemOptimizationEngine';
+import { systemOptimizationEngine } from '../../services/SystemOptimizationEngine';
 
 interface DashboardProps {
   className?: string;

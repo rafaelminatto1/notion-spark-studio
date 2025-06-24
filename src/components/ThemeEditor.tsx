@@ -31,7 +31,7 @@ export const ThemeEditor: React.FC<ThemeEditorProps> = ({
   
   const [editingTheme, setEditingTheme] = useState<CustomTheme>({
     id: selectedTheme?.id || Date.now().toString(),
-    name: selectedTheme?.name || 'Novo Tema',
+    name: selectedTheme?.name ?? 'Novo Tema',
     colors: selectedTheme?.colors || {
       primary: '#7c3aed',
       secondary: '#4f46e5',

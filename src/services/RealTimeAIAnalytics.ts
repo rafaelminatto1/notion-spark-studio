@@ -351,7 +351,7 @@ class RealTimeAIAnalytics {
     // Send real-time updates via WebSocket
     webSocketService.send('analytics_update', {
       type: 'action_processed',
-      action: action,
+      action,
       timestamp: Date.now()
     });
   }

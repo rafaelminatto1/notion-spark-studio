@@ -354,7 +354,7 @@ export const IntelligentAssistant: React.FC<IntelligentAssistantProps> = ({
         onFileSelect(action.parameters?.fileId);
         break;
       case 'create_file':
-        onCreateFile?.(action.parameters?.name || 'Novo arquivo', action.parameters?.type || 'document');
+        onCreateFile?.(action.parameters?.name ?? 'Novo arquivo', action.parameters?.type ?? 'document');
         break;
       default:
         onExecuteCommand?.(action.command, action.parameters);

@@ -319,7 +319,7 @@ function getEdgeWeight(nodeId1: string, nodeId2: string, links: GraphLink[]): nu
            (sourceId === nodeId2 && targetId === nodeId1 && link.bidirectional);
   });
   
-  return link?.weight || 1;
+  return link?.weight ?? 1;
 }
 
 function generateClusterColor(clusterId: string): string {

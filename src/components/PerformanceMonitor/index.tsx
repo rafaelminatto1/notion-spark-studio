@@ -246,8 +246,8 @@ class ConsolidatedPerformanceMonitor {
     const connection = (navigator as any).connection;
     
     return {
-      latency: connection?.rtt || 50 + Math.random() * 50,
-      bandwidth: connection?.downlink || 10 + Math.random() * 20,
+      latency: connection?.rtt ?? 50 + Math.random() * 50,
+      bandwidth: connection?.downlink ?? 10 + Math.random() * 20,
       requestsPerMinute: 20 + Math.random() * 30,
       errorRate: Math.random() * 2 // 0-2%
     };
@@ -480,7 +480,7 @@ export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
       <div className={`fixed ${positionClasses[position]} z-50`}>
         <Button
           onClick={() => setIsVisible(!isVisible)}
-          className={`rounded-full ${getPerformanceColor(metrics?.overall || 100)} bg-white/90 hover:bg-white shadow-lg backdrop-blur-sm`}
+          className={`rounded-full ${getPerformanceColor(metrics?.overall ?? 100)} bg-white/90 hover:bg-white shadow-lg backdrop-blur-sm`}
           size="icon"
           variant="outline"
         >

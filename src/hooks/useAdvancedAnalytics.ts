@@ -96,10 +96,10 @@ export function useAdvancedAnalytics(config: AnalyticsConfig = {
       category,
       properties: { elementId },
       performance: {
-        pageLoadTime: performance.timing?.loadEventEnd - performance.timing?.navigationStart || 0,
+        pageLoadTime: performance.timing?.loadEventEnd - performance.timing?.navigationStart ?? 0,
         renderTime: performance.now(),
         interactionTime: performance.now(),
-        memoryUsage: (performance as any).memory?.usedJSHeapSize || 0,
+        memoryUsage: (performance as any).memory?.usedJSHeapSize ?? 0,
         networkLatency: 0,
         fps: 60
       }
@@ -120,10 +120,10 @@ export function useAdvancedAnalytics(config: AnalyticsConfig = {
         timestamp: Date.now()
       },
       performance: {
-        pageLoadTime: performance.timing?.loadEventEnd - performance.timing?.navigationStart || 0,
+        pageLoadTime: performance.timing?.loadEventEnd - performance.timing?.navigationStart ?? 0,
         renderTime: 0,
         interactionTime: 0,
-        memoryUsage: (performance as any).memory?.usedJSHeapSize || 0,
+        memoryUsage: (performance as any).memory?.usedJSHeapSize ?? 0,
         networkLatency: 0,
         fps: 60
       }

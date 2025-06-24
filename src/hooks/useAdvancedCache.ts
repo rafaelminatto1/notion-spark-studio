@@ -155,7 +155,7 @@ export const useAdvancedCache = <T = any>(config?: Partial<CacheConfig>) => {
       try {
         const data = await fetchFn();
         await set(key, data, {
-          priority: options?.priority || 'medium',
+          priority: options?.priority ?? 'medium',
           ttl: options?.ttl
         });
         
@@ -188,7 +188,7 @@ export const useAdvancedCache = <T = any>(config?: Partial<CacheConfig>) => {
       data,
       timestamp: Date.now(),
       ttl: options?.ttl || defaultConfig.defaultTTL,
-      priority: options?.priority || 'medium',
+      priority: options?.priority ?? 'medium',
       accessCount: 1,
       lastAccess: Date.now()
     };

@@ -157,7 +157,7 @@ export const GraphExporter: React.FC<GraphExporterProps> = ({
           type: 'force',
           positions: nodes.reduce((acc, node) => ({
             ...acc,
-            [node.id]: { x: node.position?.x || 0, y: node.position?.y || 0 }
+            [node.id]: { x: node.position?.x ?? 0, y: node.position?.y ?? 0 }
           }), {})
         }
       })
@@ -173,8 +173,8 @@ export const GraphExporter: React.FC<GraphExporterProps> = ({
       node.id,
       node.title,
       node.type,
-      node.position?.x || 0,
-      node.position?.y || 0,
+      node.position?.x ?? 0,
+      node.position?.y ?? 0,
       node.metadata.tags.join(';'),
       node.connections || 0
     ]);
@@ -223,7 +223,7 @@ export const GraphExporter: React.FC<GraphExporterProps> = ({
           <attvalue for="1" value="${node.connections || 0}"/>
         </attvalues>
         ${exportOptions.includePositions ? `
-        <viz:position x="${node.position?.x || 0}" y="${node.position?.y || 0}" z="0"/>` : ''}
+        <viz:position x="${node.position?.x ?? 0}" y="${node.position?.y ?? 0}" z="0"/>` : ''}
       </node>`).join('')}
     </nodes>
     <edges>

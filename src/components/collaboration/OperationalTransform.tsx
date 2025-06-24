@@ -242,8 +242,8 @@ const applyOperationToText = (text: string, operation: TextOperation): string =>
 const checkForConflicts = (operation: TextOperation, activeOperations: TextOperation[]): boolean => {
   return activeOperations.some(active => {
     // Conflito se operações se sobrepõem
-    const activeEnd = active.position + (active.length || active.content?.length || 0);
-    const operationEnd = operation.position + (operation.length || operation.content?.length || 0);
+    const activeEnd = active.position + (active.length || active.content?.length ?? 0);
+    const operationEnd = operation.position + (operation.length || operation.content?.length ?? 0);
     
     return (
       active.userId !== operation.userId &&
@@ -264,7 +264,7 @@ const transformOperation = (operation: TextOperation, concurrentOps: TextOperati
   for (const concurrentOp of concurrentOps) {
     if (concurrentOp.timestamp < operation.timestamp) {
       if (concurrentOp.type === 'insert' && concurrentOp.position <= transformedOp.position) {
-        transformedOp.position += concurrentOp.content?.length || 0;
+        transformedOp.position += concurrentOp.content?.length ?? 0;
       } else if (concurrentOp.type === 'delete' && concurrentOp.position < transformedOp.position) {
         transformedOp.position -= concurrentOp.length || 0;
       }
@@ -409,7 +409,7 @@ export const OperationalTransform: React.FC<OperationalTransformProps> = ({
       } else {
         return {
           ...op1,
-          position: op1.position + (op2.text?.length || 0),
+          position: op1.position + (op2.text?.length ?? 0),
         };
       }
     } else if (op1.type === 'insert' && op2.type === 'delete') {
@@ -427,7 +427,7 @@ export const OperationalTransform: React.FC<OperationalTransformProps> = ({
       } else {
         return {
           ...op1,
-          position: op1.position + (op2.text?.length || 0),
+          position: op1.position + (op2.text?.length ?? 0),
         };
       }
     } else if (op1.type === 'delete' && op2.type === 'delete') {

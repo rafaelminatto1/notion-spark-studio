@@ -179,8 +179,8 @@ const useListFiltering = (items: VirtualizedItem[]) => {
           comparison = dateA.getTime() - dateB.getTime();
           break;
         case 'size':
-          const sizeA = a.metadata?.size || 0;
-          const sizeB = b.metadata?.size || 0;
+          const sizeA = a.metadata?.size ?? 0;
+          const sizeB = b.metadata?.size ?? 0;
           comparison = sizeA - sizeB;
           break;
         case 'type':

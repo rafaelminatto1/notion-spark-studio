@@ -25,8 +25,8 @@ export function TaskDialog({ open, onOpenChange, task }: TaskDialogProps) {
   const { user } = useAuth();
   const [title, setTitle] = useState(task?.title || '');
   const [description, setDescription] = useState(task?.description || '');
-  const [priority, setPriority] = useState<Task['priority']>(task?.priority || 'medium');
-  const [status, setStatus] = useState<Task['status']>(task?.status || 'todo');
+  const [priority, setPriority] = useState<Task['priority']>(task?.priority ?? 'medium');
+  const [status, setStatus] = useState<Task['status']>(task?.status ?? 'todo');
   const [dueDate, setDueDate] = useState<Date | undefined>(task?.dueDate);
   const [tags, setTags] = useState<string[]>(task?.tags || []);
   const [newTag, setNewTag] = useState('');

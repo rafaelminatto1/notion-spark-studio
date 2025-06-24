@@ -297,7 +297,7 @@ export const NoteEditorPanel: React.FC<NoteEditorPanelProps> = ({
         <div className="flex items-center gap-3">
           <FileText className="h-6 w-6 text-[#2563eb] dark:text-[#60a5fa]" />
           <span className="text-xl font-bold text-[#1a2233] dark:text-white truncate">
-            {note?.name || 'Sem título'}
+            {note?.name ?? 'Sem título'}
           </span>
           {isFavorite && <Star className="h-5 w-5 text-[#22c55e] dark:text-[#4ade80]" />}
         </div>

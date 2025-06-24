@@ -159,7 +159,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
           {file.type === 'file' && (
             <div className="flex justify-between">
               <span>Tamanho:</span>
-              <span>{file.content?.length || 0} caracteres</span>
+              <span>{file.content?.length ?? 0} caracteres</span>
             </div>
           )}
         </div>

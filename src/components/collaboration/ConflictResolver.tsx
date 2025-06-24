@@ -163,7 +163,7 @@ const performIntelligentMerge = (operations: TextOperation[], originalContent: s
           mergedContent = mergedContent.slice(0, adjustedPosition) + 
                          (operation.content || '') + 
                          mergedContent.slice(adjustedPosition);
-          positionOffset += operation.content?.length || 0;
+          positionOffset += operation.content?.length ?? 0;
           break;
           
         case 'delete':

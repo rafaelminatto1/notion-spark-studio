@@ -174,8 +174,8 @@ class PerformanceMonitor {
     const connection = (navigator as any).connection;
     
     return {
-      latency: connection?.rtt || 50 + Math.random() * 100,
-      bandwidth: connection?.downlink || 10 + Math.random() * 20,
+      latency: connection?.rtt ?? 50 + Math.random() * 100,
+      bandwidth: connection?.downlink ?? 10 + Math.random() * 20,
       requestsPerMinute: 20 + Math.random() * 30,
       errorRate: Math.random() * 5 // 0-5%
     };
@@ -671,13 +671,13 @@ export const PerformanceOptimizer: React.FC<PerformanceOptimizerProps> = ({
                     strokeWidth="8"
                     fill="transparent"
                     strokeDasharray={`${2 * Math.PI * 56}`}
-                    strokeDashoffset={`${2 * Math.PI * 56 * (1 - (systemHealth?.score || 0) / 100)}`}
+                    strokeDashoffset={`${2 * Math.PI * 56 * (1 - (systemHealth?.score ?? 0) / 100)}`}
                     className="transition-all duration-1000"
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center">
-                    <div className="text-3xl font-bold">{systemHealth?.score || 0}</div>
+                    <div className="text-3xl font-bold">{systemHealth?.score ?? 0}</div>
                     <div className="text-sm text-slate-500">Score</div>
                   </div>
                 </div>

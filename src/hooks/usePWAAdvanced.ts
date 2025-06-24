@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { pwaAdvancedService, PWACapabilities, PWAMetrics } from '../services/PWAAdvancedService';
+import type { PWACapabilities, PWAMetrics } from '../services/PWAAdvancedService';
+import { pwaAdvancedService } from '../services/PWAAdvancedService';
 
 export interface PWAState {
   capabilities: PWACapabilities | null;

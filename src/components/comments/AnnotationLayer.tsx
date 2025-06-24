@@ -52,8 +52,8 @@ export const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
     const newComment: Comment = {
       id: `comment-${Date.now()}`,
       content: '',
-      authorId: user?.id || 'anonymous',
-      authorName: user?.name || 'Usuário Anônimo',
+      authorId: user?.id ?? 'anonymous',
+      authorName: user?.name ?? 'Usuário Anônimo',
       authorAvatar: user?.avatar || '',
       createdAt: new Date(),
       updatedAt: new Date(),

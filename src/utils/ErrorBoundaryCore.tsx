@@ -281,19 +281,19 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
   };
 
   handleReportBug = () => {
-    const subject = encodeURIComponent(`Bug Report: ${this.state.error?.message || 'Unknown Error'}`);
+    const subject = encodeURIComponent(`Bug Report: ${this.state.error?.message ?? 'Unknown Error'}`);
     const body = encodeURIComponent(`
 Error ID: ${this.state.errorId}
-Message: ${this.state.error?.message || 'Unknown'}
+Message: ${this.state.error?.message ?? 'Unknown'}
 Timestamp: ${new Date().toISOString()}
 User Agent: ${typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown'}
 URL: ${typeof window !== 'undefined' ? window.location.href : 'Unknown'}
 
 Stack Trace:
-${this.state.error?.stack || 'Not available'}
+${this.state.error?.stack ?? 'Not available'}
 
 Component Stack:
-${this.state.errorInfo?.componentStack || 'Not available'}
+${this.state.errorInfo?.componentStack ?? 'Not available'}
     `.trim());
 
     const mailtoLink = `mailto:support@example.com?subject=${subject}&body=${body}`;

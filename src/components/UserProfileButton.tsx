@@ -57,7 +57,7 @@ export const UserProfileButton: React.FC<UserProfileButtonProps> = ({
               alt={profile?.name || user?.email || ''} 
             />
             <AvatarFallback>
-              {(profile?.name || user?.email || 'U').charAt(0).toUpperCase()}
+              {(profile?.name || user?.email ?? 'U').charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
         </Button>
@@ -68,7 +68,7 @@ export const UserProfileButton: React.FC<UserProfileButtonProps> = ({
             <div className="flex items-center space-x-2">
               <User className="h-4 w-4" />
               <p className="text-sm font-medium leading-none">
-                {profile?.name || user?.user_metadata?.name || 'Usuário'}
+                {profile?.name || user?.user_metadata?.name ?? 'Usuário'}
               </p>
             </div>
             <p className="text-xs leading-none text-muted-foreground">

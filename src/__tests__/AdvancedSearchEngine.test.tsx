@@ -1,5 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
-import { advancedSearchEngine, AdvancedSearchEngine, SearchDocument, SearchQuery } from '../services/AdvancedSearchEngine';
+import type { SearchDocument, SearchQuery } from '../services/AdvancedSearchEngine';
+import { advancedSearchEngine, AdvancedSearchEngine } from '../services/AdvancedSearchEngine';
 import useAdvancedSearch from '../hooks/useAdvancedSearch';
 
 // Mock data for testing
@@ -544,7 +545,7 @@ describe('Performance Tests', () => {
   }, 10000); // Increase timeout for performance test
 
   test('should maintain memory efficiency', async () => {
-    const initialMemory = (performance as any).memory?.usedJSHeapSize || 0;
+    const initialMemory = (performance as any).memory?.usedJSHeapSize ?? 0;
 
     await advancedSearchEngine.initialize(mockDocuments);
 
@@ -566,7 +567,7 @@ describe('Performance Tests', () => {
       });
     }
 
-    const finalMemory = (performance as any).memory?.usedJSHeapSize || 0;
+    const finalMemory = (performance as any).memory?.usedJSHeapSize ?? 0;
     const memoryIncrease = finalMemory - initialMemory;
 
     // Memory increase should be reasonable (less than 50MB for 100 searches)

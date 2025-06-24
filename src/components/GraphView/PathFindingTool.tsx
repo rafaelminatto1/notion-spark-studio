@@ -343,7 +343,7 @@ export const PathFindingTool: React.FC<PathFindingToolProps> = ({
                             onClick={() => node && onNodeSelect(node.id)}
                             className="whitespace-nowrap text-xs px-2 py-1 h-auto"
                           >
-                            {node?.title || 'Unknown'}
+                            {node?.title ?? 'Unknown'}
                           </Button>
                         </motion.div>
                         {index < metrics.pathNodes.length - 1 && (

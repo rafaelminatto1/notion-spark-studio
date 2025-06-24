@@ -486,8 +486,8 @@ export const useSystemIntegration = (): SystemIntegrationAPI => {
             total: Math.round(((performance as any).memory.totalJSHeapSize / 1024 / 1024) * 100) / 100,
             limit: Math.round(((performance as any).memory.jsHeapSizeLimit / 1024 / 1024) * 100) / 100
           } : null,
-          connectionType: (navigator as any).connection?.effectiveType || 'unknown',
-          downlink: (navigator as any).connection?.downlink || 0
+          connectionType: (navigator as any).connection?.effectiveType ?? 'unknown',
+          downlink: (navigator as any).connection?.downlink ?? 0
         },
         
         // Métricas offline

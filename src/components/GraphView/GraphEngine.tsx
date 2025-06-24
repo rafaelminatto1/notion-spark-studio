@@ -178,7 +178,7 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
       id: file.id,
       title: file.name,
       type: file.type,
-      size: Math.max(8, Math.min(20, (file.content?.length || 0) / 100)),
+      size: Math.max(8, Math.min(20, (file.content?.length ?? 0) / 100)),
       color: file.type === 'folder' ? '#4f46e5' : 
              file.tags?.includes('importante') ? '#dc2626' : 
              file.tags?.includes('projeto') ? '#059669' : '#6366f1',
@@ -189,7 +189,7 @@ export const GraphEngine: React.FC<GraphEngineProps> = ({
         wordCount: file.content?.split(' ').length || 0,
         collaborators: [],
         tags: file.tags || [],
-        fileSize: file.content?.length || 0,
+        fileSize: file.content?.length ?? 0,
         language: 'markdown',
         isTemplate: false,
         isShared: false,

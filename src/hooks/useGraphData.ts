@@ -37,7 +37,7 @@ export const useGraphData = (files: FileItem[], filters: GraphFilters): UseGraph
           wordCount: calculateWordCount(file.content || ''),
           collaborators: extractCollaborators(file),
           tags: extractTags(file),
-          fileSize: file.content?.length || 0,
+          fileSize: file.content?.length ?? 0,
           language: detectLanguage(file.content || ''),
           isTemplate: file.name.toLowerCase().includes('template'),
           isShared: false,
@@ -260,7 +260,7 @@ function getNodeColorByType(type: string): string {
 function calculateNodeSize(file: FileItem, connections: number): number {
   const baseSize = 8;
   const connectionBonus = Math.min(connections * 2, 20);
-  const contentBonus = Math.min((file.content?.length || 0) / 1000, 10);
+  const contentBonus = Math.min((file.content?.length ?? 0) / 1000, 10);
   return baseSize + connectionBonus + contentBonus;
 }
 

@@ -121,7 +121,7 @@ export class APMMonitoringService {
 
   constructor() {
     this.sessionId = this.generateSessionId();
-    this.buildVersion = process.env.BUILD_ID || 'unknown';
+    this.buildVersion = process.env.BUILD_ID ?? 'unknown';
     
     this.thresholds = {
       // Core Web Vitals thresholds (Google standards)
@@ -406,7 +406,7 @@ export class APMMonitoringService {
   // Monitor business metrics
   private monitorBusinessMetrics(): void {
     // User engagement tracking
-    let engagementScore = 0;
+    const engagementScore = 0;
     let interactionCount = 0;
     const startTime = Date.now();
 

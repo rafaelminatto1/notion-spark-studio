@@ -131,7 +131,7 @@ export const WorkspaceAnalytics: React.FC<WorkspaceAnalyticsProps> = ({
       );
 
       const dayWords = dayEvents.reduce((acc, event) => {
-        return acc + (event.metadata?.wordsAdded || 0);
+        return acc + (event.metadata?.wordsAdded ?? 0);
       }, 0);
 
       dailyActivity.push({

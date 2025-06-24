@@ -113,7 +113,7 @@ export const GraphViewEnhanced: React.FC<GraphViewEnhancedProps> = ({
         id: file.id,
         title: file.name,
         type: file.type as 'file',
-        size: Math.max(settings.visual.nodeMinSize, Math.min(settings.visual.nodeMaxSize, 15 + (file.content?.length || 0) / 100)),
+        size: Math.max(settings.visual.nodeMinSize, Math.min(settings.visual.nodeMaxSize, 15 + (file.content?.length ?? 0) / 100)),
         color: getNodeColor(file),
         position: { x: 0, y: 0 },
         connections: [],

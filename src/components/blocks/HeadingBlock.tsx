@@ -17,7 +17,7 @@ export const HeadingBlock: React.FC<HeadingBlockProps> = ({
   onUpdate,
   onFocus
 }) => {
-  const level = block.properties?.level || 1;
+  const level = block.properties?.level ?? 1;
   
   const getHeadingClass = (level: number) => {
     switch (level) {

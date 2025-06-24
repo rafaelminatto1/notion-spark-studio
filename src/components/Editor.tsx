@@ -342,7 +342,7 @@ const EditorInner: React.FC<EditorProps> = ({
               }`}
             >
               <MessageCircle className="h-4 w-4 mr-2" />
-              Comentários ({file.comments?.length || 0})
+              Comentários ({file.comments?.length ?? 0})
             </Button>
             {collaborationEnabled && (
               <Button

@@ -43,7 +43,7 @@ export const EvernoteLayout: React.FC<EvernoteLayoutProps> = ({
   const { checkPermission, state } = usePermissions();
   
   // Fallback seguro para currentUser
-  const currentUserId = state?.currentUser?.id || 'default-user';
+  const currentUserId = state?.currentUser?.id ?? 'default-user';
   
   // Loading state
   if (loading) {

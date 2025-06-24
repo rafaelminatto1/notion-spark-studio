@@ -18,7 +18,7 @@ export const CalloutBlock: React.FC<CalloutBlockProps> = ({
   onUpdate,
   onFocus
 }) => {
-  const type = block.properties?.type || 'info';
+  const type = block.properties?.type ?? 'info';
   
   const getCalloutConfig = (type: string) => {
     switch (type) {

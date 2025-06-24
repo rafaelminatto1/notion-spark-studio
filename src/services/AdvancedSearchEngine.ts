@@ -508,7 +508,7 @@ export class AdvancedSearchEngine {
       reasons.push('high priority');
     }
     
-    return `Relevance score ${score.toFixed(2)}${reasons.length > 0 ? ' based on ' + reasons.join(', ') : ''}`;
+    return `Relevance score ${score.toFixed(2)}${reasons.length > 0 ? ` based on ${  reasons.join(', ')}` : ''}`;
   }
 
   private determineMatchType(document: SearchDocument, query: SearchQuery): 'exact' | 'fuzzy' | 'semantic' | 'contextual' {
@@ -660,7 +660,7 @@ export class AdvancedSearchEngine {
     // Estimate memory usage
     let memoryUsage = 0;
     try {
-      memoryUsage = (performance as any).memory?.usedJSHeapSize || 0;
+      memoryUsage = (performance as any).memory?.usedJSHeapSize ?? 0;
     } catch {
       memoryUsage = indexSize * 100; // Estimate based on index size
     }

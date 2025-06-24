@@ -69,7 +69,7 @@ export const useAutoSave = ({
     
     toast({
       title: "Arquivo salvo",
-      description: `${file?.name || 'Arquivo'} foi salvo manualmente`,
+      description: `${file?.name ?? 'Arquivo'} foi salvo manualmente`,
       duration: 1500,
     });
   }, [save, toast, file?.name]);

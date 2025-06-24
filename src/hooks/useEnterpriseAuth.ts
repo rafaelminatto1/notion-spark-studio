@@ -89,7 +89,7 @@ export function useEnterpriseAuth() {
   const hasAdminAccess = permissions?.adminAccess || false;
 
   // Organization Info
-  const organizationTier = organization?.tier || 'free';
+  const organizationTier = organization?.tier ?? 'free';
   const organizationLimits = organization?.limits || {
     users: 5,
     storage: 1024, // MB

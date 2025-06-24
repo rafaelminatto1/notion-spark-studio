@@ -4,7 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Trash2, RefreshCw, HardDrive, TrendingUp } from 'lucide-react';
-import { SmartCacheSystem, CacheConfig, CacheStats } from './SmartCacheCore';
+import type { CacheConfig, CacheStats } from './SmartCacheCore';
+import { SmartCacheSystem } from './SmartCacheCore';
 
 // Context
 interface CacheContextType {

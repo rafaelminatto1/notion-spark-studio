@@ -103,7 +103,7 @@ export const UserSettings: React.FC = () => {
             <div className="flex items-center justify-between">
               <Label htmlFor="theme">Tema</Label>
               <Select
-                value={preferences?.theme || 'system'}
+                value={preferences?.theme ?? 'system'}
                 onValueChange={(value: any) => updateUserPreferences({ theme: value })}
               >
                 <SelectTrigger className="w-32">
@@ -120,7 +120,7 @@ export const UserSettings: React.FC = () => {
             <div className="flex items-center justify-between">
               <Label htmlFor="defaultView">Vista padrão</Label>
               <Select
-                value={preferences?.default_view || 'editor'}
+                value={preferences?.default_view ?? 'editor'}
                 onValueChange={(value: any) => updateUserPreferences({ default_view: value })}
               >
                 <SelectTrigger className="w-32">
@@ -181,7 +181,7 @@ export const UserSettings: React.FC = () => {
             <div className="flex items-center justify-between">
               <Label htmlFor="backupFreq">Backup (min)</Label>
               <Select
-                value={(preferences?.backup_frequency || 30).toString()}
+                value={(preferences?.backup_frequency ?? 30).toString()}
                 onValueChange={(value) => updateUserPreferences({ backup_frequency: parseInt(value) })}
               >
                 <SelectTrigger className="w-20">
@@ -198,7 +198,7 @@ export const UserSettings: React.FC = () => {
             <div className="flex items-center justify-between">
               <Label htmlFor="language">Idioma</Label>
               <Select
-                value={preferences?.language || 'pt'}
+                value={preferences?.language ?? 'pt'}
                 onValueChange={(value: any) => updateUserPreferences({ language: value })}
               >
                 <SelectTrigger className="w-20">

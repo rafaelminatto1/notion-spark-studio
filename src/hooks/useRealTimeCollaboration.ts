@@ -250,7 +250,7 @@ export function useRealTimeCollaboration(config: CollaborationConfig = {
     // Documento
     documentState,
     documentContent: documentState?.content || '',
-    documentVersion: documentState?.version || 0,
+    documentVersion: documentState?.version ?? 0,
     
     // Métricas
     metrics,

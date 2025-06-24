@@ -202,7 +202,7 @@ export function EnterpriseControlCenter() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{loadMetrics ? Math.round(loadMetrics.cpu_usage) : 0}%</div>
-            <Progress value={loadMetrics?.cpu_usage || 0} className="mt-2" />
+            <Progress value={loadMetrics?.cpu_usage ?? 0} className="mt-2" />
           </CardContent>
         </Card>
 
@@ -290,14 +290,14 @@ export function EnterpriseControlCenter() {
                     <span>CPU Usage</span>
                     <span>{loadMetrics ? Math.round(loadMetrics.cpu_usage) : 0}%</span>
                   </div>
-                  <Progress value={loadMetrics?.cpu_usage || 0} className="h-2" />
+                  <Progress value={loadMetrics?.cpu_usage ?? 0} className="h-2" />
                 </div>
                 <div>
                   <div className="flex justify-between text-sm">
                     <span>Memory Usage</span>
                     <span>{loadMetrics ? Math.round(loadMetrics.memory_usage) : 0}%</span>
                   </div>
-                  <Progress value={loadMetrics?.memory_usage || 0} className="h-2" />
+                  <Progress value={loadMetrics?.memory_usage ?? 0} className="h-2" />
                 </div>
                 <div>
                   <div className="flex justify-between text-sm">

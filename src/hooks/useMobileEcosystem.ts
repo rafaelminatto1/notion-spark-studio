@@ -233,8 +233,8 @@ export const useMobileEcosystem = (settings: Partial<MobileOptimizationSettings>
 
     return {
       isOnline: navigator.onLine,
-      connectionType: connection?.type || 'unknown',
-      effectiveType: connection?.effectiveType || 'unknown',
+      connectionType: connection?.type ?? 'unknown',
+      effectiveType: connection?.effectiveType ?? 'unknown',
       saveData: connection?.saveData || false,
     };
   }, []);

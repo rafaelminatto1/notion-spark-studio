@@ -852,7 +852,7 @@ export class AIPerformanceOptimizer {
         duration: 0,
         performance: {
           renderTime: performance.now() % 100,
-          memoryUsage: (performance as any).memory?.usedJSHeapSize || 0,
+          memoryUsage: (performance as any).memory?.usedJSHeapSize ?? 0,
           fps: 60 // Simulado - em produção usaria o PerformanceObserver
         }
       });

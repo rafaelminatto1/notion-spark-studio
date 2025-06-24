@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { ApplicationHealthMonitor, SystemHealth, HealthMetric } from './HealthMonitorCore';
+import type { SystemHealth} from './HealthMonitorCore';
+import { ApplicationHealthMonitor, HealthMetric } from './HealthMonitorCore';
 
 export function useHealthMonitor() {
   const [health, setHealth] = useState<SystemHealth | null>(null);

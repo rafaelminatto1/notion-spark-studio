@@ -173,7 +173,7 @@ export const WorkspaceMembersDialog: React.FC<WorkspaceMembersDialogProps> = ({
                       
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">
-                          {member.profile?.name || 'Usuário'}
+                          {member.profile?.name ?? 'Usuário'}
                         </p>
                         <p className="text-xs text-muted-foreground truncate">
                           {member.profile?.email}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Search, Filter, Sparkles, Clock, TrendingUp, FileText, Tag, User, Calendar } from 'lucide-react';
-import { advancedSearchEngine, SearchQuery, SearchResult, SearchSuggestion } from '../../services/AdvancedSearchEngine';
+import type { SearchQuery, SearchResult, SearchSuggestion } from '../../services/AdvancedSearchEngine';
+import { advancedSearchEngine } from '../../services/AdvancedSearchEngine';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';

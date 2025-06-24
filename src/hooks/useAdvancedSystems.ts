@@ -502,7 +502,7 @@ export function useAdvancedSystems(
         timestamp: Date.now(),
         version: '1.0.0',
         systems: systemStatus,
-        state: state,
+        state,
         configuration: {
           enablePerformanceOptimizer,
           enableRealTimeCollaboration,

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useContext } from 'react';
-import { SmartCacheSystem, CacheStats, CacheConfig } from './SmartCacheCore';
+import type { SmartCacheSystem, CacheStats} from './SmartCacheCore';
+import { CacheConfig } from './SmartCacheCore';
 
 // Context será importado do SmartCacheProvider.tsx
 interface CacheContextType {

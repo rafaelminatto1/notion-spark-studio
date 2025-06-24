@@ -136,7 +136,7 @@ export const useTags = (files: FileItem[]) => {
   const getTagStats = () => {
     const totalTags = allTags.size;
     const totalFiles = new Set(Array.from(allTags.values()).flat().map(f => f.id)).size;
-    const avgTagsPerFile = files.reduce((acc, file) => acc + (file.tags?.length || 0), 0) / files.length;
+    const avgTagsPerFile = files.reduce((acc, file) => acc + (file.tags?.length ?? 0), 0) / files.length;
     
     return {
       totalTags,

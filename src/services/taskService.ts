@@ -311,8 +311,8 @@ class TaskService {
       'tasks_list',
       async () => {
         try {
-          const page = pagination?.page || 1;
-          const limit = pagination?.limit || 50;
+          const page = pagination?.page ?? 1;
+          const limit = pagination?.limit ?? 50;
           const offset = (page - 1) * limit;
 
           // Base query
@@ -352,8 +352,8 @@ class TaskService {
           }
 
           // Apply sorting
-          const sortBy = pagination?.sortBy || 'created_at';
-          const sortOrder = pagination?.sortOrder || 'desc';
+          const sortBy = pagination?.sortBy ?? 'created_at';
+          const sortOrder = pagination?.sortOrder ?? 'desc';
           query = query.order(sortBy as string, { ascending: sortOrder === 'asc' });
 
           // Apply pagination
@@ -446,8 +446,8 @@ class TaskService {
             throw new TaskServiceError('ID do usuário é obrigatório', 'INVALID_USER_ID');
           }
 
-          const page = pagination?.page || 1;
-          const limit = pagination?.limit || 50;
+          const page = pagination?.page ?? 1;
+          const limit = pagination?.limit ?? 50;
           const offset = (page - 1) * limit;
 
           let query = supabase
@@ -456,8 +456,8 @@ class TaskService {
             .eq('user_id', userId);
 
           // Apply sorting
-          const sortBy = pagination?.sortBy || 'created_at';
-          const sortOrder = pagination?.sortOrder || 'desc';
+          const sortBy = pagination?.sortBy ?? 'created_at';
+          const sortOrder = pagination?.sortOrder ?? 'desc';
           query = query.order(sortBy as string, { ascending: sortOrder === 'asc' });
 
           // Apply pagination

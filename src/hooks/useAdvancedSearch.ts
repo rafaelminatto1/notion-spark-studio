@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { 
-  advancedSearchEngine, 
+import type { 
   SearchQuery, 
   SearchResult, 
   SearchSuggestion, 
   SearchDocument,
   SearchAnalytics 
+} from '../services/AdvancedSearchEngine';
+import { 
+  advancedSearchEngine 
 } from '../services/AdvancedSearchEngine';
 
 interface UseAdvancedSearchOptions {

@@ -617,7 +617,7 @@ export const SmartWorkflowEngine: React.FC<SmartWorkflowEngineProps> = ({
                             {getStatusIcon(execution.status)}
                             <div>
                               <h4 className="font-medium text-sm text-gray-900 dark:text-white">
-                                {workflow?.name || 'Workflow não encontrado'}
+                                {workflow?.name ?? 'Workflow não encontrado'}
                               </h4>
                               <p className="text-xs text-gray-500">
                                 {execution.startTime.toLocaleString()}

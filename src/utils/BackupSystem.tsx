@@ -19,7 +19,8 @@ import {
   Trash2,
   Database
 } from 'lucide-react';
-import { BackupSystem, BackupEntry, BackupConfig, BackupStats } from './BackupSystemCore';
+import type { BackupEntry, BackupConfig, BackupStats } from './BackupSystemCore';
+import { BackupSystem } from './BackupSystemCore';
 
 // Context React
 const BackupContext = createContext<BackupSystem | null>(null);

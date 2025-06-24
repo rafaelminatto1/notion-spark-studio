@@ -274,7 +274,7 @@ export class AIContentAnalyzer {
     // Find best category
     let bestCategory = 'general';
     let bestScore = 0;
-    let allCategories: string[] = [];
+    const allCategories: string[] = [];
 
     for (const [category, score] of categoryScores.entries()) {
       allCategories.push(category);

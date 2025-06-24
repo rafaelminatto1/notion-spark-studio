@@ -326,7 +326,7 @@ export const usePerformancePersistence = () => {
         settingsSize,
         totalSize,
         usagePercentage: Math.min(usagePercentage, 100),
-        entriesCount: historyData ? JSON.parse(historyData).entries?.length || 0 : 0
+        entriesCount: historyData ? JSON.parse(historyData).entries?.length ?? 0 : 0
       };
     } catch (error) {
       return {

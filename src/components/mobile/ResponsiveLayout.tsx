@@ -270,7 +270,7 @@ const NotebooksScreen: React.FC<{ onNavigate: (screen: string, params?: any) => 
   const { files } = useFileSystemContext();
   const { checkPermission, state } = usePermissions();
   
-  const currentUserId = state.currentUser?.id || 'default-user';
+  const currentUserId = state.currentUser?.id ?? 'default-user';
   
   const notebooks = useMemo(() => 
     files
@@ -364,7 +364,7 @@ const NotesScreen: React.FC<{
   const { files } = useFileSystemContext();
   const { checkPermission, state } = usePermissions();
   
-  const currentUserId = state.currentUser?.id || 'default-user';
+  const currentUserId = state.currentUser?.id ?? 'default-user';
   const { notebookId, notebookName } = params;
 
   const notes = useMemo(() => 
@@ -415,7 +415,7 @@ const NotesScreen: React.FC<{
                 <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
                   <span>{note.updatedAt?.toLocaleDateString('pt-BR')}</span>
                   <span>•</span>
-                  <span>{note.content?.length || 0} caracteres</span>
+                  <span>{note.content?.length ?? 0} caracteres</span>
                 </div>
               </div>
               <ChevronRight className="h-5 w-5 text-gray-400 flex-shrink-0 mt-1" />
@@ -538,7 +538,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children, cl
     )}>
       {/* Mobile Header */}
       <MobileHeader
-        title={currentScreen?.title || 'Notion Spark'}
+        title={currentScreen?.title ?? 'Notion Spark'}
         showBackButton={currentScreen?.showBackButton}
         showSearch={currentScreen?.showSearch}
         actions={currentScreen?.actions}

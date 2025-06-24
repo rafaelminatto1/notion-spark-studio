@@ -442,7 +442,7 @@ export class ApplicationHealthMonitor {
 
   async autoFix(issueId: string): Promise<boolean> {
     const issue = this.issues.find(i => i.id === issueId);
-    if (!issue || !issue.autoFixable) {
+    if (!issue?.autoFixable) {
       return false;
     }
 

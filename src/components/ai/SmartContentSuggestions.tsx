@@ -355,7 +355,7 @@ export const SmartContentSuggestions: React.FC<SmartContentSuggestionsProps> = (
     const insights: SmartInsight[] = [];
     
     if (allFiles && allFiles.length > 5) {
-      const avgLength = allFiles.reduce((sum, f) => sum + (f.content?.length || 0), 0) / allFiles.length;
+      const avgLength = allFiles.reduce((sum, f) => sum + (f.content?.length ?? 0), 0) / allFiles.length;
       
       insights.push({
         id: 'writing-consistency',

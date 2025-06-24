@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Download, X, Smartphone, Monitor, CheckCircle, Wifi, Zap, Shield } from 'lucide-react';
-import { pwaAdvancedService, PWACapabilities } from '../../services/PWAAdvancedService';
+import type { PWACapabilities } from '../../services/PWAAdvancedService';
+import { pwaAdvancedService } from '../../services/PWAAdvancedService';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';

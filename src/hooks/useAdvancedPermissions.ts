@@ -250,9 +250,9 @@ export const useAdvancedPermissions = () => {
       action,
       resourceType: resource.type,
       resourceId: resource.id,
-      userId: user?.id || 'anonymous',
-      userName: user?.email || 'Anonymous',
-      permission: permission?.id || 'none',
+      userId: user?.id ?? 'anonymous',
+      userName: user?.email ?? 'Anonymous',
+      permission: permission?.id ?? 'none',
       result,
       reason,
       context,
@@ -268,7 +268,7 @@ export const useAdvancedPermissions = () => {
         ...permission,
         id: `perm-${Date.now()}-${Math.random()}`,
         createdAt: new Date(),
-        createdBy: user?.id || 'system'
+        createdBy: user?.id ?? 'system'
       };
 
       setPermissions(prev => [...prev, newPermission]);
