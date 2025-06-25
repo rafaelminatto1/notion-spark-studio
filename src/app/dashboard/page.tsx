@@ -7,6 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import TemplateSelector from '@/components/templates/TemplateSelector';
+import NotificationCenter from '@/components/notifications/NotificationCenter';
 import { 
   Plus, 
   FileText, 
@@ -121,8 +124,16 @@ const Dashboard: React.FC = () => {
     ]);
   };
 
+  const [showTemplateSelector, setShowTemplateSelector] = useState(false);
+
   const createNewDocument = () => {
-    router.push('/editor/new');
+    setShowTemplateSelector(true);
+  };
+
+  const handleTemplateSelect = (template: any) => {
+    // Criar novo documento com template
+    const documentId = 'new-' + Date.now();
+    router.push(`/editor/${documentId}?template=${template.id}&title=${encodeURIComponent(template.name)}&content=${encodeURIComponent(template.content)}`);
   };
 
   const openDocument = (documentId: string) => {
@@ -177,6 +188,8 @@ const Dashboard: React.FC = () => {
           </div>
           
           <div className="flex items-center space-x-4">
+            <NotificationCenter />
+            
             <div className="flex items-center space-x-2">
               <Avatar className="h-8 w-8">
                 <AvatarImage src={profile?.avatar_url || ''} />
@@ -368,6 +381,20 @@ const Dashboard: React.FC = () => {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Template Selector Dialog */}
+      <Dialog open={showTemplateSelector} onOpenChange={setShowTemplateSelector}>
+        <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Escolher Template</DialogTitle>
+          </DialogHeader>
+          <TemplateSelector
+            onSelectTemplate={handleTemplateSelect}
+            onClose={() => setShowTemplateSelector(false)}
+            isOpen={showTemplateSelector}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

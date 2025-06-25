@@ -2,6 +2,8 @@
 // Advanced PWA Service Worker with Offline Sync and Push Notifications
 
 const CACHE_NAME = 'notion-spark-v1.0.0';
+const STATIC_CACHE = 'static-v1';
+const DYNAMIC_CACHE = 'dynamic-v1';
 const OFFLINE_URL = '/offline';
 const SYNC_TAG = 'background-sync';
 
@@ -26,75 +28,57 @@ const URLS_TO_CACHE = [
   '/icon-512x512.png'
 ];
 
-// API endpoints for different strategies
-const CACHE_CONFIG = {
-  [CACHE_STRATEGIES.CACHE_FIRST]: [
-    '/static/',
-    '/assets/',
-    '/icons/',
-    '/images/',
-    '.css',
-    '.js',
-    '.woff2',
-    '.woff',
-    '.ttf',
-    '.png',
-    '.jpg',
-    '.jpeg',
-    '.svg',
-    '.webp'
-  ],
-  [CACHE_STRATEGIES.NETWORK_FIRST]: [
-    '/api/user',
-    '/api/settings',
-    '/api/auth'
-  ],
-  [CACHE_STRATEGIES.STALE_WHILE_REVALIDATE]: [
-    '/api/documents',
-    '/api/notes',
-    '/api/workspaces'
-  ],
-  [CACHE_STRATEGIES.NETWORK_ONLY]: [
-    '/api/auth/login',
-    '/api/auth/logout',
-    '/api/sync',
-    '/api/analytics/events'
-  ]
-};
+// Recursos essenciais para cache
+const STATIC_ASSETS = [
+  '/',
+  '/dashboard',
+  '/login',
+  '/favicon.ico',
+  '/favicon.svg',
+  '/manifest.json',
+  '/offline.html'
+];
+
+// Recursos de API que devem ser cacheados
+const API_CACHE_PATTERNS = [
+  /\/api\/health/,
+  /\/api\/user/,
+  /\/api\/documents/
+];
 
 // Offline queue for failed requests
 let offlineQueue = [];
 
 // Install event - cache essential resources
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing Service Worker...');
+  console.log('[SW] Installing service worker...');
   
   event.waitUntil(
-    caches.open(CACHE_NAME)
+    caches.open(STATIC_CACHE)
       .then((cache) => {
-        console.log('[SW] Caching essential resources');
-        return cache.addAll(URLS_TO_CACHE);
+        console.log('[SW] Caching static assets');
+        return cache.addAll(STATIC_ASSETS);
       })
       .then(() => {
-        console.log('[SW] Installation complete');
+        console.log('[SW] Static assets cached successfully');
         return self.skipWaiting();
       })
       .catch((error) => {
-        console.error('[SW] Installation failed:', error);
+        console.error('[SW] Error caching static assets:', error);
       })
   );
 });
 
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating Service Worker...');
+  console.log('[SW] Activating service worker...');
   
   event.waitUntil(
     caches.keys()
       .then((cacheNames) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
-            if (cacheName !== CACHE_NAME) {
+            if (cacheName !== STATIC_CACHE && cacheName !== DYNAMIC_CACHE) {
               console.log('[SW] Deleting old cache:', cacheName);
               return caches.delete(cacheName);
             }
@@ -102,11 +86,8 @@ self.addEventListener('activate', (event) => {
         );
       })
       .then(() => {
-        console.log('[SW] Activation complete');
+        console.log('[SW] Service worker activated');
         return self.clients.claim();
-      })
-      .catch((error) => {
-        console.error('[SW] Activation failed:', error);
       })
   );
 });
@@ -555,6 +536,12 @@ self.addEventListener('message', (event) => {
       });
       break;
       
+    case 'CLEAN_CACHE':
+      cleanOldCache().then(() => {
+        event.ports[0].postMessage({ success: true });
+      });
+      break;
+      
     default:
       console.warn('[SW] Unknown message type:', type);
   }
@@ -641,4 +628,53 @@ Cache.prototype.match = function(request, options) {
     }
     return response;
   });
+};
+
+// Limpar cache antigo periodicamente
+async function cleanOldCache() {
+  const cache = await caches.open(DYNAMIC_CACHE);
+  const requests = await cache.keys();
+  
+  // Manter apenas os 50 itens mais recentes
+  if (requests.length > 50) {
+    const oldRequests = requests.slice(0, requests.length - 50);
+    await Promise.all(oldRequests.map(request => cache.delete(request)));
+    console.log('[SW] Cleaned old cache entries');
+  }
+}
+
+// API endpoints for different strategies
+const CACHE_CONFIG = {
+  [CACHE_STRATEGIES.CACHE_FIRST]: [
+    '/static/',
+    '/assets/',
+    '/icons/',
+    '/images/',
+    '.css',
+    '.js',
+    '.woff2',
+    '.woff',
+    '.ttf',
+    '.png',
+    '.jpg',
+    '.jpeg',
+    '.svg',
+    '.webp'
+  ],
+  [CACHE_STRATEGIES.NETWORK_FIRST]: [
+    '/api/user',
+    '/api/settings',
+    '/api/auth'
+  ],
+  [CACHE_STRATEGIES.STALE_WHILE_REVALIDATE]: [
+    '/api/documents',
+    '/api/notes',
+    '/api/workspaces'
+  ],
+  [CACHE_STRATEGIES.NETWORK_ONLY]: [
+    '/api/auth/login',
+    '/api/auth/logout',
+    '/api/sync',
+    '/api/analytics/events'
+  ]
 }; 

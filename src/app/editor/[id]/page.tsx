@@ -2,10 +2,12 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthProvider';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import FileUpload from '@/components/upload/FileUpload';
 import { 
   Save, 
   Share, 
@@ -18,7 +20,9 @@ import {
   Trash2,
   Copy,
   Download,
-  Users
+  Users,
+  Upload,
+  Paperclip
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -43,7 +47,8 @@ const DocumentEditor: React.FC = () => {
   const { user, loading } = useAuth();
   const router = useRouter();
   const params = useParams();
-  const documentId = params.id as string;
+  const searchParams = useSearchParams();
+  const documentId = params?.id as string;
   
   const [document, setDocument] = useState<Document | null>(null);
   const [title, setTitle] = useState('');
@@ -52,6 +57,7 @@ const DocumentEditor: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
   
   const contentRef = useRef<HTMLDivElement>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout>();
@@ -92,12 +98,16 @@ const DocumentEditor: React.FC = () => {
 
   const loadDocument = async () => {
     try {
-      if (documentId === 'new') {
+      if (documentId?.startsWith('new')) {
+        // Verificar se há template nos parâmetros
+        const templateTitle = searchParams?.get('title');
+        const templateContent = searchParams?.get('content');
+        
         // Criar novo documento
         const newDoc: Document = {
-          id: 'new',
-          title: 'Documento sem título',
-          content: '',
+          id: documentId,
+          title: templateTitle ? decodeURIComponent(templateTitle) : 'Documento sem título',
+          content: templateContent ? decodeURIComponent(templateContent) : '',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
           is_public: false,
@@ -209,6 +219,25 @@ Este é um exemplo de documento rico com formatação.
     }
   };
 
+  const handleUploadComplete = (files: any[]) => {
+    // Inserir links dos arquivos no editor
+    const fileLinks = files.map(file => {
+      if (file.mime_type.startsWith('image/')) {
+        return `![${file.original_filename}](${file.public_url})`;
+      } else {
+        return `[📎 ${file.original_filename}](${file.public_url})`;
+      }
+    }).join('\n\n');
+
+    if (contentRef.current) {
+      const currentContent = contentRef.current.innerHTML;
+      contentRef.current.innerHTML = currentContent + '\n\n' + fileLinks;
+      handleContentChange();
+    }
+
+    setShowUploadDialog(false);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -286,6 +315,30 @@ Este é um exemplo de documento rico com formatação.
               <Share className="h-4 w-4 mr-2" />
               Compartilhar
             </Button>
+
+            <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                >
+                  <Paperclip className="h-4 w-4 mr-2" />
+                  Anexar
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Upload de Arquivos</DialogTitle>
+                </DialogHeader>
+                <FileUpload
+                  onUploadComplete={handleUploadComplete}
+                  onUploadError={(error) => console.error('Upload error:', error)}
+                  documentId={document?.id}
+                  maxFiles={5}
+                  maxSize={10}
+                />
+              </DialogContent>
+            </Dialog>
 
             <Button
               variant="ghost"

@@ -1,15 +1,15 @@
 {
-  "name": "Notion Spark Studio - Enterprise Productivity Platform",
+  "name": "Notion Spark Studio",
   "short_name": "NotionSpark",
-  "description": "AI-powered enterprise productivity platform with real-time collaboration, advanced analytics, and mobile-first design. Transform your workflow with intelligent automation and seamless synchronization.",
+  "description": "Organize suas ideias e colabore com sua equipe - Uma plataforma moderna de produtividade",
   "version": "1.0.0",
   "start_url": "/",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
-  "orientation": "any",
-  "theme_color": "#3B82F6",
-  "background_color": "#FFFFFF",
-  "lang": "en-US",
+  "orientation": "portrait-primary",
+  "theme_color": "#2563eb",
+  "background_color": "#ffffff",
+  "lang": "pt-BR",
   "dir": "ltr",
   "scope": "/",
   "categories": [
@@ -22,41 +22,38 @@
   "prefer_related_applications": false,
   "shortcuts": [
     {
-      "name": "New Document",
-      "short_name": "New Doc",
-      "description": "Create a new document",
-      "url": "/new?type=document",
+      "name": "Novo Documento",
+      "short_name": "Novo Doc",
+      "description": "Criar um novo documento",
+      "url": "/dashboard?action=new",
       "icons": [
         {
-          "src": "/shortcuts/new-document-96x96.png",
-          "sizes": "96x96",
-          "type": "image/png"
+          "src": "/favicon.svg",
+          "sizes": "96x96"
         }
       ]
     },
     {
       "name": "Dashboard",
       "short_name": "Dashboard",
-      "description": "Open dashboard",
+      "description": "Ir para o dashboard",
       "url": "/dashboard",
       "icons": [
         {
-          "src": "/shortcuts/dashboard-96x96.png",
-          "sizes": "96x96",
-          "type": "image/png"
+          "src": "/favicon.svg",
+          "sizes": "96x96"
         }
       ]
     },
     {
-      "name": "Search",
-      "short_name": "Search",
-      "description": "Search documents",
-      "url": "/search",
+      "name": "Templates",
+      "short_name": "Templates",
+      "description": "Explorar templates",
+      "url": "/dashboard?tab=templates",
       "icons": [
         {
-          "src": "/shortcuts/search-96x96.png",
-          "sizes": "96x96",
-          "type": "image/png"
+          "src": "/favicon.svg",
+          "sizes": "96x96"
         }
       ]
     },
@@ -75,6 +72,29 @@
     }
   ],
   "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "32x32",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
     {
       "src": "/icon-72x72.png",
       "sizes": "72x72",
@@ -106,12 +126,6 @@
       "purpose": "maskable any"
     },
     {
-      "src": "/icon-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
       "src": "/icon-384x384.png",
       "sizes": "384x384",
       "type": "image/png",
@@ -137,6 +151,20 @@
     }
   ],
   "screenshots": [
+    {
+      "src": "/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Dashboard principal no desktop"
+    },
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "375x667",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Editor mobile"
+    },
     {
       "src": "/screenshots/mobile-dashboard-375x812.png",
       "sizes": "375x812",
@@ -175,8 +203,8 @@
   ],
   "protocol_handlers": [
     {
-      "protocol": "notion-spark",
-      "url": "/protocol-handler?url=%s"
+      "protocol": "web+notion",
+      "url": "/open?url=%s"
     }
   ],
   "share_target": {
@@ -218,22 +246,10 @@
     }
   ],
   "launch_handler": {
-    "client_mode": "navigate-new"
+    "client_mode": "navigate-existing"
   },
   "handle_links": "preferred",
-  "related_applications": [
-    {
-      "platform": "play",
-      "url": "https://play.google.com/store/apps/details?id=com.notionspark.mobile",
-      "id": "com.notionspark.mobile"
-    },
-    {
-      "platform": "itunes",
-      "url": "https://apps.apple.com/app/notion-spark-studio/id123456789",
-      "id": "123456789"
-    }
-  ],
-  "prefer_related_applications": false,
+  "related_applications": [],
   "edge_side_panel": {
     "preferred_width": 400
   },
