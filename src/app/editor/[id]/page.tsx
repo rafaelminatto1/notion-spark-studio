@@ -8,6 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import FileUpload from '@/components/upload/FileUpload';
+import CommentsPanel from '@/components/collaboration/CommentsPanel';
+import ChatPanel from '@/components/collaboration/ChatPanel';
+import PresenceIndicator from '@/components/collaboration/PresenceIndicator';
+import CollaborativeCursors from '@/components/collaboration/CollaborativeCursors';
+import { usePresence } from '@/hooks/usePresence';
 import { 
   Save, 
   Share, 
@@ -22,7 +27,8 @@ import {
   Download,
   Users,
   Upload,
-  Paperclip
+  Paperclip,
+  MessageSquare
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -58,9 +64,25 @@ const DocumentEditor: React.FC = () => {
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const [showCommentsPanel, setShowCommentsPanel] = useState(false);
+  const [showChatPanel, setShowChatPanel] = useState(false);
+  const [selectedText, setSelectedText] = useState<string>('');
+  const [selectionRange, setSelectionRange] = useState<{ start: number; end: number } | undefined>();
   
   const contentRef = useRef<HTMLDivElement>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout>();
+
+  // Hook de presença para colaboração
+  const {
+    onlineUsers,
+    cursors,
+    isOnline,
+    onlineCount,
+    otherUsers,
+    otherCursors,
+    updateCursor,
+    updateStatus
+  } = usePresence(documentId);
 
   // Redirecionar se não autenticado
   useEffect(() => {
@@ -237,6 +259,77 @@ Este é um exemplo de documento rico com formatação.
 
     setShowUploadDialog(false);
   };
+
+  // Funções de colaboração
+  const handleTextSelection = () => {
+    const selection = window.getSelection();
+    if (selection && selection.toString().length > 0) {
+      setSelectedText(selection.toString());
+      
+      // Calcular posição da seleção
+      const range = selection.getRangeAt(0);
+      if (contentRef.current) {
+        const startPos = getTextPosition(range.startContainer, range.startOffset);
+        const endPos = getTextPosition(range.endContainer, range.endOffset);
+        setSelectionRange({ start: startPos, end: endPos });
+      }
+    } else {
+      setSelectedText('');
+      setSelectionRange(undefined);
+    }
+  };
+
+  const getTextPosition = (node: Node, offset: number): number => {
+    if (!contentRef.current) return 0;
+    
+    const walker = document.createTreeWalker(
+      contentRef.current,
+      NodeFilter.SHOW_TEXT,
+      null
+    );
+
+    let position = 0;
+    let currentNode;
+
+    while (currentNode = walker.nextNode()) {
+      if (currentNode === node) {
+        return position + offset;
+      }
+      position += currentNode.textContent?.length || 0;
+    }
+
+    return position;
+  };
+
+  const handleCursorMove = (position: number, selection?: { start: number; end: number }) => {
+    updateCursor(position, selection);
+  };
+
+  const handleMentionUser = (userId: string) => {
+    // Implementar menção de usuário
+    console.log('Mention user:', userId);
+  };
+
+  const handleStartChat = (userId: string) => {
+    setShowChatPanel(true);
+  };
+
+  const handleInviteUser = () => {
+    // Implementar convite de usuário
+    console.log('Invite user');
+  };
+
+  // Detectar seleção de texto
+  useEffect(() => {
+    const handleSelectionChange = () => {
+      handleTextSelection();
+    };
+
+    document.addEventListener('selectionchange', handleSelectionChange);
+    return () => {
+      document.removeEventListener('selectionchange', handleSelectionChange);
+    };
+  }, []);
 
   if (loading) {
     return (
