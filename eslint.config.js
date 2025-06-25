@@ -37,7 +37,19 @@ export default tseslint.config(
       '*.config.js',
       '*.config.ts',
       'public/**',
-      '.env*'
+      '.env*',
+      // Cypress files
+      'cypress/**',
+      // MCP Vercel files
+      'mcp-vercel/**',
+      // Scripts
+      'scripts/**',
+      'server/**',
+      'server.js',
+      // Generated files
+      'fix-critical-issues.js',
+      // Test output files
+      '*.txt'
     ]
   },
   {

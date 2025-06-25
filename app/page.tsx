@@ -24,10 +24,10 @@ export default function HomePage() {
         try {
           const parsedFiles = JSON.parse(savedFiles);
           // Converter strings de data de volta para objetos Date
-          const filesWithDates = parsedFiles.map((file: any) => ({
+          const filesWithDates = parsedFiles.map((file: FileItem) => ({
             ...file,
-            createdAt: new Date(file.createdAt),
-            updatedAt: new Date(file.updatedAt)
+            createdAt: file.createdAt ? new Date(file.createdAt) : new Date(),
+            updatedAt: file.updatedAt ? new Date(file.updatedAt) : new Date()
           }));
           setFiles(filesWithDates);
         } catch (error) {
@@ -96,7 +96,7 @@ export default function HomePage() {
 
   const handleCreateFile = (name: string) => {
     const newFile: FileItem = {
-      id: 'file_' + Date.now(),
+      id: `file_${Date.now()}`,
       name,
       type: 'file',
       emoji: '📄',
@@ -111,7 +111,7 @@ export default function HomePage() {
     localStorage.setItem('spark_files', JSON.stringify(updatedFiles));
   };
 
-  const handleUpdateFile = (fileId: string, updates: Partial<FileItem>) => {
+  const _handleUpdateFile = (fileId: string, updates: Partial<FileItem>) => {
     const updatedFiles = files.map(file => 
       file.id === fileId ? { ...file, ...updates, updatedAt: new Date() } : file
     );
@@ -119,7 +119,7 @@ export default function HomePage() {
     localStorage.setItem('spark_files', JSON.stringify(updatedFiles));
   };
 
-  const handleDeleteFile = (fileId: string) => {
+  const _handleDeleteFile = (fileId: string) => {
     const updatedFiles = files.filter(file => file.id !== fileId);
     setFiles(updatedFiles);
     localStorage.setItem('spark_files', JSON.stringify(updatedFiles));
@@ -130,7 +130,7 @@ export default function HomePage() {
     localStorage.setItem('spark_favorites', JSON.stringify(updatedFavorites));
   };
 
-  const handleToggleFavorite = (fileId: string) => {
+  const _handleToggleFavorite = (fileId: string) => {
     const updatedFavorites = favorites.includes(fileId)
       ? favorites.filter(id => id !== fileId)
       : [...favorites, fileId];

@@ -1,0 +1,16 @@
+# Arquivos JavaScript que não devem ser verificados pelo ESLint
+*.js
+cypress/
+mcp-vercel/dist/
+mcp-vercel/*.js
+scripts/*.js
+server/
+server.js
+*.config.js
+build-*
+*.cmd
+*.bat
+node_modules/
+dist/
+out/
+.next/

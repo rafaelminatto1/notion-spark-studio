@@ -34,7 +34,9 @@
       ]
     },
     "strictNullChecks": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
   },
   "include": [
     "next-env.d.ts",
@@ -48,6 +50,13 @@
     "cypress/**/*",
     ".next",
     "dist",
-    "build"
+    "build",
+    "mcp-vercel/**/*",
+    "scripts/**/*",
+    "server/**/*",
+    "*.config.js",
+    "**/*.config.js",
+    "build-*",
+    "*.cmd"
   ]
 }

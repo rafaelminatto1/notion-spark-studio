@@ -1,4 +1,4 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import type { NextApiRequest, NextApiResponse } from 'next';
 
 interface HealthStatus {
   status: 'healthy' | 'unhealthy' | 'degraded';
@@ -37,9 +37,9 @@ export default async function handler(
 
   try {
     // Verificar informações do ambiente
-    const environment = process.env.NODE_ENV || 'development';
-    const vercelEnv = process.env.VERCEL_ENV || 'unknown';
-    const version = process.env.npm_package_version || '2.0.0';
+    const environment = process.env.NODE_ENV ?? 'development';
+    const vercelEnv = process.env.VERCEL_ENV ?? 'unknown';
+    const version = process.env.npm_package_version ?? '2.0.0';
     
     // Verificar serviços
     const services = {
@@ -54,9 +54,9 @@ export default async function handler(
 
     // Informações de build
     const build = {
-      commit: process.env.VERCEL_GIT_COMMIT_SHA?.substring(0, 8) || 'local',
-      timestamp: process.env.VERCEL_GIT_COMMIT_DATE || new Date().toISOString(),
-      vercelUrl: process.env.VERCEL_URL
+      commit: process.env.VERCEL_GIT_COMMIT_SHA?.substring(0, 8) ?? 'local',
+      timestamp: process.env.VERCEL_GIT_COMMIT_DATE ?? new Date().toISOString(),
+      ...(process.env.VERCEL_URL && { vercelUrl: process.env.VERCEL_URL })
     };
 
     // Determinar status geral
@@ -94,8 +94,8 @@ export default async function handler(
     const errorResponse: HealthStatus = {
       status: 'unhealthy',
       timestamp: new Date().toISOString(),
-      version: process.env.npm_package_version || '2.0.0',
-      environment: process.env.NODE_ENV || 'development',
+      version: process.env.npm_package_version ?? '2.0.0',
+      environment: process.env.NODE_ENV ?? 'development',
       uptime: process.uptime(),
       services: {
         database: 'error',
@@ -107,9 +107,9 @@ export default async function handler(
         responseTime: Date.now() - startTime
       },
       build: {
-        commit: process.env.VERCEL_GIT_COMMIT_SHA?.substring(0, 8) || 'local',
-        timestamp: process.env.VERCEL_GIT_COMMIT_DATE || new Date().toISOString(),
-        vercelUrl: process.env.VERCEL_URL
+        commit: process.env.VERCEL_GIT_COMMIT_SHA?.substring(0, 8) ?? 'local',
+        timestamp: process.env.VERCEL_GIT_COMMIT_DATE ?? new Date().toISOString(),
+        ...(process.env.VERCEL_URL && { vercelUrl: process.env.VERCEL_URL })
       }
     };
 
