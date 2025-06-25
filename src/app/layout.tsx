@@ -1,8 +1,9 @@
 'use client';
 
+import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import { AuthProvider } from '@/contexts/AuthContext';
+import { AuthProvider } from '@/contexts/AuthProvider';
 import { Toaster } from '@/components/ui/toaster';
 import { Navbar } from '@/components/Navbar';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -26,6 +27,26 @@ export const useNavigation = () => {
   return context;
 };
 
+export const metadata: Metadata = {
+  title: 'Notion Spark Studio',
+  description: 'Organize suas ideias e colabore com sua equipe - Uma plataforma moderna de produtividade',
+  keywords: ['notion', 'produtividade', 'colaboração', 'documentos', 'workspace'],
+  authors: [{ name: 'Notion Spark Studio Team' }],
+  viewport: 'width=device-width, initial-scale=1',
+  robots: 'index, follow',
+  openGraph: {
+    title: 'Notion Spark Studio',
+    description: 'Organize suas ideias e colabore com sua equipe',
+    type: 'website',
+    locale: 'pt_BR',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Notion Spark Studio',
+    description: 'Organize suas ideias e colabore com sua equipe',
+  },
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -34,20 +55,16 @@ export default function RootLayout({
   const [currentSection, setCurrentSection] = useState('dashboard');
 
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" className="h-full">
       <head>
-        <title>Notion Spark Studio</title>
-        <meta name="description" content="Uma plataforma moderna para produtividade e colaboração com IA" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="icon" href="/favicon.ico" sizes="32x32" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="theme-color" content="#6366f1" />
       </head>
-      <body className={inter.className}>
+      <body className={`${inter.className} h-full antialiased`}>
         <ErrorBoundary>
           <NavigationContext.Provider value={{ currentSection, setCurrentSection }}>
             <AuthProvider>
-              <div className="min-h-screen bg-background">
+              <div className="min-h-full">
                 <Navbar />
                 <main className="pt-16">
                   {children}
