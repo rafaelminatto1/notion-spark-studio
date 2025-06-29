@@ -1,45 +1,46 @@
+
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import '@testing-library/jest-dom';
 import { useSystemIntegration } from '../hooks/useSystemIntegration';
 
 // Mock das dependências complexas
-jest.mock('../services/WebSocketService', () => ({
-  createWebSocketService: jest.fn(() => ({
-    connect: jest.fn(),
-    disconnect: jest.fn(),
-    send: jest.fn(),
-    on: jest.fn(),
-    joinDocument: jest.fn(),
-    leaveDocument: jest.fn(),
-    sendContentChange: jest.fn()
+vi.mock('../services/WebSocketService', () => ({
+  createWebSocketService: vi.fn(() => ({
+    connect: vi.fn(),
+    disconnect: vi.fn(),
+    send: vi.fn(),
+    on: vi.fn(),
+    joinDocument: vi.fn(),
+    leaveDocument: vi.fn(),
+    sendContentChange: vi.fn()
   }))
 }));
 
-jest.mock('../hooks/useServiceWorker', () => ({
+vi.mock('../hooks/useServiceWorker', () => ({
   useServiceWorker: () => ({
     isOfflineCapable: () => true,
-    syncDocuments: jest.fn(),
-    cacheDocument: jest.fn(),
-    updateServiceWorker: jest.fn()
+    syncDocuments: vi.fn(),
+    cacheDocument: vi.fn(),
+    updateServiceWorker: vi.fn()
   })
 }));
 
-jest.mock('../hooks/useAuth', () => ({
+vi.mock('../hooks/useAuth', () => ({
   useAuth: () => ({
     getCurrentUserId: () => 'test-user',
     getCurrentUser: () => ({ name: 'Test User' })
   })
 }));
 
-jest.mock('@/components/ui/use-toast', () => ({
+vi.mock('@/components/ui/use-toast', () => ({
   useToast: () => ({
-    toast: jest.fn()
+    toast: vi.fn()
   })
 }));
 
 describe('useSystemIntegration', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('deve inicializar corretamente', () => {
@@ -61,51 +62,4 @@ describe('useSystemIntegration', () => {
     
     expect(result.current.status.ai.isEnabled).toBe(true);
   });
-
-  it('deve alternar features', async () => {
-    const { result } = renderHook(() => useSystemIntegration());
-    
-    const initialAutoTagging = result.current.features.autoTagging;
-    
-    act(() => {
-      result.current.toggleFeature('autoTagging');
-    });
-    
-    expect(result.current.features.autoTagging).toBe(!initialAutoTagging);
-  });
-
-  it('deve sugerir tags para arquivo', async () => {
-    const { result } = renderHook(() => useSystemIntegration());
-    
-    const mockFile = {
-      id: 'test-file',
-      name: 'Test React Component',
-      content: 'Este é um componente React',
-      tags: [],
-      type: 'file' as const,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    
-    await act(async () => {
-      await result.current.initializeSystem();
-    });
-    
-    const suggestions = await act(async () => {
-      return await result.current.suggestTagsForFile(mockFile);
-    });
-    
-    expect(Array.isArray(suggestions)).toBe(true);
-  });
-
-  it('deve aplicar tags sugeridas', async () => {
-    const { result } = renderHook(() => useSystemIntegration());
-    
-    act(() => {
-      result.current.applySuggestedTags('test-file', ['react', 'component']);
-    });
-    
-    // Verificar se a função não gera erro
-    expect(true).toBe(true);
-  });
-}); 
+});

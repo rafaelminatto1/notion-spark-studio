@@ -7,9 +7,11 @@ export interface SearchDocument {
   type: string;
   createdAt: Date;
   score?: number;
+  embedding?: number[];
+  metadata?: Record<string, any>;
 }
 
-export interface SearchOptions {
+export interface SearchQuery {
   query: string;
   filters?: {
     type?: string;
@@ -28,10 +30,34 @@ export interface SearchResult {
   documents: SearchDocument[];
   total: number;
   suggestions?: string[];
+  results?: SearchDocument[];
+  analytics?: {
+    queryTime: number;
+    totalResults: number;
+    suggestions: string[];
+  };
+}
+
+export interface SearchAnalytics {
+  totalQueries: number;
+  averageQueryTime: number;
+  topQueries: Array<{ query: string; count: number }>;
+  popularFilters: Record<string, number>;
 }
 
 export class AdvancedSearchEngine {
   private documents: SearchDocument[] = [];
+  private analytics: SearchAnalytics = {
+    totalQueries: 0,
+    averageQueryTime: 0,
+    topQueries: [],
+    popularFilters: {}
+  };
+
+  async initialize(): Promise<void> {
+    // Initialize search engine
+    console.log('AdvancedSearchEngine initialized');
+  }
 
   addDocument(document: SearchDocument): void {
     this.documents.push(document);
@@ -41,7 +67,21 @@ export class AdvancedSearchEngine {
     this.documents = this.documents.filter(doc => doc.id !== id);
   }
 
-  async search(options: SearchOptions): Promise<SearchResult> {
+  async indexDocument(document: SearchDocument): Promise<SearchDocument | undefined> {
+    // Generate embedding for the document
+    const embedding = this.generateEmbedding(document.content);
+    const indexedDocument = { ...document, embedding };
+    this.addDocument(indexedDocument);
+    return indexedDocument;
+  }
+
+  private generateEmbedding(content: string): number[] {
+    // Simple mock embedding generation
+    return content.split('').map((_, i) => Math.random() * (i + 1));
+  }
+
+  async search(options: SearchQuery): Promise<SearchResult> {
+    const startTime = Date.now();
     let results = [...this.documents];
     
     // Apply text search
@@ -78,10 +118,23 @@ export class AdvancedSearchEngine {
     const limit = options.limit || 10;
     results = results.slice(offset, offset + limit);
 
+    const queryTime = Date.now() - startTime;
+    
+    // Update analytics
+    this.analytics.totalQueries++;
+    this.analytics.averageQueryTime = 
+      (this.analytics.averageQueryTime + queryTime) / this.analytics.totalQueries;
+
     return {
       documents: results,
       total,
-      suggestions: this.generateSuggestions(options.query)
+      suggestions: this.generateSuggestions(options.query),
+      results: results,
+      analytics: {
+        queryTime,
+        totalResults: total,
+        suggestions: this.generateSuggestions(options.query)
+      }
     };
   }
 
@@ -130,9 +183,24 @@ export class AdvancedSearchEngine {
     return this.documents.length;
   }
 
+  getAnalytics(): SearchAnalytics {
+    return { ...this.analytics };
+  }
+
+  getTrendingQueries(): Array<{ query: string; count: number }> {
+    return this.analytics.topQueries.slice(0, 10);
+  }
+
   clear(): void {
     this.documents = [];
+    this.analytics = {
+      totalQueries: 0,
+      averageQueryTime: 0,
+      topQueries: [],
+      popularFilters: {}
+    };
   }
 }
 
+export const advancedSearchEngine = new AdvancedSearchEngine();
 export const searchEngine = new AdvancedSearchEngine();

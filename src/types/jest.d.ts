@@ -1,18 +1,20 @@
-/// <reference types="jest" />
+
+/// <reference types="vitest/globals" />
 /// <reference types="@testing-library/jest-dom" />
 
 declare global {
-  namespace jest {
-    interface Matchers<R> {
-      toBeDefined(): R;
-      toBe(expected: any): R;
-      toBeGreaterThan(expected: number): R;
-      toBeGreaterThanOrEqual(expected: number): R;
-      toContain(expected: any): R;
-      toEqual(expected: any): R;
-      toHaveLength(expected: number): R;
+  namespace Vi {
+    interface JestAssertion<T = any> {
+      toBeDefined(): T;
+      toBe(expected: any): T;
+      toBeGreaterThan(expected: number): T;
+      toBeGreaterThanOrEqual(expected: number): T;
+      toContain(expected: any): T;
+      toEqual(expected: any): T;
+      toHaveLength(expected: number): T;
+      toBeInstanceOf(expected: any): T;
     }
   }
 }
 
-export {}; 
+export {};

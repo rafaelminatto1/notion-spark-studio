@@ -1,4 +1,5 @@
-import '@testing-library/jest-dom';
+
+import { describe, it, expect, beforeEach, jest } from 'vitest';
 import { AITaggingService } from '../services/AITaggingService';
 
 // Mock básico para o teste
@@ -24,4 +25,4 @@ describe('AITaggingService', () => {
     const result = await service.suggestTags('');
     expect(Array.isArray(result)).toBe(true);
   });
-}); 
+});
