@@ -1,3 +1,4 @@
+
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
@@ -81,29 +82,9 @@ Object.defineProperty(window, 'sessionStorage', {
 // Mock do fetch
 global.fetch = vi.fn();
 
-// Mock do console
-const originalConsole = { ...console };
-const mockConsole = {
-  ...console,
-  error: vi.fn(),
-  warn: vi.fn(),
-  log: vi.fn(),
-};
-
-Object.defineProperty(global, 'console', {
-  value: mockConsole,
-});
-
-// Restaura console original após cada teste
-afterEach(() => {
-  Object.defineProperty(global, 'console', {
-    value: originalConsole,
-  });
-});
-
 // Limpa todos os mocks após cada teste
 afterEach(() => {
   vi.clearAllMocks();
   localStorageMock.clear();
   sessionStorageMock.clear();
-}); 
+});

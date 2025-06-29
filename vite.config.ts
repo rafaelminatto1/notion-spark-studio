@@ -29,5 +29,8 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'lucide-react']
+  },
+  define: {
+    'import.meta.vitest': 'undefined'
   }
 })
