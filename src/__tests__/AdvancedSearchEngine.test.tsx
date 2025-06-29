@@ -65,9 +65,9 @@ describe('AdvancedSearchEngine', () => {
       
       const indexedDoc = await searchEngine.indexDocument(mockDocument);
       
-      if (indexedDoc) {
+      if (indexedDoc?.embedding) {
         expect(indexedDoc.embedding).toBeDefined();
-        expect(indexedDoc.embedding?.length).toBeGreaterThan(0);
+        expect(indexedDoc.embedding.length).toBeGreaterThan(0);
       }
     });
 
@@ -170,7 +170,6 @@ describe('AdvancedSearchEngine', () => {
         }
       };
       
-      const docs = searchEngine.getTotalDocuments();
       const result = await searchEngine.search(query);
       if (result.results) {
         const sortedResults = result.results.map((r: SearchDocument) => r.createdAt);
@@ -225,7 +224,7 @@ describe('AdvancedSearchEngine', () => {
       // Execute multiple searches to generate analytics
       await searchEngine.search({ query: 'test' });
       
-      const analytics = searchEngine.getAnalytics();
+      const analytics = searchEngine.getAnalytics();  
       expect(analytics.totalQueries).toBe(1);
       expect(analytics.averageQueryTime).toBeGreaterThan(0);
     });

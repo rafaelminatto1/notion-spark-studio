@@ -1,475 +1,382 @@
-'use client';
 
-import React, { useState } from 'react';
-import { useAuth } from '@/contexts/AuthProvider';
-import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+'use client';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  ArrowLeft, 
-  User, 
-  Mail, 
-  Shield, 
-  Bell, 
-  Palette, 
-  Download,
-  Trash2,
-  Save,
-  Upload,
-  CheckCircle,
-  AlertCircle
-} from 'lucide-react';
+import { toast } from 'sonner';
+import { User, Settings, Palette, Bell, Shield, Database, Download, Upload, Trash2, Eye } from 'lucide-react';
 
-const SettingsPage: React.FC = () => {
-  const { user, profile, updateProfile, signOut, loading } = useAuth();
-  const router = useRouter();
-  
-  const [activeTab, setActiveTab] = useState('profile');
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  
-  const [profileData, setProfileData] = useState({
-    full_name: profile?.full_name || '',
-    email: profile?.email || user?.email || '',
-    avatar_url: profile?.avatar_url || ''
+interface UserPreferences {
+  theme: 'light' | 'dark' | 'system';
+  language: 'pt' | 'en';
+  compact_mode: boolean;
+  show_line_numbers: boolean;
+  enable_animations: boolean;
+  auto_save: boolean;
+  backup_frequency: number;
+  default_view: 'dashboard' | 'editor';
+}
+
+export default function SettingsPage() {
+  const { user, profile, updateProfile } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [preferences, setPreferences] = useState<UserPreferences>({
+    theme: 'system',
+    language: 'pt',
+    compact_mode: false,
+    show_line_numbers: true,
+    enable_animations: true,
+    auto_save: true,
+    backup_frequency: 30,
+    default_view: 'dashboard'
   });
 
-  const [preferences, setPreferences] = useState({
-    theme: 'light',
-    notifications: {
-      email: true,
-      push: true,
-      mentions: true,
-      comments: true
-    },
-    privacy: {
-      profile_public: false,
-      activity_visible: true
-    }
-  });
+  // Form states
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
 
-  // Redirecionar se não autenticado
-  React.useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
+  useEffect(() => {
+    if (profile) {
+      setName(profile.name || '');
+      setEmail(profile.email || '');
     }
-  }, [user, loading, router]);
+  }, [profile]);
 
-  const handleProfileUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleUpdateProfile = async () => {
+    if (!updateProfile) return;
     
-    if (!profileData.full_name.trim()) {
-      setMessage({
-        type: 'error',
-        text: 'Nome completo é obrigatório'
-      });
-      return;
-    }
-
-    setIsUpdating(true);
-    setMessage(null);
-
+    setLoading(true);
     try {
-      const { error } = await updateProfile({
-        full_name: profileData.full_name,
-        avatar_url: profileData.avatar_url
-      });
-
-      if (error) {
-        setMessage({
-          type: 'error',
-          text: error.message || 'Erro ao atualizar perfil'
-        });
-      } else {
-        setMessage({
-          type: 'success',
-          text: 'Perfil atualizado com sucesso!'
-        });
-      }
+      await updateProfile({ name, email });
+      toast.success('Perfil atualizado com sucesso');
     } catch (error) {
-      setMessage({
-        type: 'error',
-        text: 'Erro inesperado ao atualizar perfil'
-      });
+      console.error('Error updating profile:', error);
+      toast.error('Erro ao atualizar perfil');
     } finally {
-      setIsUpdating(false);
+      setLoading(false);
     }
   };
 
-  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Simular upload de avatar
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          setProfileData(prev => ({
-            ...prev,
-            avatar_url: event.target!.result as string
-          }));
-        }
-      };
-      reader.readAsDataURL(file);
-    }
+  const handlePreferenceChange = (key: keyof UserPreferences, value: any) => {
+    setPreferences(prev => ({ ...prev, [key]: value }));
   };
 
-  const exportData = () => {
-    // Simular exportação de dados
-    const data = {
-      profile: profile,
-      preferences: preferences,
-      exported_at: new Date().toISOString()
-    };
-    
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'notion-spark-data.json';
-    a.click();
-    URL.revokeObjectURL(url);
+  const handleExportData = () => {
+    toast.info('Funcionalidade de exportação em desenvolvimento');
   };
 
-  const deleteAccount = async () => {
-    if (confirm('ATENÇÃO: Esta ação é irreversível. Tem certeza que deseja excluir sua conta permanentemente?')) {
-      if (confirm('Digite "EXCLUIR" para confirmar:') === 'EXCLUIR') {
-        // Implementar exclusão de conta
-        console.log('Excluir conta');
-      }
-    }
+  const handleImportData = () => {
+    toast.info('Funcionalidade de importação em desenvolvimento');
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-2">Carregando configurações...</span>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
+  const handleDeleteAccount = () => {
+    toast.error('Funcionalidade de exclusão de conta em desenvolvimento');
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.push('/dashboard')}
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Voltar ao Dashboard
-            </Button>
-            <h1 className="text-2xl font-bold text-gray-900">Configurações</h1>
-          </div>
-        </div>
-      </header>
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">Configurações</h1>
+        <p className="text-muted-foreground">
+          Gerencie sua conta e personalize sua experiência
+        </p>
+      </div>
 
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto p-6">
-        {message && (
-          <Alert className={`mb-6 ${message.type === 'success' ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
-            {message.type === 'success' ? (
-              <CheckCircle className="h-4 w-4 text-green-600" />
-            ) : (
-              <AlertCircle className="h-4 w-4 text-red-600" />
-            )}
-            <AlertDescription className={message.type === 'success' ? 'text-green-800' : 'text-red-800'}>
-              {message.text}
-            </AlertDescription>
-          </Alert>
-        )}
+      <Tabs defaultValue="profile" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="profile" className="flex items-center gap-2">
+            <User className="w-4 h-4" />
+            Perfil
+          </TabsTrigger>
+          <TabsTrigger value="preferences" className="flex items-center gap-2">
+            <Settings className="w-4 h-4" />
+            Preferências
+          </TabsTrigger>
+          <TabsTrigger value="appearance" className="flex items-center gap-2">
+            <Palette className="w-4 h-4" />
+            Aparência
+          </TabsTrigger>
+          <TabsTrigger value="notifications" className="flex items-center gap-2">
+            <Bell className="w-4 h-4" />
+            Notificações
+          </TabsTrigger>
+          <TabsTrigger value="data" className="flex items-center gap-2">
+            <Database className="w-4 h-4" />
+            Dados
+          </TabsTrigger>
+        </TabsList>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="profile">Perfil</TabsTrigger>
-            <TabsTrigger value="preferences">Preferências</TabsTrigger>
-            <TabsTrigger value="privacy">Privacidade</TabsTrigger>
-            <TabsTrigger value="account">Conta</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="profile" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <User className="h-5 w-5 mr-2" />
-                  Informações do Perfil
-                </CardTitle>
-                <CardDescription>
-                  Gerencie suas informações pessoais e foto de perfil
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleProfileUpdate} className="space-y-6">
-                  {/* Avatar */}
-                  <div className="flex items-center space-x-4">
-                    <Avatar className="h-20 w-20">
-                      <AvatarImage src={profileData.avatar_url} />
-                      <AvatarFallback className="text-lg">
-                        {profileData.full_name?.charAt(0) || user.email?.charAt(0) || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <Label htmlFor="avatar-upload" className="cursor-pointer">
-                        <Button type="button" variant="outline" size="sm" asChild>
-                          <span>
-                            <Upload className="h-4 w-4 mr-2" />
-                            Alterar Foto
-                          </span>
-                        </Button>
-                      </Label>
-                      <input
-                        id="avatar-upload"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleAvatarUpload}
-                        className="hidden"
-                      />
-                      <p className="text-sm text-gray-500 mt-1">
-                        PNG, JPG até 5MB
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Nome */}
-                  <div className="space-y-2">
-                    <Label htmlFor="full_name">Nome Completo</Label>
-                    <Input
-                      id="full_name"
-                      value={profileData.full_name}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, full_name: e.target.value }))}
-                      placeholder="Seu nome completo"
-                      disabled={isUpdating}
-                    />
-                  </div>
-
-                  {/* Email */}
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={profileData.email}
-                      disabled
-                      className="bg-gray-50"
-                    />
-                    <p className="text-sm text-gray-500">
-                      Para alterar seu email, entre em contato com o suporte
-                    </p>
-                  </div>
-
-                  {/* Role */}
-                  <div className="space-y-2">
-                    <Label>Função</Label>
-                    <div>
-                      <Badge variant={profile?.role === 'admin' ? 'default' : 'secondary'}>
-                        {profile?.role === 'admin' ? 'Administrador' : 'Usuário'}
-                      </Badge>
-                    </div>
-                  </div>
-
-                  <Button type="submit" disabled={isUpdating}>
-                    {isUpdating ? 'Salvando...' : (
-                      <>
-                        <Save className="h-4 w-4 mr-2" />
-                        Salvar Alterações
-                      </>
-                    )}
+        {/* Profile Tab */}
+        <TabsContent value="profile">
+          <Card>
+            <CardHeader>
+              <CardTitle>Informações do Perfil</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center space-x-4">
+                <Avatar className="w-20 h-20">
+                  <AvatarImage src={profile?.avatar} />
+                  <AvatarFallback>
+                    {profile?.name?.charAt(0) || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <Button variant="outline" size="sm">
+                    Alterar Foto
                   </Button>
-                </form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="preferences" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Palette className="h-5 w-5 mr-2" />
-                  Aparência e Preferências
-                </CardTitle>
-                <CardDescription>
-                  Personalize sua experiência no Notion Spark Studio
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Tema */}
-                <div className="space-y-3">
-                  <Label>Tema</Label>
-                  <div className="flex space-x-4">
-                    <label className="flex items-center space-x-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="theme"
-                        value="light"
-                        checked={preferences.theme === 'light'}
-                        onChange={(e) => setPreferences(prev => ({ ...prev, theme: e.target.value }))}
-                      />
-                      <span>Claro</span>
-                    </label>
-                    <label className="flex items-center space-x-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="theme"
-                        value="dark"
-                        checked={preferences.theme === 'dark'}
-                        onChange={(e) => setPreferences(prev => ({ ...prev, theme: e.target.value }))}
-                      />
-                      <span>Escuro</span>
-                    </label>
-                    <label className="flex items-center space-x-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="theme"
-                        value="auto"
-                        checked={preferences.theme === 'auto'}
-                        onChange={(e) => setPreferences(prev => ({ ...prev, theme: e.target.value }))}
-                      />
-                      <span>Automático</span>
-                    </label>
-                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    JPG, PNG ou GIF. Máximo 5MB.
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Bell className="h-5 w-5 mr-2" />
-                  Notificações
-                </CardTitle>
-                <CardDescription>
-                  Configure como e quando você deseja ser notificado
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {Object.entries({
-                  email: 'Notificações por email',
-                  push: 'Notificações push',
-                  mentions: 'Quando mencionado',
-                  comments: 'Comentários em documentos'
-                }).map(([key, label]) => (
-                  <div key={key} className="flex items-center justify-between">
-                    <Label>{label}</Label>
-                    <input
-                      type="checkbox"
-                      checked={preferences.notifications[key as keyof typeof preferences.notifications]}
-                      onChange={(e) => setPreferences(prev => ({
-                        ...prev,
-                        notifications: {
-                          ...prev.notifications,
-                          [key]: e.target.checked
-                        }
-                      }))}
-                      className="rounded"
-                    />
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </TabsContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Nome</Label>
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Seu nome"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="seu@email.com"
+                  />
+                </div>
+              </div>
 
-          <TabsContent value="privacy" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Shield className="h-5 w-5 mr-2" />
-                  Privacidade e Segurança
-                </CardTitle>
-                <CardDescription>
-                  Controle quem pode ver suas informações e atividades
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {Object.entries({
-                  profile_public: 'Perfil público',
-                  activity_visible: 'Atividade visível para outros'
-                }).map(([key, label]) => (
-                  <div key={key} className="flex items-center justify-between">
-                    <Label>{label}</Label>
-                    <input
-                      type="checkbox"
-                      checked={preferences.privacy[key as keyof typeof preferences.privacy]}
-                      onChange={(e) => setPreferences(prev => ({
-                        ...prev,
-                        privacy: {
-                          ...prev.privacy,
-                          [key]: e.target.checked
-                        }
-                      }))}
-                      className="rounded"
-                    />
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </TabsContent>
+              <div className="space-y-2">
+                <Label>Status da Conta</Label>
+                <div className="flex items-center space-x-2">
+                  <Badge variant={user?.email_confirmed_at ? 'default' : 'destructive'}>
+                    {user?.email_confirmed_at ? 'Verificado' : 'Não Verificado'}
+                  </Badge>
+                  {!user?.email_confirmed_at && (
+                    <Button variant="outline" size="sm">
+                      Reenviar Verificação
+                    </Button>
+                  )}
+                </div>
+              </div>
 
-          <TabsContent value="account" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Gerenciar Conta</CardTitle>
-                <CardDescription>
-                  Exportar dados, sair da conta ou excluir permanentemente
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-4 border rounded-lg">
+              <div className="flex justify-end">
+                <Button onClick={handleUpdateProfile} disabled={loading}>
+                  {loading ? 'Salvando...' : 'Salvar Alterações'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Preferences Tab */}
+        <TabsContent value="preferences">
+          <Card>
+            <CardHeader>
+              <CardTitle>Preferências Gerais</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label>Idioma</Label>
+                  <Select
+                    value={preferences.language}
+                    onValueChange={(value: 'pt' | 'en') => handlePreferenceChange('language', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pt">Português</SelectItem>
+                      <SelectItem value="en">English</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Visualização Padrão</Label>
+                  <Select
+                    value={preferences.default_view}
+                    onValueChange={(value: 'dashboard' | 'editor') => handlePreferenceChange('default_view', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="dashboard">Dashboard</SelectItem>
+                      <SelectItem value="editor">Editor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-medium">Exportar Dados</h4>
-                    <p className="text-sm text-gray-600">
-                      Baixe uma cópia de todos os seus dados
+                    <Label>Modo Compacto</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Interface mais condensada
                     </p>
                   </div>
-                  <Button variant="outline" onClick={exportData}>
-                    <Download className="h-4 w-4 mr-2" />
-                    Exportar
-                  </Button>
+                  <Switch
+                    checked={preferences.compact_mode}
+                    onCheckedChange={(checked) => handlePreferenceChange('compact_mode', checked)}
+                  />
                 </div>
 
-                <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-medium">Sair da Conta</h4>
-                    <p className="text-sm text-gray-600">
-                      Desconectar de todos os dispositivos
+                    <Label>Salvamento Automático</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Salva automaticamente durante a edição
                     </p>
                   </div>
-                  <Button variant="outline" onClick={signOut}>
-                    Sair
-                  </Button>
+                  <Switch
+                    checked={preferences.auto_save}
+                    onCheckedChange={(checked) => handlePreferenceChange('auto_save', checked)}
+                  />
                 </div>
 
-                <div className="flex items-center justify-between p-4 border border-red-200 rounded-lg bg-red-50">
+                <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-medium text-red-900">Excluir Conta</h4>
-                    <p className="text-sm text-red-700">
-                      Ação permanente e irreversível
+                    <Label>Mostrar Números de Linha</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Exibe numeração no editor
                     </p>
                   </div>
-                  <Button variant="destructive" onClick={deleteAccount}>
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Excluir
+                  <Switch
+                    checked={preferences.show_line_numbers}
+                    onCheckedChange={(checked) => handlePreferenceChange('show_line_numbers', checked)}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Appearance Tab */}
+        <TabsContent value="appearance">
+          <Card>
+            <CardHeader>
+              <CardTitle>Personalização Visual</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label>Tema</Label>
+                <Select
+                  value={preferences.theme}
+                  onValueChange={(value: 'light' | 'dark' | 'system') => handlePreferenceChange('theme', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="light">Claro</SelectItem>
+                    <SelectItem value="dark">Escuro</SelectItem>
+                    <SelectItem value="system">Sistema</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Animações</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Habilita transições e animações
+                  </p>
+                </div>
+                <Switch
+                  checked={preferences.enable_animations}
+                  onCheckedChange={(checked) => handlePreferenceChange('enable_animations', checked)}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Notifications Tab */}
+        <TabsContent value="notifications">
+          <Card>
+            <CardHeader>
+              <CardTitle>Notificações</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <Alert>
+                  <Bell className="w-4 h-4" />
+                  <AlertDescription>
+                    As configurações de notificação serão implementadas em breve.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Data Tab */}
+        <TabsContent value="data">
+          <Card>
+            <CardHeader>
+              <CardTitle>Gerenciamento de Dados</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-medium mb-2">Backup e Exportação</h3>
+                  <div className="flex space-x-2">
+                    <Button variant="outline" onClick={handleExportData}>
+                      <Download className="w-4 h-4 mr-2" />
+                      Exportar Dados
+                    </Button>
+                    <Button variant="outline" onClick={handleImportData}>
+                      <Upload className="w-4 h-4 mr-2" />
+                      Importar Dados
+                    </Button>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div>
+                  <h3 className="font-medium mb-2 text-destructive">Zona de Perigo</h3>
+                  <Alert className="border-destructive">
+                    <Shield className="w-4 h-4" />
+                    <AlertDescription>
+                      A exclusão da conta é permanente e não pode ser desfeita.
+                    </AlertDescription>
+                  </Alert>
+                  <Button
+                    variant="destructive"
+                    className="mt-4"
+                    onClick={handleDeleteAccount}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Excluir Conta
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </main>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
-};
-
-export default SettingsPage; 
+}

@@ -27,8 +27,7 @@ export default function TaskTab() {
       updateTask.mutate({
         id: taskId,
         updates: { 
-          status: task.status === 'done' ? 'todo' : 'done',
-          done: task.status !== 'done'
+          status: task.status === 'done' ? 'todo' : 'done'
         }
       });
     }
@@ -80,12 +79,12 @@ export default function TaskTab() {
                   >
                     <Checkbox
                       id={`task-${task.id}`}
-                      checked={task.done || task.status === 'done'}
+                      checked={task.status === 'done'}
                       onCheckedChange={() => handleToggle(task.id)}
                     />
                     <label
                       htmlFor={`task-${task.id}`}
-                      className={`flex-1 text-sm ${(task.done || task.status === 'done') ? 'line-through text-muted-foreground' : ''}`}
+                      className={`flex-1 text-sm ${task.status === 'done' ? 'line-through text-muted-foreground' : ''}`}
                     >
                       {task.title}
                     </label>
