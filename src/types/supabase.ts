@@ -1,3 +1,4 @@
+
 export type Json =
   | string
   | number
@@ -386,4 +387,3 @@ export type Enums<
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
-``` 
