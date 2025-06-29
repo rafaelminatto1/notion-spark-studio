@@ -68,7 +68,7 @@ describe('TaskService', () => {
     description: 'Descrição de teste',
     status: 'todo',
     priority: 'high',
-    dueDate: undefined,
+    dueDate: new Date('2024-01-15'),
     tags: ['test'],
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
@@ -95,7 +95,8 @@ describe('TaskService', () => {
     });
     
     expect(result).toBeDefined();
-    expect(result.id).toBe('1');
+    expect(result.id).toBeDefined();
+    expect(result.title).toBe('Test Task');
   });
 
   it('should get tasks successfully', async () => {

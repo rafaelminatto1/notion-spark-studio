@@ -1,12 +1,14 @@
+
 import React, { useState } from 'react';
 import { useTasks } from '@/hooks/useTasks';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/Card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import Spinner from '@/components/ui/Spinner';
 import EmptyState from '@/components/feedback/EmptyState';
 import { motion, AnimatePresence } from 'framer-motion';
+import type { Task } from '@/types/task';
 
 export default function TaskTab() {
   const { tasks, isLoading, error, createTask, toggleTask, removeTask } = useTasks();
@@ -49,7 +51,7 @@ export default function TaskTab() {
                     <EmptyState message="Você está em dia! Nenhuma tarefa pendente." />
                  </motion.div>
               ) : (
-                tasks.map(task => (
+                tasks.map((task: Task) => (
                   <motion.li
                     key={task.id}
                     layout
@@ -61,12 +63,12 @@ export default function TaskTab() {
                   >
                     <Checkbox
                       id={`task-${task.id}`}
-                      checked={task.done}
+                      checked={task.done || task.status === 'done'}
                       onCheckedChange={() => toggleTask.mutate(task.id)}
                     />
                     <label
                       htmlFor={`task-${task.id}`}
-                      className={`flex-1 text-sm ${task.done ? 'line-through text-muted-foreground' : ''}`}
+                      className={`flex-1 text-sm ${(task.done || task.status === 'done') ? 'line-through text-muted-foreground' : ''}`}
                     >
                       {task.title}
                     </label>
@@ -88,4 +90,4 @@ export default function TaskTab() {
       </CardContent>
     </Card>
   );
-} 
+}

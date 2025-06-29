@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import TaskTab from './TaskTab';
@@ -29,4 +30,4 @@ export default function DashboardTabs() {
       ))}
     </Tabs>
   );
-} 
+}

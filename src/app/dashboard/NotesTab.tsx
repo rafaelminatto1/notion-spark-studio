@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNotes } from '@/hooks/useNotes';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/Card';
@@ -108,4 +109,4 @@ export default function NotesTab() {
       </div>
     </div>
   );
-} 
+}

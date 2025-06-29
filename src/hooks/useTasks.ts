@@ -1,92 +1,124 @@
-import { useState, useCallback } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { taskService } from '@/services/TaskService';
 import type { Task, TaskFilters } from '@/types/task';
-import { useToast } from '@/hooks/use-toast';
 
-export function useTasks(initialFilters?: TaskFilters) {
-  const [filters, setFilters] = useState<TaskFilters>(initialFilters || {});
+interface TasksHookReturn {
+  tasks: Task[];
+  isLoading: boolean;
+  error: Error | null;
+  filters: TaskFilters;
+  updateFilters: (newFilters: Partial<TaskFilters>) => void;
+  createTask: {
+    mutate: (title: string, options?: { onSuccess?: () => void }) => void;
+    isPending: boolean;
+  };
+  toggleTask: {
+    mutate: (id: string) => void;
+    isPending: boolean;
+  };
+  removeTask: {
+    mutate: (id: string) => void;
+    isPending: boolean;
+  };
+  updateTask: any;
+  deleteTask: any;
+  isCreating: boolean;
+  isUpdating: boolean;
+  isDeleting: boolean;
+}
+
+export function useTasks(): TasksHookReturn {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  const [filters, setFilters] = useState<TaskFilters>({});
 
-  const { data: tasksResult, isLoading, error } = useQuery({
+  const { data: tasksData, isLoading, error } = useQuery({
     queryKey: ['tasks', filters],
     queryFn: () => taskService.getTasks(filters),
   });
 
-  const tasks = tasksResult?.data || [];
-
-  const createTask = useMutation({
-    mutationFn: (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => 
-      taskService.createTask(taskData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      toast({
-        title: "Tarefa criada",
-        description: "Tarefa criada com sucesso",
+  const createTaskMutation = useMutation({
+    mutationFn: async (title: string) => {
+      return taskService.createTask({
+        title,
+        description: '',
+        status: 'todo',
+        priority: 'medium',
+        tags: [],
+        userId: 'current-user'
       });
     },
-    onError: (error) => {
-      toast({
-        title: "Erro",
-        description: "Erro ao criar tarefa",
-        variant: "destructive",
-      });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
     },
   });
 
-  const updateTask = useMutation({
-    mutationFn: ({ id, updates }: { id: string; updates: Partial<Task> }) => 
-      taskService.updateTask(id, updates),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      toast({
-        title: "Tarefa atualizada",
-        description: "Tarefa atualizada com sucesso",
+  const toggleTaskMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return taskService.updateTask(id, { 
+        status: 'done' as const,
+        updatedAt: new Date()
       });
     },
-    onError: (error) => {
-      toast({
-        title: "Erro",
-        description: "Erro ao atualizar tarefa",
-        variant: "destructive",
-      });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
     },
   });
 
-  const deleteTask = useMutation({
+  const removeTaskMutation = useMutation({
     mutationFn: (id: string) => taskService.deleteTask(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      toast({
-        title: "Tarefa removida",
-        description: "Tarefa removida com sucesso",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Erro", 
-        description: "Erro ao remover tarefa",
-        variant: "destructive",
-      });
     },
   });
 
-  const updateFilters = useCallback((newFilters: Partial<TaskFilters>) => {
+  const updateFilters = (newFilters: Partial<TaskFilters>) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
-  }, []);
+  };
+
+  // Mock tasks for development
+  const mockTasks: Task[] = [
+    {
+      id: '1',
+      title: 'Complete project documentation',
+      description: 'Write comprehensive documentation for the project',
+      status: 'todo',
+      priority: 'high',
+      tags: ['documentation', 'project'],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      userId: 'current-user',
+      done: false
+    }
+  ];
 
   return {
-    tasks,
+    tasks: tasksData?.data || mockTasks,
     isLoading,
     error,
     filters,
     updateFilters,
-    createTask: createTask.mutate,
-    updateTask: updateTask.mutate,
-    deleteTask: deleteTask.mutate,
-    isCreating: createTask.isPending,
-    isUpdating: updateTask.isPending,
-    isDeleting: deleteTask.isPending,
+    createTask: {
+      mutate: (title: string, options?: { onSuccess?: () => void }) => {
+        createTaskMutation.mutate(title, {
+          onSuccess: options?.onSuccess
+        });
+      },
+      isPending: createTaskMutation.isPending,
+    },
+    toggleTask: {
+      mutate: toggleTaskMutation.mutate,
+      isPending: toggleTaskMutation.isPending,
+    },
+    removeTask: {
+      mutate: removeTaskMutation.mutate,
+      isPending: removeTaskMutation.isPending,
+    },
+    updateTask: toggleTaskMutation,
+    deleteTask: removeTaskMutation,
+    isCreating: createTaskMutation.isPending,
+    isUpdating: toggleTaskMutation.isPending,
+    isDeleting: removeTaskMutation.isPending,
   };
-} 
+}

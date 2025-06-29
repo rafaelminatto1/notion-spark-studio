@@ -42,7 +42,7 @@ Object.defineProperty(window, 'performance', {
   }
 });
 
-global.requestAnimationFrame = vi.fn((cb) => {
+global.requestAnimationFrame = vi.fn((cb: FrameRequestCallback) => {
   setTimeout(cb, 16);
   return 1;
 });
