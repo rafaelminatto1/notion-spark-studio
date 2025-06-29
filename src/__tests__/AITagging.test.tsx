@@ -1,16 +1,16 @@
 
-import { describe, it, expect, beforeEach, jest } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { AITaggingService } from '../services/AITaggingService';
 
 // Mock básico para o teste
-global.fetch = jest.fn();
+global.fetch = vi.fn();
 
 describe('AITaggingService', () => {
   let service: AITaggingService;
 
   beforeEach(() => {
     service = new AITaggingService();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('deve ser instanciado corretamente', () => {

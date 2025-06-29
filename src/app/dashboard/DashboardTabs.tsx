@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TaskTab from './TaskTab';
 import NotesTab from './NotesTab';
 import MetricsTab from './MetricsTab';

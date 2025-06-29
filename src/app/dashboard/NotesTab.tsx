@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNotes } from '@/hooks/useNotes';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/Card';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
