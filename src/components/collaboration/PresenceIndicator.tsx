@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -25,7 +26,8 @@ import {
   Crown,
   Edit3,
   Eye,
-  Plus
+  Plus,
+  Sparkles
 } from 'lucide-react';
 
 interface User {
@@ -60,10 +62,10 @@ const PresenceIndicator: React.FC<PresenceIndicatorProps> = ({
 }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'online': return 'bg-green-500';
-      case 'away': return 'bg-yellow-500';
-      case 'offline': return 'bg-gray-400';
-      default: return 'bg-gray-400';
+      case 'online': return 'bg-emerald-500 shadow-emerald-500/50';
+      case 'away': return 'bg-amber-500 shadow-amber-500/50';
+      case 'offline': return 'bg-gray-400 shadow-gray-400/50';
+      default: return 'bg-gray-400 shadow-gray-400/50';
     }
   };
 
@@ -77,10 +79,9 @@ const PresenceIndicator: React.FC<PresenceIndicatorProps> = ({
   };
 
   const getRoleIcon = (userId: string) => {
-    // Simular diferentes roles
-    if (userId === 'user1') return <Crown className="h-3 w-3 text-yellow-600" />;
-    if (userId === 'user2') return <Edit3 className="h-3 w-3 text-blue-600" />;
-    return <Eye className="h-3 w-3 text-gray-600" />;
+    if (userId === 'user1') return <Crown className="h-3 w-3 text-amber-500" />;
+    if (userId === 'user2') return <Edit3 className="h-3 w-3 text-blue-500" />;
+    return <Eye className="h-3 w-3 text-slate-500" />;
   };
 
   const getRoleText = (userId: string) => {
@@ -103,44 +104,51 @@ const PresenceIndicator: React.FC<PresenceIndicatorProps> = ({
     return `${diffDays}d atrás`;
   };
 
-  // Mostrar até 3 avatares, depois um contador
   const visibleUsers = users.slice(0, 3);
   const remainingCount = Math.max(0, users.length - 3);
 
   return (
-    <div className={`flex items-center space-x-2 ${className}`}>
-      {/* Contador de usuários online */}
-      <div className="flex items-center space-x-1 text-sm text-gray-600">
-        <Circle className="h-3 w-3 text-green-500 fill-current" />
-        <span>{onlineCount} online</span>
+    <div className={`flex items-center space-x-3 ${className}`}>
+      {/* Status online melhorado */}
+      <div className="flex items-center space-x-2 px-3 py-1.5 bg-slate-900/50 backdrop-blur-sm border border-slate-700/50 rounded-full">
+        <div className="relative">
+          <Circle className="h-3 w-3 text-emerald-500 fill-current animate-pulse" />
+          <Circle className="absolute inset-0 h-3 w-3 text-emerald-500 animate-ping opacity-20" />
+        </div>
+        <span className="text-sm font-medium text-slate-300">
+          {onlineCount} online
+        </span>
       </div>
 
-      {/* Avatares dos usuários */}
-      <div className="flex items-center -space-x-2">
+      {/* Avatares com melhor visual */}
+      <div className="flex items-center -space-x-3">
         <TooltipProvider>
-          {visibleUsers.map((user) => (
+          {visibleUsers.map((user, index) => (
             <Tooltip key={user.id}>
               <TooltipTrigger asChild>
-                <div className="relative">
-                  <Avatar className="h-8 w-8 border-2 border-white hover:z-10 transition-transform hover:scale-110">
+                <div 
+                  className="relative transition-all duration-200 hover:z-20 hover:scale-110"
+                  style={{ zIndex: 10 - index }}
+                >
+                  <Avatar className="h-9 w-9 border-2 border-slate-800/50 ring-2 ring-slate-700/30 backdrop-blur-sm">
                     <AvatarImage src={user.user?.avatar_url} />
-                    <AvatarFallback className="text-xs">
+                    <AvatarFallback className="text-xs font-medium bg-gradient-to-br from-purple-500/20 to-blue-500/20 text-slate-200">
                       {user.user?.full_name?.charAt(0) || user.user?.email?.charAt(0) || 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  <div className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white ${getStatusColor(user.status)}`} />
+                  <div className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-slate-800 shadow-lg ${getStatusColor(user.status)}`} />
                 </div>
               </TooltipTrigger>
-              <TooltipContent>
-                <div className="text-center">
-                  <p className="font-medium">
+              <TooltipContent className="bg-slate-900/95 backdrop-blur-sm border-slate-700/50">
+                <div className="text-center space-y-1">
+                  <p className="font-medium text-slate-100">
                     {user.user?.full_name || user.user?.email}
                   </p>
-                  <div className="flex items-center justify-center space-x-1 mt-1">
+                  <div className="flex items-center justify-center space-x-1">
                     {getRoleIcon(user.user_id)}
-                    <span className="text-xs">{getRoleText(user.user_id)}</span>
+                    <span className="text-xs text-slate-400">{getRoleText(user.user_id)}</span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-slate-500">
                     {getStatusText(user.status)} • {formatLastSeen(user.last_seen)}
                   </p>
                 </div>
@@ -148,11 +156,10 @@ const PresenceIndicator: React.FC<PresenceIndicatorProps> = ({
             </Tooltip>
           ))}
 
-          {/* Contador de usuários restantes */}
           {remainingCount > 0 && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="h-8 w-8 bg-gray-100 border-2 border-white rounded-full flex items-center justify-center text-xs font-medium text-gray-600 hover:bg-gray-200 transition-colors">
+                <div className="h-9 w-9 bg-slate-800/50 backdrop-blur-sm border-2 border-slate-700/50 rounded-full flex items-center justify-center text-xs font-medium text-slate-300 hover:bg-slate-700/50 transition-all duration-200 hover:scale-110 cursor-pointer">
                   +{remainingCount}
                 </div>
               </TooltipTrigger>
@@ -164,53 +171,63 @@ const PresenceIndicator: React.FC<PresenceIndicatorProps> = ({
         </TooltipProvider>
       </div>
 
-      {/* Menu de ações */}
+      {/* Menu melhorado */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-            <Users className="h-4 w-4" />
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-9 w-9 p-0 rounded-full bg-slate-900/30 backdrop-blur-sm border border-slate-700/30 hover:bg-slate-800/50 hover:border-slate-600/50 transition-all duration-200"
+          >
+            <Users className="h-4 w-4 text-slate-300" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-64">
-          <div className="p-2">
-            <h4 className="font-medium text-sm mb-2">
-              Usuários Ativos ({onlineCount})
-            </h4>
+        <DropdownMenuContent 
+          align="end" 
+          className="w-72 bg-slate-900/95 backdrop-blur-md border-slate-700/50"
+        >
+          <div className="p-3">
+            <div className="flex items-center space-x-2 mb-3">
+              <Sparkles className="h-4 w-4 text-purple-400" />
+              <h4 className="font-medium text-sm text-slate-100">
+                Usuários Ativos ({onlineCount})
+              </h4>
+            </div>
             
-            <div className="space-y-2 max-h-48 overflow-y-auto">
+            <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-magic">
               {users.map((user) => (
-                <div key={user.id} className="flex items-center space-x-2 p-2 rounded hover:bg-gray-50">
+                <div key={user.id} className="flex items-center space-x-3 p-2.5 rounded-lg hover:bg-slate-800/50 transition-colors group">
                   <div className="relative">
-                    <Avatar className="h-6 w-6">
+                    <Avatar className="h-7 w-7 border border-slate-700/50">
                       <AvatarImage src={user.user?.avatar_url} />
-                      <AvatarFallback className="text-xs">
+                      <AvatarFallback className="text-xs bg-gradient-to-br from-purple-500/20 to-blue-500/20 text-slate-200">
                         {user.user?.full_name?.charAt(0) || user.user?.email?.charAt(0) || 'U'}
                       </AvatarFallback>
                     </Avatar>
-                    <div className={`absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-white ${getStatusColor(user.status)}`} />
+                    <div className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border border-slate-800 ${getStatusColor(user.status)}`} />
                   </div>
                   
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-1">
-                      <p className="text-sm font-medium truncate">
+                      <p className="text-sm font-medium truncate text-slate-200 group-hover:text-slate-100">
                         {user.user?.full_name || user.user?.email}
                       </p>
                       {getRoleIcon(user.user_id)}
                     </div>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-slate-500">
                       {getStatusText(user.status)} • {formatLastSeen(user.last_seen)}
                     </p>
                   </div>
 
-                  <div className="flex space-x-1">
+                  <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     {onMentionUser && (
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-6 w-6 p-0"
+                        className="h-7 w-7 p-0 hover:bg-slate-700/50"
                         onClick={() => onMentionUser(user.user_id)}
                       >
-                        <AtSign className="h-3 w-3" />
+                        <AtSign className="h-3 w-3 text-slate-400" />
                       </Button>
                     )}
                     
@@ -218,10 +235,10 @@ const PresenceIndicator: React.FC<PresenceIndicatorProps> = ({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-6 w-6 p-0"
+                        className="h-7 w-7 p-0 hover:bg-slate-700/50"
                         onClick={() => onStartChat(user.user_id)}
                       >
-                        <MessageSquare className="h-3 w-3" />
+                        <MessageSquare className="h-3 w-3 text-slate-400" />
                       </Button>
                     )}
                   </div>
@@ -230,17 +247,20 @@ const PresenceIndicator: React.FC<PresenceIndicatorProps> = ({
             </div>
           </div>
 
-          <DropdownMenuSeparator />
+          <DropdownMenuSeparator className="bg-slate-700/50" />
           
           {onInviteUser && (
-            <DropdownMenuItem onClick={onInviteUser}>
-              <Plus className="h-4 w-4 mr-2" />
+            <DropdownMenuItem 
+              onClick={onInviteUser}
+              className="text-slate-200 hover:bg-slate-800/50 focus:bg-slate-800/50"
+            >
+              <Plus className="h-4 w-4 mr-2 text-emerald-400" />
               Convidar usuário
             </DropdownMenuItem>
           )}
           
-          <DropdownMenuItem>
-            <Users className="h-4 w-4 mr-2" />
+          <DropdownMenuItem className="text-slate-200 hover:bg-slate-800/50 focus:bg-slate-800/50">
+            <Users className="h-4 w-4 mr-2 text-blue-400" />
             Gerenciar permissões
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -249,4 +269,4 @@ const PresenceIndicator: React.FC<PresenceIndicatorProps> = ({
   );
 };
 
-export default PresenceIndicator; 
+export default PresenceIndicator;

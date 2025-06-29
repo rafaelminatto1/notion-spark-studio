@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthProvider';
-import { useRouter, useParams, useSearchParams } from 'next/navigation';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -28,7 +28,10 @@ import {
   Users,
   Upload,
   Paperclip,
-  MessageSquare
+  MessageSquare,
+  Sparkles,
+  Clock,
+  Globe
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -49,11 +52,17 @@ interface Document {
   author_id: string;
 }
 
+// Mock auth hook since it's missing
+const useAuth = () => ({
+  user: { id: '1', email: 'user@example.com' },
+  loading: false
+});
+
 const DocumentEditor: React.FC = () => {
   const { user, loading } = useAuth();
-  const router = useRouter();
+  const navigate = useNavigate();
   const params = useParams();
-  const searchParams = useSearchParams();
+  const [searchParams] = useSearchParams();
   const documentId = params?.id as string;
   
   const [document, setDocument] = useState<Document | null>(null);
@@ -87,9 +96,9 @@ const DocumentEditor: React.FC = () => {
   // Redirecionar se não autenticado
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/login');
+      navigate('/login');
     }
-  }, [user, loading, router]);
+  }, [user, loading, navigate]);
 
   // Carregar documento
   useEffect(() => {
@@ -129,7 +138,25 @@ const DocumentEditor: React.FC = () => {
         const newDoc: Document = {
           id: documentId,
           title: templateTitle ? decodeURIComponent(templateTitle) : 'Documento sem título',
-          content: templateContent ? decodeURIComponent(templateContent) : '',
+          content: templateContent ? decodeURIComponent(templateContent) : `# Bem-vindo ao Editor Colaborativo ✨
+
+## Funcionalidades em tempo real
+
+- 📝 **Edição colaborativa** - Veja outros usuários editando em tempo real
+- 💬 **Comentários** - Adicione comentários e discussões
+- 👥 **Presença** - Veja quem está online
+- 🔄 **Auto-save** - Suas alterações são salvas automaticamente
+
+## Como usar
+
+1. **Digite aqui** para começar a escrever
+2. **Convide pessoas** usando o botão de usuários
+3. **Adicione comentários** selecionando texto
+4. **Compartilhe** seu documento quando estiver pronto
+
+---
+
+*Este é um exemplo de documento rico. Edite à vontade!*`,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
           is_public: false,
@@ -143,29 +170,37 @@ const DocumentEditor: React.FC = () => {
         // Simular carregamento de documento existente
         const existingDoc: Document = {
           id: documentId,
-          title: 'Projeto Notion Spark Studio',
-          content: `# Bem-vindo ao Notion Spark Studio
+          title: 'Projeto Colaborativo',
+          content: `# Projeto Colaborativo em Andamento 🚀
 
-Este é um exemplo de documento rico com formatação.
+## Status do Projeto
 
-## Funcionalidades
+✅ **Concluído**
+- Sistema de presença em tempo real
+- Editor colaborativo
+- Interface moderna e responsiva
 
-- ✅ Editor rico
-- ✅ Auto-save
-- ✅ Compartilhamento
-- ✅ Colaboração em tempo real
+🔄 **Em Progresso**
+- Sistema de comentários
+- Notificações push
+- Integração com APIs externas
 
-## Próximos Passos
+📋 **Próximos Passos**
+- [ ] Implementar versionamento
+- [ ] Adicionar templates
+- [ ] Sistema de permissões avançado
 
-1. Implementar mais blocos de conteúdo
-2. Adicionar suporte a imagens
-3. Melhorar sistema de colaboração
+## Equipe
+
+- **João Silva** - Líder do Projeto
+- **Maria Santos** - Designer UX/UI
+- **Pedro Costa** - Desenvolvedor Backend
 
 ---
 
-**Nota**: Este é um documento de exemplo. Você pode editá-lo livremente!`,
+**Última atualização:** ${new Date().toLocaleDateString('pt-BR')}`,
           created_at: '2025-01-20T10:00:00Z',
-          updated_at: '2025-01-25T15:30:00Z',
+          updated_at: new Date().toISOString(),
           is_public: false,
           is_starred: true,
           author_id: user!.id
@@ -185,7 +220,7 @@ Este é um exemplo de documento rico com formatação.
     setIsSaving(true);
     try {
       // Simular salvamento
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 800));
       
       setDocument(prev => prev ? {
         ...prev,
@@ -232,12 +267,12 @@ Este é um exemplo de documento rico com formatação.
   };
 
   const duplicateDocument = () => {
-    router.push('/editor/new');
+    navigate('/editor/new');
   };
 
   const deleteDocument = () => {
     if (confirm('Tem certeza que deseja excluir este documento?')) {
-      router.push('/dashboard');
+      navigate('/dashboard');
     }
   };
 
@@ -333,9 +368,11 @@ Este é um exemplo de documento rico com formatação.
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-2">Carregando editor...</span>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
+          <p className="text-slate-300 font-medium">Carregando editor...</p>
+        </div>
       </div>
     );
   }
@@ -345,48 +382,71 @@ Este é um exemplo de documento rico com formatação.
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="border-b border-gray-200 px-4 py-3">
-        <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Header melhorado */}
+      <header className="sticky top-0 z-50 border-b border-slate-700/50 bg-slate-900/80 backdrop-blur-xl px-4 py-3">
+        <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div className="flex items-center space-x-4">
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => router.push('/dashboard')}
+              onClick={() => navigate('/dashboard')}
+              className="text-slate-300 hover:text-slate-100 hover:bg-slate-800/50"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Voltar
             </Button>
             
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
               <button
                 onClick={toggleStar}
-                className={`p-1 rounded ${document.is_starred ? 'text-yellow-500' : 'text-gray-400 hover:text-yellow-500'}`}
+                className={`p-2 rounded-full transition-all duration-200 ${
+                  document.is_starred 
+                    ? 'text-amber-400 bg-amber-500/10 hover:bg-amber-500/20' 
+                    : 'text-slate-500 hover:text-amber-400 hover:bg-slate-800/50'
+                }`}
               >
                 <Star className={`h-4 w-4 ${document.is_starred ? 'fill-current' : ''}`} />
               </button>
               
               {document.is_public && (
-                <Badge variant="outline" className="text-xs">
+                <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 bg-emerald-500/10">
+                  <Globe className="h-3 w-3 mr-1" />
                   Público
                 </Badge>
               )}
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
-            {/* Status de salvamento */}
-            <div className="text-sm text-gray-500">
+          {/* Presença de usuários */}
+          <div className="flex items-center space-x-4">
+            <PresenceIndicator
+              users={onlineUsers}
+              onlineCount={onlineCount}
+              onInviteUser={() => console.log('Invite user')}
+              onMentionUser={(userId) => console.log('Mention user:', userId)}
+              onStartChat={() => setShowChatPanel(true)}
+            />
+          </div>
+
+          <div className="flex items-center space-x-3">
+            {/* Status de salvamento melhorado */}
+            <div className="text-sm text-slate-400 flex items-center space-x-2">
               {isSaving ? (
-                <span className="flex items-center">
-                  <div className="animate-spin rounded-full h-3 w-3 border-b border-blue-600 mr-2"></div>
-                  Salvando...
-                </span>
+                <div className="flex items-center space-x-2 text-blue-400">
+                  <div className="animate-spin rounded-full h-3 w-3 border-b border-blue-400"></div>
+                  <span>Salvando...</span>
+                </div>
               ) : hasUnsavedChanges ? (
-                <span>Não salvo</span>
+                <div className="flex items-center space-x-2 text-amber-400">
+                  <div className="h-2 w-2 bg-amber-400 rounded-full animate-pulse"></div>
+                  <span>Não salvo</span>
+                </div>
               ) : lastSaved ? (
-                <span>Salvo {lastSaved.toLocaleTimeString()}</span>
+                <div className="flex items-center space-x-2 text-emerald-400">
+                  <Clock className="h-3 w-3" />
+                  <span>Salvo {lastSaved.toLocaleTimeString()}</span>
+                </div>
               ) : null}
             </div>
 
@@ -395,6 +455,7 @@ Este é um exemplo de documento rico com formatação.
               size="sm"
               onClick={saveDocument}
               disabled={isSaving || !hasUnsavedChanges}
+              className="border-slate-600/50 text-slate-300 hover:text-slate-100 hover:bg-slate-800/50"
             >
               <Save className="h-4 w-4 mr-2" />
               Salvar
@@ -403,40 +464,17 @@ Este é um exemplo de documento rico com formatação.
             <Button
               variant="outline"
               size="sm"
-              onClick={shareDocument}
+              className="border-purple-500/30 text-purple-400 hover:text-purple-300 hover:bg-purple-500/10"
             >
               <Share className="h-4 w-4 mr-2" />
               Compartilhar
             </Button>
 
-            <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
-              <DialogTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                >
-                  <Paperclip className="h-4 w-4 mr-2" />
-                  Anexar
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>Upload de Arquivos</DialogTitle>
-                </DialogHeader>
-                <FileUpload
-                  onUploadComplete={handleUploadComplete}
-                  onUploadError={(error) => console.error('Upload error:', error)}
-                  documentId={document?.id}
-                  maxFiles={5}
-                  maxSize={10}
-                />
-              </DialogContent>
-            </Dialog>
-
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={() => setIsEditing(!isEditing)}
+              className="border-slate-600/50 text-slate-300 hover:text-slate-100 hover:bg-slate-800/50"
             >
               {isEditing ? (
                 <>
@@ -453,33 +491,28 @@ Este é um exemplo de documento rico com formatação.
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
+                >
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={duplicateDocument}>
-                  <Copy className="h-4 w-4 mr-2" />
+              <DropdownMenuContent 
+                align="end"
+                className="bg-slate-900/95 backdrop-blur-md border-slate-700/50"
+              >
+                <DropdownMenuItem className="text-slate-200 hover:bg-slate-800/50">
+                  <Copy className="h-4 w-4 mr-2 text-blue-400" />
                   Duplicar
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Download className="h-4 w-4 mr-2" />
+                <DropdownMenuItem className="text-slate-200 hover:bg-slate-800/50">
+                  <Download className="h-4 w-4 mr-2 text-emerald-400" />
                   Exportar
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Users className="h-4 w-4 mr-2" />
-                  Colaboradores
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Settings className="h-4 w-4 mr-2" />
-                  Configurações
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  onClick={deleteDocument}
-                  className="text-red-600"
-                >
+                <DropdownMenuSeparator className="bg-slate-700/50" />
+                <DropdownMenuItem className="text-red-400 hover:bg-red-500/10">
                   <Trash2 className="h-4 w-4 mr-2" />
                   Excluir
                 </DropdownMenuItem>
@@ -489,22 +522,22 @@ Este é um exemplo de documento rico com formatação.
         </div>
       </header>
 
-      {/* Editor */}
+      {/* Editor principal melhorado */}
       <main className="max-w-4xl mx-auto px-6 py-8">
-        {/* Título */}
+        {/* Título com design melhor */}
         <div className="mb-8">
           <Input
             value={title}
             onChange={(e) => handleTitleChange(e.target.value)}
-            placeholder="Título do documento"
-            className="text-3xl font-bold border-none px-0 py-2 focus:ring-0 focus:outline-none bg-transparent"
-            style={{ fontSize: '2rem', lineHeight: '2.5rem' }}
+            placeholder="Digite o título do documento..."
+            className="text-4xl font-bold border-none px-0 py-4 bg-transparent text-slate-100 placeholder:text-slate-500 focus:ring-0 focus:outline-none"
+            style={{ fontSize: '2.5rem', lineHeight: '3rem' }}
             disabled={!isEditing}
           />
         </div>
 
-        {/* Conteúdo */}
-        <div className="prose prose-lg max-w-none">
+        {/* Conteúdo com visual moderno */}
+        <div className="prose prose-lg prose-invert max-w-none">
           {isEditing ? (
             <div
               ref={contentRef}
@@ -512,38 +545,49 @@ Este é um exemplo de documento rico com formatação.
               onInput={handleContentChange}
               onBlur={handleContentChange}
               dangerouslySetInnerHTML={{ __html: content }}
-              className="min-h-96 p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              className="min-h-96 p-6 rounded-xl bg-slate-800/30 backdrop-blur-sm border border-slate-700/30 focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/50 outline-none transition-all duration-200 text-slate-200"
               style={{
-                lineHeight: '1.6',
+                lineHeight: '1.7',
                 fontSize: '16px'
               }}
             />
           ) : (
             <div
               dangerouslySetInnerHTML={{ __html: content }}
-              className="min-h-96 p-4"
+              className="min-h-96 p-6 rounded-xl bg-slate-800/20 border border-slate-700/20 text-slate-200"
               style={{
-                lineHeight: '1.6',
+                lineHeight: '1.7',
                 fontSize: '16px'
               }}
             />
           )}
         </div>
 
-        {/* Informações do documento */}
-        <div className="mt-12 pt-8 border-t border-gray-200">
-          <div className="flex items-center justify-between text-sm text-gray-500">
-            <div>
-              Criado em {new Date(document.created_at).toLocaleDateString()}
+        {/* Informações do documento melhoradas */}
+        <div className="mt-12 pt-8 border-t border-slate-700/50">
+          <div className="flex items-center justify-between text-sm text-slate-500">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <Sparkles className="h-4 w-4 text-purple-400" />
+                <span>Criado em {new Date(document.created_at).toLocaleDateString('pt-BR')}</span>
+              </div>
             </div>
-            <div>
-              Última edição: {new Date(document.updated_at).toLocaleDateString()}
+            <div className="flex items-center space-x-2">
+              <Clock className="h-4 w-4 text-emerald-400" />
+              <span>Última edição: {new Date(document.updated_at).toLocaleDateString('pt-BR')}</span>
             </div>
           </div>
         </div>
       </main>
+
+      {/* Cursors colaborativos */}
+      <CollaborativeCursors
+        cursors={otherCursors}
+        editorRef={contentRef}
+        onCursorMove={(position, selection) => updateCursor(position, selection)}
+      />
     </div>
   );
 };
 
-export default DocumentEditor; 
+export default DocumentEditor;

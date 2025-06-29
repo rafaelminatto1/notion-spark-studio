@@ -84,6 +84,294 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_messages: {
+        Row: {
+          created_at: string | null
+          document_id: string
+          edited_at: string | null
+          id: string
+          is_edited: boolean | null
+          mentioned_users: string[] | null
+          message: string
+          message_type: string | null
+          reply_to: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          document_id: string
+          edited_at?: string | null
+          id?: string
+          is_edited?: boolean | null
+          mentioned_users?: string[] | null
+          message: string
+          message_type?: string | null
+          reply_to?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          document_id?: string
+          edited_at?: string | null
+          id?: string
+          is_edited?: boolean | null
+          mentioned_users?: string[] | null
+          message?: string
+          message_type?: string | null
+          reply_to?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_reply_to_fkey"
+            columns: ["reply_to"]
+            isOneToOne: false
+            referencedRelation: "chat_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      comment_reactions: {
+        Row: {
+          comment_id: string | null
+          created_at: string | null
+          id: string
+          reaction: string
+          user_id: string | null
+        }
+        Insert: {
+          comment_id?: string | null
+          created_at?: string | null
+          id?: string
+          reaction: string
+          user_id?: string | null
+        }
+        Update: {
+          comment_id?: string | null
+          created_at?: string | null
+          id?: string
+          reaction?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comment_reactions_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      comments: {
+        Row: {
+          content: string
+          created_at: string | null
+          document_id: string
+          id: string
+          is_resolved: boolean | null
+          parent_id: string | null
+          position_end: number | null
+          position_start: number | null
+          resolved_at: string | null
+          resolved_by: string | null
+          selection_text: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          document_id: string
+          id?: string
+          is_resolved?: boolean | null
+          parent_id?: string | null
+          position_end?: number | null
+          position_start?: number | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          selection_text?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          document_id?: string
+          id?: string
+          is_resolved?: boolean | null
+          parent_id?: string | null
+          position_end?: number | null
+          position_start?: number | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          selection_text?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_collaborators: {
+        Row: {
+          accepted_at: string | null
+          created_at: string | null
+          document_id: string
+          id: string
+          invited_at: string | null
+          invited_by: string | null
+          role: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string | null
+          document_id: string
+          id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          role?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string | null
+          document_id?: string
+          id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          role?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      document_sessions: {
+        Row: {
+          document_id: string
+          ended_at: string | null
+          id: string
+          is_active: boolean | null
+          last_activity: string | null
+          session_id: string
+          started_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          document_id: string
+          ended_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_activity?: string | null
+          session_id: string
+          started_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          document_id?: string
+          ended_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_activity?: string | null
+          session_id?: string
+          started_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      document_templates: {
+        Row: {
+          category: string
+          content: string
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          is_public: boolean | null
+          name: string
+          updated_at: string | null
+          usage_count: number | null
+        }
+        Insert: {
+          category?: string
+          content: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          name: string
+          updated_at?: string | null
+          usage_count?: number | null
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          name?: string
+          updated_at?: string | null
+          usage_count?: number | null
+        }
+        Relationships: []
+      }
+      file_uploads: {
+        Row: {
+          created_at: string | null
+          document_id: string | null
+          file_size: number
+          filename: string
+          id: string
+          mime_type: string
+          original_filename: string
+          public_url: string | null
+          storage_path: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          document_id?: string | null
+          file_size: number
+          filename: string
+          id?: string
+          mime_type: string
+          original_filename: string
+          public_url?: string | null
+          storage_path: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          document_id?: string | null
+          file_size?: number
+          filename?: string
+          id?: string
+          mime_type?: string
+          original_filename?: string
+          public_url?: string | null
+          storage_path?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       files: {
         Row: {
           content: string | null
@@ -209,6 +497,57 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      mentions: {
+        Row: {
+          chat_message_id: string | null
+          comment_id: string | null
+          created_at: string | null
+          document_id: string
+          id: string
+          is_read: boolean | null
+          mentioned_by: string | null
+          mentioned_user_id: string | null
+          read_at: string | null
+        }
+        Insert: {
+          chat_message_id?: string | null
+          comment_id?: string | null
+          created_at?: string | null
+          document_id: string
+          id?: string
+          is_read?: boolean | null
+          mentioned_by?: string | null
+          mentioned_user_id?: string | null
+          read_at?: string | null
+        }
+        Update: {
+          chat_message_id?: string | null
+          comment_id?: string | null
+          created_at?: string | null
+          document_id?: string
+          id?: string
+          is_read?: boolean | null
+          mentioned_by?: string | null
+          mentioned_user_id?: string | null
+          read_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mentions_chat_message_id_fkey"
+            columns: ["chat_message_id"]
+            isOneToOne: false
+            referencedRelation: "chat_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mentions_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       password_reset_tokens: {
         Row: {
@@ -342,6 +681,45 @@ export type Database = {
           theme?: Database["public"]["Enums"]["theme_type"] | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_presence: {
+        Row: {
+          created_at: string | null
+          cursor_position: number | null
+          document_id: string | null
+          id: string
+          last_seen: string | null
+          selection_end: number | null
+          selection_start: number | null
+          status: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          cursor_position?: number | null
+          document_id?: string | null
+          id?: string
+          last_seen?: string | null
+          selection_end?: number | null
+          selection_start?: number | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          cursor_position?: number | null
+          document_id?: string | null
+          id?: string
+          last_seen?: string | null
+          selection_end?: number | null
+          selection_start?: number | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -481,15 +859,31 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      cleanup_inactive_sessions: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      get_current_user_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["app_role"]
+      }
+      get_current_user_role_cached: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       has_role: {
         Args: {
           _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
         }
+        Returns: boolean
+      }
+      is_admin_cached: {
+        Args: Record<PropertyKey, never>
         Returns: boolean
       }
       log_password_reset_attempt: {
